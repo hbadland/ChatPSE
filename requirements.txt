@@ -1,0 +1,7 @@
+dwsimopt
+openai
+anthropic
+google-genai
+pythonnet>=3.0.1
+chromadb
+sentence-transformers

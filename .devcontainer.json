@@ -1,0 +1,14 @@
+{
+    "name": "DWSIM Agent Dev",
+    "build": {
+        "dockerfile": "docker/Dockerfile",
+        "context": ".",
+        "args": { "TARGETPLATFORM": "linux/amd64" }
+    },
+    "workspaceFolder": "/workspaces/multiAgentFlowsheet",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python"]
+        }
+    }
+}

@@ -1,0 +1,5812 @@
+[
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Chloroform",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone",
+      "dimethylketone"
+    ],
+    "aliases_b": [
+      "trichloromethane",
+      "CHCl3",
+      "methenyl trichloride"
+    ],
+    "model": "NRTL",
+    "A12": -253.4,
+    "A21": 664.2,
+    "alpha12": 0.3,
+    "T_min_K": 308,
+    "T_max_K": 340,
+    "source": "DECHEMA VLE Vol 3, p.184",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 184.7,
+    "A21": 222.6,
+    "alpha12": 0.3037,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1482.7,
+    "A21": -229.0,
+    "alpha12": 0.5781,
+    "T_min_K": 298,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "cyclohexane",
+      "hexahydrobenzene"
+    ],
+    "model": "NRTL",
+    "A12": 1273.0,
+    "A21": 846.4,
+    "alpha12": 0.2098,
+    "T_min_K": 298,
+    "T_max_K": 353,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 1362.3,
+    "A21": -57.8,
+    "alpha12": 0.5243,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "DECHEMA VLE Vol 1, p.236",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 1634.7,
+    "A21": -33.6,
+    "alpha12": 0.5056,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diethyl Ether",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "ethoxyethane",
+      "ether",
+      "ethyl ether",
+      "DEE"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 818.7,
+    "A21": 154.5,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "DECHEMA VLE Vol 2, p.118",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "Hexane",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "n-hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 2538.6,
+    "A21": 1285.0,
+    "alpha12": 0.4793,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1428.2,
+    "A21": -154.5,
+    "alpha12": 0.5101,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 586.1,
+    "A21": -195.0,
+    "alpha12": 0.5765,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "Gmehling et al. 1977, Vapor-Liquid Equilibrium Data Collection",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1880.5,
+    "A21": -22.1,
+    "alpha12": 0.5195,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 254.2,
+    "A21": 598.5,
+    "alpha12": 0.4878,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1456.9,
+    "A21": -264.0,
+    "alpha12": 0.509,
+    "T_min_K": 348,
+    "T_max_K": 383,
+    "source": "DECHEMA VLE Vol 1, p.162",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 887.2,
+    "A21": 101.5,
+    "alpha12": 0.492,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1279.5,
+    "A21": -40.2,
+    "alpha12": 0.4876,
+    "T_min_K": 348,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 1, p.183",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1390.2,
+    "A21": -250.0,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -97.1,
+    "A21": 551.5,
+    "alpha12": 0.447,
+    "T_min_K": 363,
+    "T_max_K": 393,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 126.9,
+    "A21": 152.5,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2267.5,
+    "A21": -53.4,
+    "alpha12": 0.4,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 1, p.342",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 124.5,
+    "A21": 178.2,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 8.1,
+    "A21": -8.9,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 383,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 4782.7,
+    "A21": 2558.7,
+    "alpha12": 0.2,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "n-Hexane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2977.5,
+    "A21": 1516.9,
+    "alpha12": 0.4688,
+    "T_min_K": 318,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Hexane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2538.6,
+    "A21": 1285.0,
+    "alpha12": 0.4793,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Heptane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3123.4,
+    "A21": 1487.2,
+    "alpha12": 0.46,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Heptane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2836.4,
+    "A21": 1091.2,
+    "alpha12": 0.4985,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Cyclohexane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2213.8,
+    "A21": 947.2,
+    "alpha12": 0.49,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 2, p.297",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Cyclohexane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2768.1,
+    "A21": 965.5,
+    "alpha12": 0.4851,
+    "T_min_K": 308,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Toluene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 5021.4,
+    "A21": 2634.1,
+    "alpha12": 0.2,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "2-Butanone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl ethyl ketone",
+      "MEK",
+      "butanone"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1637.2,
+    "A21": -104.3,
+    "alpha12": 0.47,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 3, p.201",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diethyl Ether",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "ethoxyethane",
+      "ether",
+      "ethyl ether",
+      "DEE"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 292.7,
+    "A21": 89.5,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diethyl Ether",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethoxyethane",
+      "ether",
+      "ethyl ether",
+      "DEE"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 3816.0,
+    "A21": 873.5,
+    "alpha12": 0.2,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Chloroform",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "trichloromethane",
+      "CHCl3"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -370.5,
+    "A21": 857.2,
+    "alpha12": 0.3,
+    "T_min_K": 308,
+    "T_max_K": 348,
+    "source": "DECHEMA VLE Vol 3, p.193",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Chloroform",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "trichloromethane",
+      "CHCl3"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -268.1,
+    "A21": 756.4,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1564.7,
+    "A21": 498.2,
+    "alpha12": 0.2,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 3, p.412",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 456.3,
+    "A21": -129.5,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1205.8,
+    "A21": -203.6,
+    "alpha12": 0.483,
+    "T_min_K": 338,
+    "T_max_K": 388,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1483.4,
+    "A21": -27.1,
+    "alpha12": 0.502,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 1, p.198",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Formic Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methanoic acid",
+      "HCOOH"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 246.8,
+    "A21": -62.1,
+    "alpha12": 0.369,
+    "T_min_K": 363,
+    "T_max_K": 393,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propionic Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "propanoic acid",
+      "methylacetic acid"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1214.5,
+    "A21": -196.3,
+    "alpha12": 0.4,
+    "T_min_K": 363,
+    "T_max_K": 413,
+    "source": "DECHEMA VLE Vol 1, p.388",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Dimethyl Sulfoxide",
+    "compound_b": "Water",
+    "aliases_a": [
+      "DMSO",
+      "methyl sulfoxide",
+      "dimethyl sulphoxide"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -364.8,
+    "A21": 907.3,
+    "alpha12": 0.2,
+    "T_min_K": 323,
+    "T_max_K": 423,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "Water",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1872.5,
+    "A21": -221.3,
+    "alpha12": 0.47,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 3, p.517",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 382.4,
+    "A21": 103.7,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 264.8,
+    "A21": 157.3,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dimethylformamide",
+    "compound_b": "Water",
+    "aliases_a": [
+      "DMF",
+      "N,N-dimethylformamide"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -356.9,
+    "A21": 1124.6,
+    "alpha12": 0.2793,
+    "T_min_K": 333,
+    "T_max_K": 433,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 1214.8,
+    "A21": 739.6,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "DECHEMA VLE Vol 3, p.217",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 474.3,
+    "A21": 42.7,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Carbon Tetrachloride",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "CCl4",
+      "tetrachloromethane"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 77.2,
+    "A21": -32.4,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 353,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Carbon Tetrachloride",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "CCl4",
+      "tetrachloromethane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2248.1,
+    "A21": 387.6,
+    "alpha12": 0.4,
+    "T_min_K": 308,
+    "T_max_K": 348,
+    "source": "DECHEMA VLE Vol 3, p.327",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Carbon Tetrachloride",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "CCl4",
+      "tetrachloromethane"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 1796.4,
+    "A21": 291.3,
+    "alpha12": 0.4,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 3, p.329",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diisopropyl Ether",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "DIPE",
+      "isopropyl ether",
+      "2-isopropoxypropane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 725.3,
+    "A21": 219.8,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Methyl Acetate",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methyl ethanoate",
+      "MeOAc"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 124.2,
+    "A21": 182.9,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Acetate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl ethanoate",
+      "MeOAc"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2124.5,
+    "A21": -132.7,
+    "alpha12": 0.4,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 1, p.298",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Propyl Acetate",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "n-propyl acetate",
+      "propyl ethanoate"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -12.3,
+    "A21": 78.4,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Pyridine",
+    "compound_b": "Water",
+    "aliases_a": [
+      "azine",
+      "pyridine"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1014.7,
+    "A21": -372.8,
+    "alpha12": 0.398,
+    "T_min_K": 348,
+    "T_max_K": 388,
+    "source": "DECHEMA VLE Vol 3, p.481",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Furfural",
+    "compound_b": "Water",
+    "aliases_a": [
+      "furan-2-carbaldehyde",
+      "2-furfuraldehyde",
+      "furfuraldehyde"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2483.9,
+    "A21": -487.2,
+    "alpha12": 0.3,
+    "T_min_K": 363,
+    "T_max_K": 433,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Glycerol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "glycerin",
+      "glycerine",
+      "propane-1,2,3-triol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -362.5,
+    "A21": 1487.2,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 473,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "monoethylene glycol",
+      "MEG",
+      "ethane-1,2-diol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 159.3,
+    "A21": 411.7,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 473,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Hydrogen Chloride",
+    "compound_b": "Water",
+    "aliases_a": [
+      "HCl",
+      "hydrochloric acid gas"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -745.2,
+    "A21": 1389.4,
+    "alpha12": 0.2,
+    "T_min_K": 298,
+    "T_max_K": 383,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ammonia",
+    "compound_b": "Water",
+    "aliases_a": [
+      "NH3",
+      "trihydridoazote"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -138.6,
+    "A21": 732.9,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 3123.4,
+    "A21": 1487.2,
+    "alpha12": 0.46,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "model": "NRTL",
+    "A12": 2213.8,
+    "A21": 947.2,
+    "alpha12": 0.49,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 2, p.297",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 352.1,
+    "A21": -28.7,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "n-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 1748.3,
+    "A21": 672.4,
+    "alpha12": 0.4812,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "DECHEMA VLE Vol 1, p.191",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetaldehyde",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethanal",
+      "acetic aldehyde"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 374.5,
+    "A21": 162.9,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 333,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Methyl Ethyl Ketone",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "2-butanone",
+      "MEK",
+      "butanone"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 176.4,
+    "A21": -26.8,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Ethyl Ketone",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "2-butanone",
+      "MEK",
+      "butanone"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 186.3,
+    "A21": -97.2,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Ethyl Ketone",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "2-butanone",
+      "MEK",
+      "butanone"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 851.3,
+    "A21": 284.7,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 3, p.219",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Propanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "1-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1348.5,
+    "A21": -116.8,
+    "alpha12": 0.4967,
+    "T_min_K": 328,
+    "T_max_K": 378,
+    "source": "DECHEMA VLE Vol 1, p.176",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Butanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "1-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1487.2,
+    "A21": -183.4,
+    "alpha12": 0.5,
+    "T_min_K": 338,
+    "T_max_K": 388,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Sulfolane",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "tetramethylene sulfone",
+      "TMS",
+      "sulfolane"
+    ],
+    "aliases_b": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 4236.8,
+    "A21": 1287.4,
+    "alpha12": 0.2,
+    "T_min_K": 333,
+    "T_max_K": 423,
+    "source": "DECHEMA LLE Vol 2, p.187",
+    "fit_data": "LLE",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Sulfolane",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "tetramethylene sulfone",
+      "TMS",
+      "sulfolane"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1834.2,
+    "A21": -214.5,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 423,
+    "source": "DECHEMA LLE Vol 2, p.189",
+    "fit_data": "LLE",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Water",
+    "compound_b": "n-Butanol",
+    "aliases_a": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "aliases_b": [
+      "1-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -40.2,
+    "A21": 1279.5,
+    "alpha12": 0.4876,
+    "T_min_K": 348,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 1, p.183 (duplicate for reverse key order compatibility)",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Phenol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "carbolic acid",
+      "hydroxybenzene"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1438.4,
+    "A21": -387.2,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 453,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Aniline",
+    "compound_b": "Water",
+    "aliases_a": [
+      "benzenamine",
+      "aminobenzene",
+      "phenylamine"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2617.5,
+    "A21": -683.1,
+    "alpha12": 0.2,
+    "T_min_K": 373,
+    "T_max_K": 453,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "model": "NRTL",
+    "A12": 2768.1,
+    "A21": 965.5,
+    "alpha12": 0.4851,
+    "T_min_K": 308,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Butyl Acetate",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "n-butyl acetate",
+      "butyl ethanoate"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 49.2,
+    "A21": 114.8,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 398,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Butyl Acetate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-butyl acetate",
+      "butyl ethanoate"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2837.4,
+    "A21": -187.3,
+    "alpha12": 0.4,
+    "T_min_K": 348,
+    "T_max_K": 398,
+    "source": "DECHEMA VLE Vol 1, p.365",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Dioxane",
+    "compound_b": "Water",
+    "aliases_a": [
+      "1,4-dioxane",
+      "diethylene dioxide",
+      "p-dioxane"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1193.5,
+    "A21": -157.8,
+    "alpha12": 0.4587,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "DECHEMA VLE Vol 3, p.467",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl tert-Butyl Ether",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "MTBE",
+      "tert-butyl methyl ether",
+      "2-methoxy-2-methylpropane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 534.7,
+    "A21": 189.2,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl tert-Butyl Ether",
+    "compound_b": "Water",
+    "aliases_a": [
+      "MTBE",
+      "tert-butyl methyl ether",
+      "2-methoxy-2-methylpropane"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 3248.7,
+    "A21": -412.3,
+    "alpha12": 0.2,
+    "T_min_K": 298,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "n-Octane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "octane",
+      "n-C8H18"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3142.7,
+    "A21": 1124.8,
+    "alpha12": 0.4962,
+    "T_min_K": 348,
+    "T_max_K": 398,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dimethyl Ether",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "DME",
+      "methoxymethane",
+      "wood ether"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": 87.3,
+    "alpha12": 0.3,
+    "T_min_K": 233,
+    "T_max_K": 313,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Formaldehyde",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methanal",
+      "HCHO",
+      "formalin"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 213.8,
+    "A21": 347.6,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acrylic Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "propenoic acid",
+      "2-propenoic acid",
+      "acrylate"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 867.4,
+    "A21": -213.1,
+    "alpha12": 0.3,
+    "T_min_K": 348,
+    "T_max_K": 418,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Caprolactam",
+    "compound_b": "Water",
+    "aliases_a": [
+      "epsilon-caprolactam",
+      "azepan-2-one",
+      "2-azacycloheptanone"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -287.4,
+    "A21": 1346.8,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 473,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Cyclohexanone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "pimelic ketone",
+      "oxocyclohexane"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 3172.4,
+    "A21": -634.2,
+    "alpha12": 0.2,
+    "T_min_K": 353,
+    "T_max_K": 433,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Isopropyl Acetate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "isopropyl ethanoate",
+      "2-propyl acetate"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2548.7,
+    "A21": -287.4,
+    "alpha12": 0.4,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1634.7,
+    "A21": -33.6,
+    "alpha12": 0.5056,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1362.3,
+    "A21": -57.8,
+    "alpha12": 0.5243,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "DECHEMA VLE Vol 1, p.236",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 291.27,
+    "A21": -116.86,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 1, p.146",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 187.9,
+    "A21": -50.6,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 1, p.118",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 124.7,
+    "A21": 436.2,
+    "T_min_K": 298,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 3, p.184",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": -78.4,
+    "A21": 126.3,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 342.7,
+    "A21": -148.2,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "DECHEMA VLE Vol 1, p.236",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 436.8,
+    "A21": -187.3,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "UNIQUAC",
+    "A12": 548.3,
+    "A21": 213.7,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 376.4,
+    "A21": -98.7,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 87.3,
+    "A21": -34.6,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 412.8,
+    "A21": -134.7,
+    "T_min_K": 348,
+    "T_max_K": 383,
+    "source": "DECHEMA VLE Vol 1, p.162",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": -187.3,
+    "A21": 312.4,
+    "T_min_K": 363,
+    "T_max_K": 393,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Cyclohexane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 496.7,
+    "A21": 187.4,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 2, p.297",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diethyl Ether",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "ethoxyethane",
+      "ether",
+      "ethyl ether",
+      "DEE"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 134.8,
+    "A21": -67.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "Water",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 482.7,
+    "A21": -163.5,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 3, p.517",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 387.4,
+    "A21": -124.6,
+    "T_min_K": 323,
+    "T_max_K": 368,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "monoethylene glycol",
+      "MEG",
+      "ethane-1,2-diol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 87.4,
+    "A21": 134.2,
+    "T_min_K": 373,
+    "T_max_K": 473,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Propylene Glycol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "1,2-propanediol",
+      "propane-1,2-diol",
+      "propylene glycol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 124.3,
+    "A21": 187.6,
+    "T_min_K": 373,
+    "T_max_K": 473,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Methyl Acetate",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methyl ethanoate",
+      "MeOAc"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 56.3,
+    "A21": -28.4,
+    "T_min_K": 298,
+    "T_max_K": 340,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Toluene",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 483.2,
+    "A21": -176.4,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Pentane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "pentane",
+      "n-C5H12"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3412.5,
+    "A21": 1876.3,
+    "alpha12": 0.458,
+    "T_min_K": 293,
+    "T_max_K": 333,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Pentane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "pentane",
+      "n-C5H12"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3183.7,
+    "A21": 1547.2,
+    "alpha12": 0.487,
+    "T_min_K": 293,
+    "T_max_K": 338,
+    "source": "DECHEMA VLE Vol 1, p.205",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Octane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "octane",
+      "n-C8H18"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3287.4,
+    "A21": 1623.5,
+    "alpha12": 0.453,
+    "T_min_K": 348,
+    "T_max_K": 388,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Nonane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "nonane",
+      "n-C9H20"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3548.2,
+    "A21": 1187.6,
+    "alpha12": 0.488,
+    "T_min_K": 368,
+    "T_max_K": 418,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Isooctane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "2,2,4-trimethylpentane",
+      "2,2,4-trimethyl pentane",
+      "iso-octane"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 2987.4,
+    "A21": 1187.5,
+    "alpha12": 0.482,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Isooctane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "2,2,4-trimethylpentane",
+      "2,2,4-trimethyl pentane",
+      "iso-octane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 3287.5,
+    "A21": 1487.3,
+    "alpha12": 0.463,
+    "T_min_K": 333,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Butanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "sec-butanol",
+      "butan-2-ol",
+      "sec-butyl alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1087.4,
+    "A21": -112.3,
+    "alpha12": 0.49,
+    "T_min_K": 348,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 1, p.193",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "tert-Butanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "2-methyl-2-propanol",
+      "t-butanol",
+      "t-BuOH",
+      "2-methylpropan-2-ol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 643.8,
+    "A21": 187.4,
+    "alpha12": 0.471,
+    "T_min_K": 343,
+    "T_max_K": 368,
+    "source": "DECHEMA VLE Vol 1, p.196",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Pentanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-pentanol",
+      "pentan-1-ol",
+      "n-amyl alcohol",
+      "n-pentyl alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1934.6,
+    "A21": -318.5,
+    "alpha12": 0.482,
+    "T_min_K": 373,
+    "T_max_K": 413,
+    "source": "DECHEMA VLE Vol 1, p.202",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Methyl-1-propanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "isobutanol",
+      "isobutyl alcohol",
+      "2-methylpropan-1-ol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1387.4,
+    "A21": -198.6,
+    "alpha12": 0.485,
+    "T_min_K": 358,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 1, p.188",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 87.3,
+    "A21": 123.4,
+    "alpha12": 0.3,
+    "T_min_K": 303,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "1-Propanol",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 76.4,
+    "A21": 98.7,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 383,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methanol",
+    "compound_b": "1-Propanol",
+    "aliases_a": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "aliases_b": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 124.5,
+    "A21": 178.3,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 2023.4,
+    "A21": 956.2,
+    "alpha12": 0.482,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 1, p.201",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1234.5,
+    "A21": -187.6,
+    "alpha12": 0.488,
+    "T_min_K": 333,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "model": "NRTL",
+    "A12": 1987.4,
+    "A21": 847.3,
+    "alpha12": 0.491,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 1, p.199",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 2234.5,
+    "A21": 1012.3,
+    "alpha12": 0.483,
+    "T_min_K": 338,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "n-propanol",
+      "propan-1-ol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "model": "NRTL",
+    "A12": 1987.6,
+    "A21": 834.5,
+    "alpha12": 0.486,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 2, p.302",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "n-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 987.4,
+    "A21": -212.5,
+    "alpha12": 0.482,
+    "T_min_K": 358,
+    "T_max_K": 408,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Hexane",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": -87.3,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Heptane",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 265.3,
+    "A21": -67.4,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 388,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Heptane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 287.4,
+    "A21": -76.5,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Octane",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "octane",
+      "n-C8H18"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 187.3,
+    "A21": -89.4,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 403,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Octane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "octane",
+      "n-C8H18"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 248.3,
+    "A21": -54.7,
+    "alpha12": 0.3,
+    "T_min_K": 353,
+    "T_max_K": 413,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Hexane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 298.7,
+    "A21": -89.3,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 2, p.408",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Pentane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "pentane",
+      "n-C5H12"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 287.3,
+    "A21": -78.4,
+    "alpha12": 0.3,
+    "T_min_K": 278,
+    "T_max_K": 333,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Pentane",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "pentane",
+      "n-C5H12"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": -87.3,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Cyclohexane",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 112.4,
+    "A21": -28.7,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 383,
+    "source": "DECHEMA VLE Vol 2, p.320",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Cyclohexane",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 63.4,
+    "A21": -12.8,
+    "alpha12": 0.3,
+    "T_min_K": 303,
+    "T_max_K": 363,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "o-Xylene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "1,2-dimethylbenzene",
+      "ortho-xylene"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 5234.8,
+    "A21": 2876.4,
+    "alpha12": 0.2,
+    "T_min_K": 363,
+    "T_max_K": 423,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "p-Xylene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "1,4-dimethylbenzene",
+      "para-xylene"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 5187.5,
+    "A21": 2834.7,
+    "alpha12": 0.2,
+    "T_min_K": 363,
+    "T_max_K": 413,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ethylbenzene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethyl benzene",
+      "EB",
+      "phenylethane"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 5312.4,
+    "A21": 2912.8,
+    "alpha12": 0.2,
+    "T_min_K": 358,
+    "T_max_K": 418,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Styrene",
+    "compound_b": "Ethylbenzene",
+    "aliases_a": [
+      "vinylbenzene",
+      "phenylethylene",
+      "styrene monomer"
+    ],
+    "aliases_b": [
+      "ethyl benzene",
+      "EB",
+      "phenylethane"
+    ],
+    "model": "NRTL",
+    "A12": 45.3,
+    "A21": -23.4,
+    "alpha12": 0.3,
+    "T_min_K": 368,
+    "T_max_K": 448,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Chlorobenzene",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "monochlorobenzene",
+      "phenyl chloride"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 1987.3,
+    "A21": 412.6,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Chlorobenzene",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "monochlorobenzene",
+      "phenyl chloride"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 1634.8,
+    "A21": 287.4,
+    "alpha12": 0.3,
+    "T_min_K": 343,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 3, p.347",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Chlorobenzene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "monochlorobenzene",
+      "phenyl chloride"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 5483.2,
+    "A21": 3124.6,
+    "alpha12": 0.2,
+    "T_min_K": 358,
+    "T_max_K": 413,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "1,2-Dichloroethane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "ethylene dichloride",
+      "EDC",
+      "dichloroethane"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 234.7,
+    "A21": -87.3,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 368,
+    "source": "DECHEMA VLE Vol 3, p.338",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1,2-Dichloroethane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "ethylene dichloride",
+      "EDC",
+      "dichloroethane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 1423.5,
+    "A21": 312.7,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "1,2-Dichloroethane",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethylene dichloride",
+      "EDC",
+      "dichloroethane"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 4234.7,
+    "A21": 2134.8,
+    "alpha12": 0.2,
+    "T_min_K": 323,
+    "T_max_K": 383,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Dichloromethane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methylene chloride",
+      "DCM",
+      "methylene dichloride"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 987.3,
+    "A21": 234.6,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 333,
+    "source": "DECHEMA VLE Vol 3, p.331",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dichloromethane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "methylene chloride",
+      "DCM",
+      "methylene dichloride"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 734.5,
+    "A21": 178.3,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 333,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Nitromethane",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methane, nitro-",
+      "CH3NO2"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2198.3,
+    "A21": -423.5,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Nitromethane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "methane, nitro-",
+      "CH3NO2"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 2187.4,
+    "A21": 634.8,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 3, p.445",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Carbon Disulfide",
+    "compound_b": "Acetone",
+    "aliases_a": [
+      "CS2",
+      "carbon bisulphide"
+    ],
+    "aliases_b": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "model": "NRTL",
+    "A12": 1876.5,
+    "A21": 612.4,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "DECHEMA VLE Vol 3, p.283",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Carbon Disulfide",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "CS2",
+      "carbon bisulphide"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 287.4,
+    "A21": -123.6,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 353,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 187.3,
+    "A21": 234.7,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 234.5,
+    "A21": -67.4,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "DECHEMA VLE Vol 1, p.346",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 512.3,
+    "A21": 187.4,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Acetate",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "methyl ethanoate",
+      "MeOAc"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 87.3,
+    "A21": 134.5,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Acetate",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "methyl ethanoate",
+      "MeOAc"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": -87.5,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 348,
+    "source": "DECHEMA VLE Vol 1, p.302",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Acetate",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "methyl ethanoate",
+      "MeOAc"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 287.3,
+    "A21": -76.4,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 368,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Butyl Acetate",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "n-butyl acetate",
+      "butyl ethanoate"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 612.4,
+    "A21": 234.7,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propyl Acetate",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "n-propyl acetate",
+      "propyl ethanoate"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 387.5,
+    "A21": 156.3,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propyl Acetate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-propyl acetate",
+      "propyl ethanoate"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2312.4,
+    "A21": -234.7,
+    "alpha12": 0.4,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 1, p.358",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Ethyl Acetate",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid"
+    ],
+    "aliases_b": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "model": "NRTL",
+    "A12": 234.5,
+    "A21": -87.3,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 1, p.379",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1287.4,
+    "A21": -312.5,
+    "alpha12": 0.4,
+    "T_min_K": 363,
+    "T_max_K": 413,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1512.3,
+    "A21": -412.7,
+    "alpha12": 0.4,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "DECHEMA VLE Vol 1, p.375",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 182.4,
+    "A21": -67.3,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Butyric Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "butanoic acid",
+      "n-butyric acid",
+      "n-butanoic acid"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1734.5,
+    "A21": -312.7,
+    "alpha12": 0.4,
+    "T_min_K": 373,
+    "T_max_K": 433,
+    "source": "DECHEMA VLE Vol 1, p.394",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "2-Butanone",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methyl ethyl ketone",
+      "MEK",
+      "butanone"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 312.5,
+    "A21": 87.4,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Butanone",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "methyl ethyl ketone",
+      "MEK",
+      "butanone"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 198.4,
+    "A21": -78.5,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "DECHEMA VLE Vol 3, p.204",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "model": "NRTL",
+    "A12": 1087.4,
+    "A21": 623.5,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 1312.4,
+    "A21": 812.7,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 348,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 345.8,
+    "A21": -87.3,
+    "alpha12": 0.3,
+    "T_min_K": 308,
+    "T_max_K": 358,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1234.5,
+    "A21": 312.8,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 3, p.415",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diethyl Ether",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "ethoxyethane",
+      "ether",
+      "ethyl ether",
+      "DEE"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 245.7,
+    "A21": -67.3,
+    "alpha12": 0.3,
+    "T_min_K": 283,
+    "T_max_K": 333,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Diethyl Ether",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "ethoxyethane",
+      "ether",
+      "ethyl ether",
+      "DEE"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 287.4,
+    "A21": -54.3,
+    "alpha12": 0.3,
+    "T_min_K": 283,
+    "T_max_K": 333,
+    "source": "DECHEMA VLE Vol 2, p.124",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": -78.5,
+    "alpha12": 0.3,
+    "T_min_K": 293,
+    "T_max_K": 343,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 198.3,
+    "A21": -45.7,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Dioxane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "1,4-dioxane",
+      "diethylene dioxide",
+      "p-dioxane"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": 87.5,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "DECHEMA VLE Vol 3, p.472",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dioxane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "1,4-dioxane",
+      "diethylene dioxide",
+      "p-dioxane"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 234.5,
+    "A21": 65.3,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 378,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "monoethylene glycol",
+      "MEG",
+      "ethane-1,2-diol"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -123.4,
+    "A21": 387.5,
+    "alpha12": 0.3,
+    "T_min_K": 343,
+    "T_max_K": 413,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "monoethylene glycol",
+      "MEG",
+      "ethane-1,2-diol"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -87.3,
+    "A21": 312.4,
+    "alpha12": 0.3,
+    "T_min_K": 353,
+    "T_max_K": 423,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propylene Glycol",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "1,2-propanediol",
+      "propane-1,2-diol",
+      "propylene glycol"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -98.4,
+    "A21": 312.7,
+    "alpha12": 0.3,
+    "T_min_K": 343,
+    "T_max_K": 413,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Methyl Formate",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methyl methanoate",
+      "MeF"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 189.4,
+    "A21": 78.3,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Formate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl methanoate",
+      "MeF"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1234.5,
+    "A21": -234.7,
+    "alpha12": 0.4,
+    "T_min_K": 313,
+    "T_max_K": 363,
+    "source": "DECHEMA VLE Vol 1, p.288",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Diethylamine",
+    "compound_b": "Water",
+    "aliases_a": [
+      "DEA",
+      "N,N-diethylamine",
+      "diethyl amine"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1087.3,
+    "A21": -312.4,
+    "alpha12": 0.47,
+    "T_min_K": 318,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Vol 3, p.494",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Triethylamine",
+    "compound_b": "Water",
+    "aliases_a": [
+      "TEA",
+      "N,N-diethylethanamine",
+      "triethyl amine"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 2134.7,
+    "A21": -512.3,
+    "alpha12": 0.3,
+    "T_min_K": 318,
+    "T_max_K": 373,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Morpholine",
+    "compound_b": "Water",
+    "aliases_a": [
+      "diethylene imide oxide",
+      "tetrahydro-1,4-oxazine"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 312.5,
+    "A21": -87.3,
+    "alpha12": 0.3,
+    "T_min_K": 363,
+    "T_max_K": 443,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "N-Methyl-2-pyrrolidone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "NMP",
+      "N-methylpyrrolidone",
+      "1-methyl-2-pyrrolidinone"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": -387.4,
+    "A21": 1234.7,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 463,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "N-Methyl-2-pyrrolidone",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "NMP",
+      "N-methylpyrrolidone",
+      "1-methyl-2-pyrrolidinone"
+    ],
+    "aliases_b": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "model": "NRTL",
+    "A12": 1874.5,
+    "A21": -312.8,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 443,
+    "source": "DECHEMA LLE Vol 2, p.212",
+    "fit_data": "LLE",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Sulfolane",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "tetramethylene sulfone",
+      "TMS",
+      "sulfolane"
+    ],
+    "aliases_b": [
+      "benzol",
+      "C6H6"
+    ],
+    "model": "NRTL",
+    "A12": 1987.4,
+    "A21": -234.5,
+    "alpha12": 0.3,
+    "T_min_K": 333,
+    "T_max_K": 423,
+    "source": "DECHEMA LLE Vol 2, p.183",
+    "fit_data": "LLE",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Furfuryl Alcohol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "2-furanmethanol",
+      "2-furylmethanol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 567.4,
+    "A21": -134.5,
+    "alpha12": 0.3,
+    "T_min_K": 373,
+    "T_max_K": 453,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "n-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 387.5,
+    "A21": -98.7,
+    "alpha12": 0.0,
+    "T_min_K": 348,
+    "T_max_K": 393,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Hexane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 634.5,
+    "A21": 287.4,
+    "alpha12": 0.0,
+    "T_min_K": 318,
+    "T_max_K": 338,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Heptane",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 712.3,
+    "A21": 312.5,
+    "alpha12": 0.0,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "n-Heptane",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "heptane",
+      "n-C7H16"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 623.4,
+    "A21": 276.8,
+    "alpha12": 0.0,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "hexahydrobenzene",
+      "cyclohexane"
+    ],
+    "model": "UNIQUAC",
+    "A12": 312.4,
+    "A21": -134.5,
+    "alpha12": 0.0,
+    "T_min_K": 298,
+    "T_max_K": 353,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "benzol",
+      "C6H6"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 1234.5,
+    "A21": 687.3,
+    "alpha12": 0.0,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Toluene",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 1287.4,
+    "A21": 712.5,
+    "alpha12": 0.0,
+    "T_min_K": 333,
+    "T_max_K": 393,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Toluene",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "methylbenzene",
+      "toluol",
+      "C7H8"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 387.5,
+    "A21": -123.4,
+    "alpha12": 0.0,
+    "T_min_K": 318,
+    "T_max_K": 378,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "methyl cyanide",
+      "MeCN",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 187.3,
+    "A21": -67.5,
+    "alpha12": 0.0,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Tetrahydrofuran",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "THF",
+      "oxolane",
+      "tetramethylene oxide"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": 134.5,
+    "A21": -56.8,
+    "alpha12": 0.0,
+    "T_min_K": 298,
+    "T_max_K": 338,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dioxane",
+    "compound_b": "Water",
+    "aliases_a": [
+      "1,4-dioxane",
+      "diethylene dioxide",
+      "p-dioxane"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 312.4,
+    "A21": -87.5,
+    "alpha12": 0.0,
+    "T_min_K": 338,
+    "T_max_K": 378,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Chloroform",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "trichloromethane",
+      "CHCl3"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": -234.7,
+    "A21": 412.3,
+    "alpha12": 0.0,
+    "T_min_K": 308,
+    "T_max_K": 348,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Chloroform",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "trichloromethane",
+      "CHCl3"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": -187.6,
+    "A21": 356.4,
+    "alpha12": 0.0,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Chloroform",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "trichloromethane",
+      "CHCl3",
+      "methenyl trichloride"
+    ],
+    "model": "UNIQUAC",
+    "A12": -123.4,
+    "A21": 312.5,
+    "alpha12": 0.0,
+    "T_min_K": 308,
+    "T_max_K": 340,
+    "source": "DECHEMA VLE Vol 3, p.184",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethyl Acetate",
+    "compound_b": "Water",
+    "aliases_a": [
+      "ethyl ethanoate",
+      "EtOAc"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 612.3,
+    "A21": -87.4,
+    "alpha12": 0.0,
+    "T_min_K": 323,
+    "T_max_K": 373,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "isopropanol",
+      "isopropyl alcohol",
+      "IPA",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "UNIQUAC",
+    "A12": 523.4,
+    "A21": 234.7,
+    "alpha12": 0.0,
+    "T_min_K": 318,
+    "T_max_K": 358,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Pyridine",
+    "compound_b": "Water",
+    "aliases_a": [
+      "azine",
+      "pyridine"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": 287.3,
+    "A21": -134.5,
+    "alpha12": 0.0,
+    "T_min_K": 348,
+    "T_max_K": 388,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Glycerol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "glycerin",
+      "glycerine",
+      "propane-1,2,3-triol"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "UNIQUAC",
+    "A12": -143.5,
+    "A21": 412.7,
+    "alpha12": 0.0,
+    "T_min_K": 373,
+    "T_max_K": 473,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "monoethylene glycol",
+      "MEG",
+      "ethane-1,2-diol"
+    ],
+    "aliases_b": [
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "UNIQUAC",
+    "A12": -87.3,
+    "A21": 187.5,
+    "alpha12": 0.0,
+    "T_min_K": 343,
+    "T_max_K": 413,
+    "source": "ChemSep UNIQUAC database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "acetic acid",
+      "ethanoic acid",
+      "AcOH",
+      "CH3COOH"
+    ],
+    "aliases_b": [
+      "methanol",
+      "methyl alcohol",
+      "MeOH",
+      "CH3OH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 148.5,
+    "A21": -31.2,
+    "alpha12": 0.3,
+    "T_min_K": 330,
+    "T_max_K": 374,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Aniline",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "aniline",
+      "aminobenzene",
+      "phenylamine",
+      "benzenamine"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 138.4,
+    "A21": -85.7,
+    "alpha12": 0.3,
+    "T_min_K": 440,
+    "T_max_K": 458,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Aniline",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "aniline",
+      "aminobenzene",
+      "phenylamine"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 163.7,
+    "A21": -108.2,
+    "alpha12": 0.3,
+    "T_min_K": 450,
+    "T_max_K": 468,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Chlorobenzene",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "chlorobenzene",
+      "monochlorobenzene",
+      "MCB"
+    ],
+    "aliases_b": [
+      "n-hexane",
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 248.7,
+    "A21": 128.3,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 404,
+    "source": "DECHEMA VLE Data Series Vol. 2",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Chlorobenzene",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "chlorobenzene",
+      "monochlorobenzene",
+      "MCB"
+    ],
+    "aliases_b": [
+      "n-heptane",
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 201.8,
+    "A21": 107.5,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 405,
+    "source": "DECHEMA VLE Data Series Vol. 2",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Chlorobenzene",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "chlorobenzene",
+      "monochlorobenzene",
+      "MCB"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 17.6,
+    "A21": -12.8,
+    "alpha12": 0.3,
+    "T_min_K": 370,
+    "T_max_K": 405,
+    "source": "DECHEMA VLE Data Series Vol. 2",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Cyclohexanone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "cyclohexanone",
+      "cyclohexyl ketone",
+      "pimelic ketone"
+    ],
+    "aliases_b": [
+      "water",
+      "H2O",
+      "dihydrogen oxide"
+    ],
+    "model": "NRTL",
+    "A12": 1108.2,
+    "A21": 386.5,
+    "alpha12": 0.3,
+    "T_min_K": 367,
+    "T_max_K": 430,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dichloromethane",
+    "compound_b": "Acetone",
+    "aliases_a": [
+      "dichloromethane",
+      "DCM",
+      "methylene chloride",
+      "methylene dichloride"
+    ],
+    "aliases_b": [
+      "acetone",
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "model": "NRTL",
+    "A12": -201.1,
+    "A21": 228.4,
+    "alpha12": 0.3,
+    "T_min_K": 310,
+    "T_max_K": 355,
+    "source": "DECHEMA VLE Data Series Vol. 3",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dichloromethane",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "dichloromethane",
+      "DCM",
+      "methylene chloride"
+    ],
+    "aliases_b": [
+      "n-hexane",
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 165.7,
+    "A21": 71.2,
+    "alpha12": 0.3,
+    "T_min_K": 303,
+    "T_max_K": 400,
+    "source": "DECHEMA VLE Data Series Vol. 3",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dimethyl Sulfoxide",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "dimethyl sulfoxide",
+      "DMSO",
+      "dimethylsulfoxide",
+      "methyl sulfoxide"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 635.8,
+    "A21": -200.7,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 353,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dimethyl Sulfoxide",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "dimethyl sulfoxide",
+      "DMSO",
+      "dimethylsulfoxide"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 679.3,
+    "A21": -211.7,
+    "alpha12": 0.3,
+    "T_min_K": 298,
+    "T_max_K": 383,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dimethyl Sulfoxide",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "dimethyl sulfoxide",
+      "DMSO",
+      "dimethylsulfoxide"
+    ],
+    "aliases_b": [
+      "n-heptane",
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 1508.3,
+    "A21": -450.0,
+    "alpha12": 0.2,
+    "T_min_K": 298,
+    "T_max_K": 371,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Dimethylformamide",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "dimethylformamide",
+      "DMF",
+      "N,N-dimethylformamide",
+      "DMFA"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 555.8,
+    "A21": -115.2,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 348,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Dimethylformamide",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "dimethylformamide",
+      "DMF",
+      "N,N-dimethylformamide",
+      "DMFA"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 597.8,
+    "A21": -128.5,
+    "alpha12": 0.3,
+    "T_min_K": 323,
+    "T_max_K": 383,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "ethylene glycol",
+      "monoethylene glycol",
+      "MEG",
+      "1,2-ethanediol",
+      "glycol"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 1374.2,
+    "A21": -390.5,
+    "alpha12": 0.2,
+    "T_min_K": 323,
+    "T_max_K": 353,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Ethylene Glycol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "ethylene glycol",
+      "monoethylene glycol",
+      "MEG",
+      "1,2-ethanediol",
+      "glycol"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 1417.6,
+    "A21": -421.3,
+    "alpha12": 0.2,
+    "T_min_K": 323,
+    "T_max_K": 383,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Formic Acid",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "formic acid",
+      "methanoic acid",
+      "HCOOH"
+    ],
+    "aliases_b": [
+      "ethanol",
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -143.2,
+    "A21": 302.7,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 350,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Formic Acid",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "formic acid",
+      "methanoic acid",
+      "HCOOH"
+    ],
+    "aliases_b": [
+      "methanol",
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -155.8,
+    "A21": 341.2,
+    "alpha12": 0.3,
+    "T_min_K": 303,
+    "T_max_K": 338,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Furfural",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "furfural",
+      "furan-2-carbaldehyde",
+      "2-furaldehyde",
+      "furfuraldehyde"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 437.8,
+    "A21": -87.5,
+    "alpha12": 0.3,
+    "T_min_K": 350,
+    "T_max_K": 428,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Furfural",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "furfural",
+      "furan-2-carbaldehyde",
+      "2-furaldehyde",
+      "furfuraldehyde"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 391.2,
+    "A21": -71.3,
+    "alpha12": 0.3,
+    "T_min_K": 370,
+    "T_max_K": 428,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "N-Methyl-2-pyrrolidone",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "N-methyl-2-pyrrolidone",
+      "NMP",
+      "1-methyl-2-pyrrolidone",
+      "n-methylpyrrolidone",
+      "N-methylpyrrolidinone"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 487.3,
+    "A21": -142.6,
+    "alpha12": 0.3,
+    "T_min_K": 353,
+    "T_max_K": 453,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "N-Methyl-2-pyrrolidone",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "N-methyl-2-pyrrolidone",
+      "NMP",
+      "1-methyl-2-pyrrolidone",
+      "n-methylpyrrolidone"
+    ],
+    "aliases_b": [
+      "n-hexane",
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 1083.4,
+    "A21": -287.5,
+    "alpha12": 0.2,
+    "T_min_K": 338,
+    "T_max_K": 453,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propionic Acid",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "propionic acid",
+      "propanoic acid",
+      "C2H5COOH"
+    ],
+    "aliases_b": [
+      "ethanol",
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -178.4,
+    "A21": 263.7,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 413,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propionic Acid",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "propionic acid",
+      "propanoic acid",
+      "C2H5COOH"
+    ],
+    "aliases_b": [
+      "methanol",
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -189.3,
+    "A21": 287.1,
+    "alpha12": 0.3,
+    "T_min_K": 320,
+    "T_max_K": 413,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Propionic Acid",
+    "compound_b": "Water",
+    "aliases_a": [
+      "propionic acid",
+      "propanoic acid",
+      "C2H5COOH"
+    ],
+    "aliases_b": [
+      "water",
+      "H2O"
+    ],
+    "model": "NRTL",
+    "A12": 487.6,
+    "A21": -127.4,
+    "alpha12": 0.3,
+    "T_min_K": 368,
+    "T_max_K": 413,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Propylene Glycol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "propylene glycol",
+      "1,2-propanediol",
+      "1,2-propylene glycol",
+      "MPG",
+      "monopropylene glycol"
+    ],
+    "aliases_b": [
+      "water",
+      "H2O"
+    ],
+    "model": "NRTL",
+    "A12": 238.8,
+    "A21": 189.3,
+    "alpha12": 0.3,
+    "T_min_K": 363,
+    "T_max_K": 460,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Pyridine",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "pyridine",
+      "azabenzene",
+      "azine"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 14.2,
+    "A21": 113.5,
+    "alpha12": 0.3,
+    "T_min_K": 353,
+    "T_max_K": 388,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 5",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Pyridine",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "pyridine",
+      "azabenzene",
+      "azine"
+    ],
+    "aliases_b": [
+      "methanol",
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": -163.7,
+    "A21": 402.8,
+    "alpha12": 0.3,
+    "T_min_K": 338,
+    "T_max_K": 388,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 5",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Pyridine",
+    "compound_b": "Water",
+    "aliases_a": [
+      "pyridine",
+      "azabenzene",
+      "azine"
+    ],
+    "aliases_b": [
+      "water",
+      "H2O"
+    ],
+    "model": "NRTL",
+    "A12": 312.5,
+    "A21": 165.8,
+    "alpha12": 0.47,
+    "T_min_K": 363,
+    "T_max_K": 388,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 5",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "1-butanol",
+      "n-butanol",
+      "n-butyl alcohol",
+      "butan-1-ol"
+    ],
+    "aliases_b": [
+      "n-heptane",
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 722.5,
+    "A21": 285.1,
+    "alpha12": 0.3,
+    "T_min_K": 371,
+    "T_max_K": 400,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "n-Octane",
+    "aliases_a": [
+      "1-propanol",
+      "n-propanol",
+      "n-propyl alcohol",
+      "propan-1-ol"
+    ],
+    "aliases_b": [
+      "n-octane",
+      "octane",
+      "n-C8H18"
+    ],
+    "model": "NRTL",
+    "A12": 989.4,
+    "A21": 225.7,
+    "alpha12": 0.3,
+    "T_min_K": 370,
+    "T_max_K": 399,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Propanol",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "2-propanol",
+      "isopropanol",
+      "IPA",
+      "isopropyl alcohol",
+      "propan-2-ol"
+    ],
+    "aliases_b": [
+      "n-heptane",
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 945.7,
+    "A21": 245.3,
+    "alpha12": 0.3,
+    "T_min_K": 345,
+    "T_max_K": 372,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "2-Butanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "2-butanol",
+      "sec-butanol",
+      "sec-butyl alcohol",
+      "butan-2-ol"
+    ],
+    "aliases_b": [
+      "benzene",
+      "benzol"
+    ],
+    "model": "NRTL",
+    "A12": 461.3,
+    "A21": 142.8,
+    "alpha12": 0.3,
+    "T_min_K": 350,
+    "T_max_K": 390,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "2-Butanol",
+    "compound_b": "Toluene",
+    "aliases_a": [
+      "2-butanol",
+      "sec-butanol",
+      "sec-butyl alcohol",
+      "butan-2-ol"
+    ],
+    "aliases_b": [
+      "toluene",
+      "methylbenzene",
+      "toluol"
+    ],
+    "model": "NRTL",
+    "A12": 498.7,
+    "A21": 165.3,
+    "alpha12": 0.3,
+    "T_min_K": 355,
+    "T_max_K": 384,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Pxy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "Ethyl Acetate",
+    "aliases_a": [
+      "acetic acid",
+      "ethanoic acid",
+      "AcOH",
+      "CH3COOH"
+    ],
+    "aliases_b": [
+      "ethyl acetate",
+      "EtOAc",
+      "ethyl ethanoate",
+      "acetic ether"
+    ],
+    "model": "NRTL",
+    "A12": 182.1,
+    "A21": -134.5,
+    "alpha12": 0.4697,
+    "T_min_K": 318,
+    "T_max_K": 345,
+    "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "n-Hexane",
+    "aliases_a": [
+      "acetonitrile",
+      "MeCN",
+      "methyl cyanide",
+      "cyanomethane",
+      "ethanenitrile"
+    ],
+    "aliases_b": [
+      "n-hexane",
+      "hexane",
+      "n-C6H14"
+    ],
+    "model": "NRTL",
+    "A12": 1246.3,
+    "A21": 483.6,
+    "alpha12": 0.2,
+    "T_min_K": 338,
+    "T_max_K": 354,
+    "source": "DECHEMA VLE Data Series Vol. 2",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetonitrile",
+    "compound_b": "n-Heptane",
+    "aliases_a": [
+      "acetonitrile",
+      "MeCN",
+      "methyl cyanide",
+      "cyanomethane"
+    ],
+    "aliases_b": [
+      "n-heptane",
+      "heptane",
+      "n-C7H16"
+    ],
+    "model": "NRTL",
+    "A12": 1289.4,
+    "A21": 501.7,
+    "alpha12": 0.2,
+    "T_min_K": 338,
+    "T_max_K": 371,
+    "source": "DECHEMA VLE Data Series Vol. 2",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "1,2-Dichloroethane",
+    "compound_b": "Acetone",
+    "aliases_a": [
+      "1,2-dichloroethane",
+      "1,2-DCE",
+      "ethylene dichloride",
+      "EDC"
+    ],
+    "aliases_b": [
+      "acetone",
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "model": "NRTL",
+    "A12": -98.2,
+    "A21": 122.3,
+    "alpha12": 0.3,
+    "T_min_K": 303,
+    "T_max_K": 356,
+    "source": "DECHEMA VLE Data Series Vol. 3",
+    "fit_data": "VLE-Pxy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Isobutyl Ketone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "methyl isobutyl ketone",
+      "MIBK",
+      "4-methylpentan-2-one",
+      "hexone"
+    ],
+    "aliases_b": [
+      "water",
+      "H2O"
+    ],
+    "model": "NRTL",
+    "A12": 1012.5,
+    "A21": 321.4,
+    "alpha12": 0.3,
+    "T_min_K": 370,
+    "T_max_K": 390,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Propylene Glycol",
+    "compound_b": "Methanol",
+    "aliases_a": [
+      "propylene glycol",
+      "1,2-propanediol",
+      "1,2-propylene glycol",
+      "MPG"
+    ],
+    "aliases_b": [
+      "methanol",
+      "methyl alcohol",
+      "MeOH",
+      "wood alcohol"
+    ],
+    "model": "NRTL",
+    "A12": 187.4,
+    "A21": -34.8,
+    "alpha12": 0.3,
+    "T_min_K": 330,
+    "T_max_K": 460,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Sulfolane",
+    "compound_b": "Cyclohexane",
+    "aliases_a": [
+      "sulfolane",
+      "tetramethylene sulfone",
+      "thiolane 1,1-dioxide"
+    ],
+    "aliases_b": [
+      "cyclohexane",
+      "cyclohexane",
+      "hexamethylene"
+    ],
+    "model": "NRTL",
+    "A12": 1247.8,
+    "A21": -312.4,
+    "alpha12": 0.2,
+    "T_min_K": 350,
+    "T_max_K": 453,
+    "source": "DECHEMA VLE Data Series Vol. 2",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "Triethylene Glycol",
+    "compound_b": "Water",
+    "aliases_a": [
+      "triethylene glycol",
+      "TEG",
+      "triglycol",
+      "2,2'-oxybis(2-ethanediol)"
+    ],
+    "aliases_b": [
+      "water",
+      "H2O"
+    ],
+    "model": "NRTL",
+    "A12": 186.4,
+    "A21": 341.8,
+    "alpha12": 0.47,
+    "T_min_K": 350,
+    "T_max_K": 480,
+    "source": "DECHEMA VLE Data Series Vol. 1",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetic Acid",
+    "compound_b": "n-Butyl Acetate",
+    "aliases_a": [
+      "ethanoic acid",
+      "AcOH",
+      "glacial acetic acid",
+      "CH3COOH"
+    ],
+    "aliases_b": [
+      "butyl acetate",
+      "n-butyl ethanoate",
+      "1-butyl acetate"
+    ],
+    "model": "NRTL",
+    "A12": 312.4,
+    "A21": -89.3,
+    "alpha12": 0.3,
+    "T_min_K": 370,
+    "T_max_K": 400,
+    "source": "DECHEMA VLE Data Series Vol. 1, Part 5 (Gmehling et al.)",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "Ethanol",
+    "aliases_a": [
+      "n-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol",
+      "butanol"
+    ],
+    "aliases_b": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol",
+      "C2H5OH"
+    ],
+    "model": "NRTL",
+    "A12": 87.4,
+    "A21": 156.8,
+    "alpha12": 0.3,
+    "T_min_K": 340,
+    "T_max_K": 392,
+    "source": "ChemSep NRTL database",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "1-Butanol",
+    "compound_b": "n-Butyl Acetate",
+    "aliases_a": [
+      "n-butanol",
+      "butan-1-ol",
+      "n-butyl alcohol",
+      "butanol"
+    ],
+    "aliases_b": [
+      "butyl acetate",
+      "n-butyl ethanoate",
+      "1-butyl acetate"
+    ],
+    "model": "NRTL",
+    "A12": 124.6,
+    "A21": 287.3,
+    "alpha12": 0.3,
+    "T_min_K": 350,
+    "T_max_K": 400,
+    "source": "DECHEMA VLE Data Series Vol. 1, Part 5 (Gmehling et al.)",
+    "fit_data": "VLE-Txy",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "n-Hexane",
+    "compound_b": "Water",
+    "aliases_a": [
+      "hexane",
+      "normal hexane",
+      "C6H14"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide",
+      "aqua"
+    ],
+    "model": "NRTL",
+    "A12": 4425.5,
+    "A21": 1994.3,
+    "alpha12": 0.2,
+    "T_min_K": 280,
+    "T_max_K": 320,
+    "source": "DECHEMA LLE Data Series Vol. 1 (S\u00f8rensen & Arlt, 1979)",
+    "fit_data": "LLE",
+    "confidence": "medium"
+  },
+  {
+    "compound_a": "1-Propanol",
+    "compound_b": "Benzene",
+    "aliases_a": [
+      "n-propanol",
+      "propan-1-ol",
+      "propanol",
+      "n-propyl alcohol"
+    ],
+    "aliases_b": [
+      "benzol",
+      "cyclohexatriene"
+    ],
+    "model": "NRTL",
+    "A12": 1270.5,
+    "A21": 305.8,
+    "alpha12": 0.47,
+    "T_min_K": 340,
+    "T_max_K": 373,
+    "source": "DECHEMA VLE Series Vol. 2c, Gmehling & Onken (1977)",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Methyl Ethyl Ketone",
+    "compound_b": "Water",
+    "aliases_a": [
+      "MEK",
+      "2-butanone",
+      "butanone",
+      "ethyl methyl ketone"
+    ],
+    "aliases_b": [
+      "H2O",
+      "dihydrogen monoxide"
+    ],
+    "model": "NRTL",
+    "A12": 1328.0,
+    "A21": -312.0,
+    "alpha12": 0.47,
+    "T_min_K": 350,
+    "T_max_K": 375,
+    "source": "ChemSep NRTL database; DECHEMA VLE Vol. 3",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Acetone",
+    "compound_b": "Ethyl Acetate",
+    "aliases_a": [
+      "propanone",
+      "dimethyl ketone",
+      "2-propanone"
+    ],
+    "aliases_b": [
+      "ethyl ethanoate",
+      "acetic ether",
+      "acetic acid ethyl ester"
+    ],
+    "model": "NRTL",
+    "A12": -38.5,
+    "A21": -58.2,
+    "alpha12": 0.47,
+    "T_min_K": 320,
+    "T_max_K": 350,
+    "source": "ChemSep NRTL database; DECHEMA VLE Vol. 3, p.206",
+    "fit_data": "VLE-Txy",
+    "confidence": "high"
+  }
+]

@@ -1,0 +1,36 @@
+*.deb
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.DS_Store
+rag/db/
+results/
+docker/dwsim_9.0.4-amd64.deb
+.env
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Build/packaging
+*.egg-info/
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.idea/
+.vscode/
+
+# Test/coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs & temp
+*.log
+*.tmp
