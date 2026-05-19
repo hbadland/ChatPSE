@@ -3,30 +3,46 @@ Multi-level validation for FlowsheetGraph.
 
 Level 1 — Schema:   required fields, supported types, composition sums
 Level 2 — Graph:    connectivity, port constraints, acyclicity, duplicate ports
-Level 3 — Physics:  T/P physical ranges, flow positivity, phase consistency
+Level 3 — Physics:  T/P ranges, phase consistency, thermodynamic feasibility,
+                    mass balance (when flows are defined)
 
-All checks are deterministic.  No LLM calls.
-Returns a ValidationReport; agents check report.valid before proceeding.
+All checks are deterministic. No LLM calls.
+Issues are typed via ir.types enums; the ValidationReport feeds directly
+into DeterministicRepair for structured, targeted fixing.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ir.graph import FlowsheetGraph, PORT_SPECS, SUPPORTED_UNIT_TYPES
+from ir.graph import (
+    FlowsheetGraph, PORT_SPECS, SUPPORTED_UNIT_TYPES,
+    SeparatorNode, PumpNode, CompressorNode, ExpanderNode,
+    HeaterNode, CoolerNode, SplitterNode,
+)
+from ir.types import ErrorType, RepairStrategy, ErrorSeverity, ErrorTarget, SimError
 
 
-# ── Issue + Report ─────────────────────────────────────────────────────────────
+# ── ValidationIssue — wraps SimError with a validation level ──────────────────
 
 @dataclass
 class ValidationIssue:
-    level:    str   # "SCHEMA" | "GRAPH" | "PHYSICS"
-    code:     str
-    location: str   # unit/stream tag, or "global"
-    message:  str
-    severity: str   # "ERROR" | "WARNING"
+    level:  str       # "SCHEMA" | "GRAPH" | "PHYSICS"
+    error:  SimError
+
+    @property
+    def severity(self) -> str:
+        return self.error.severity.value
+
+    @property
+    def code(self) -> str:
+        return self.error.error_type.value
+
+    @property
+    def location(self) -> str:
+        return str(self.error.target)
 
     def __str__(self) -> str:
-        return f"[{self.level}/{self.severity}] {self.code} @ {self.location}: {self.message}"
+        return f"[{self.level}/{self.severity}] {self.error}"
 
 
 @dataclass
@@ -35,16 +51,20 @@ class ValidationReport:
 
     @property
     def valid(self) -> bool:
-        return not any(i.severity == "ERROR" for i in self.issues)
+        return not any(i.error.severity == ErrorSeverity.CRITICAL for i in self.issues)
 
     def errors(self) -> list[ValidationIssue]:
-        return [i for i in self.issues if i.severity == "ERROR"]
+        return [i for i in self.issues if i.error.severity == ErrorSeverity.CRITICAL]
 
     def warnings(self) -> list[ValidationIssue]:
-        return [i for i in self.issues if i.severity == "WARNING"]
+        return [i for i in self.issues if i.error.severity == ErrorSeverity.WARNING]
 
     def by_level(self, level: str) -> list[ValidationIssue]:
         return [i for i in self.issues if i.level == level]
+
+    def sim_errors(self) -> list[SimError]:
+        """Return the underlying SimError objects for direct use by RepairAgent."""
+        return [i.error for i in self.issues]
 
     def summary(self) -> str:
         if not self.issues:
@@ -54,6 +74,14 @@ class ValidationReport:
         for issue in self.issues:
             lines.append(f"  {issue}")
         return "\n".join(lines)
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────────
+
+def _err(level: str, etype: ErrorType, target: ErrorTarget, evidence: str,
+         strategy: RepairStrategy,
+         severity: ErrorSeverity = ErrorSeverity.CRITICAL) -> ValidationIssue:
+    return ValidationIssue(level, SimError(etype, target, evidence, strategy, severity))
 
 
 # ── Public entry point ─────────────────────────────────────────────────────────
@@ -70,63 +98,59 @@ def validate(graph: FlowsheetGraph) -> ValidationReport:
 
 def _schema_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
+    G = ErrorTarget.global_
 
     if not graph.compounds:
-        issues.append(ValidationIssue(
-            "SCHEMA", "MISSING_COMPOUNDS", "global",
-            "compounds list is empty", "ERROR"))
+        issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM, G(),
+                           "compounds list is empty", RepairStrategy.HUMAN))
 
     if not graph.property_package:
-        issues.append(ValidationIssue(
-            "SCHEMA", "MISSING_PROPERTY_PACKAGE", "global",
-            "property_package is not set", "ERROR"))
+        issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM, G(),
+                           "property_package is not set", RepairStrategy.THERMO_SWITCH))
 
     if not graph.units():
-        issues.append(ValidationIssue(
-            "SCHEMA", "NO_UNITS", "global",
-            "flowsheet has no unit operations", "ERROR"))
+        issues.append(_err("SCHEMA", ErrorType.INVALID_TOPOLOGY, G(),
+                           "flowsheet has no unit operations", RepairStrategy.HUMAN))
 
     if not graph.streams():
-        issues.append(ValidationIssue(
-            "SCHEMA", "NO_STREAMS", "global",
-            "flowsheet has no streams", "ERROR"))
+        issues.append(_err("SCHEMA", ErrorType.INVALID_TOPOLOGY, G(),
+                           "flowsheet has no streams", RepairStrategy.HUMAN))
 
     for node in graph.units():
         if node.unit_type not in SUPPORTED_UNIT_TYPES:
-            issues.append(ValidationIssue(
-                "SCHEMA", "UNSUPPORTED_UNIT_TYPE", node.tag,
-                f"unknown type '{node.unit_type}'; "
-                f"supported: {sorted(SUPPORTED_UNIT_TYPES)}", "ERROR"))
+            issues.append(_err("SCHEMA", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.unit(node.tag),
+                               f"unknown type '{node.unit_type}'", RepairStrategy.HUMAN))
 
     for stream in graph.streams():
         if not stream.tag:
-            issues.append(ValidationIssue(
-                "SCHEMA", "MISSING_STREAM_TAG", "global",
-                "a stream has no tag", "ERROR"))
+            issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM, G(),
+                               "stream has no tag", RepairStrategy.HUMAN))
             continue
-
         comp = stream.composition
         if comp:
             total = sum(comp.values())
             if abs(total - 1.0) > 0.01:
-                issues.append(ValidationIssue(
-                    "SCHEMA", "COMPOSITION_SUM", stream.tag,
-                    f"mole fractions sum to {total:.4f}, not 1.0", "ERROR"))
+                issues.append(_err("SCHEMA", ErrorType.UNPHYSICAL_VALUES,
+                                   ErrorTarget.stream(stream.tag, "composition"),
+                                   f"mole fractions sum to {total:.4f}",
+                                   RepairStrategy.DEFAULT_FILL))
             for name, frac in comp.items():
                 if name not in graph.compounds:
-                    issues.append(ValidationIssue(
-                        "SCHEMA", "UNKNOWN_COMPOUND", stream.tag,
-                        f"compound '{name}' not in compounds list", "ERROR"))
+                    issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM,
+                                       ErrorTarget.stream(stream.tag, "composition"),
+                                       f"compound '{name}' not in compounds list",
+                                       RepairStrategy.HUMAN))
                 if not isinstance(frac, (int, float)) or frac < 0.0:
-                    issues.append(ValidationIssue(
-                        "SCHEMA", "INVALID_FRACTION", stream.tag,
-                        f"'{name}' fraction {frac} is not a non-negative number", "ERROR"))
-
+                    issues.append(_err("SCHEMA", ErrorType.UNPHYSICAL_VALUES,
+                                       ErrorTarget.stream(stream.tag, "composition"),
+                                       f"'{name}' fraction {frac} invalid",
+                                       RepairStrategy.DEFAULT_FILL))
         if stream.flow is not None and stream.flow <= 0:
-            issues.append(ValidationIssue(
-                "SCHEMA", "NON_POSITIVE_FLOW", stream.tag,
-                f"flow={stream.flow} mol/s must be > 0", "ERROR"))
-
+            issues.append(_err("SCHEMA", ErrorType.UNPHYSICAL_VALUES,
+                               ErrorTarget.stream(stream.tag, "flow"),
+                               f"flow={stream.flow} mol/s must be > 0",
+                               RepairStrategy.DEFAULT_FILL))
     return issues
 
 
@@ -134,65 +158,56 @@ def _schema_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
 
 def _graph_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
+    G = ErrorTarget.global_
 
-    # Acyclicity
     if not graph.is_acyclic():
-        issues.append(ValidationIssue(
-            "GRAPH", "CYCLE", "global",
-            "connection graph contains a cycle (recycle loops not supported)", "ERROR"))
+        issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY, G(),
+                           "connection graph contains a cycle", RepairStrategy.HUMAN))
 
-    unit_tags   = graph.unit_tags()
-    stream_tags = graph.stream_tags()
-
-    # Every stream must connect to at least one unit
     for stream in graph.streams():
         src = graph.stream_source(stream.tag)
         dst = graph.stream_dest(stream.tag)
         if src is None and dst is None:
-            issues.append(ValidationIssue(
-                "GRAPH", "ISOLATED_STREAM", stream.tag,
-                "stream is not connected to any unit", "ERROR"))
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.stream(stream.tag),
+                               "stream not connected to any unit",
+                               RepairStrategy.TOPOLOGY_FIX))
 
-    # Port constraint enforcement per unit
     for node in graph.units():
-        specs = PORT_SPECS.get(node.unit_type, [])
-        if not specs:
-            continue
+        specs  = PORT_SPECS.get(node.unit_type, [])
+        req_in  = len([s for s in specs if s.direction == "inlet"  and s.required])
+        req_out = len([s for s in specs if s.direction == "outlet" and s.required])
+        max_out = len([s for s in specs if s.direction == "outlet"])
 
-        required_inlets  = [s for s in specs if s.direction == "inlet"  and s.required]
-        required_outlets = [s for s in specs if s.direction == "outlet" and s.required]
-        actual_inlets    = graph.inlet_streams(node.tag)
-        actual_outlets   = graph.outlet_streams(node.tag)
+        actual_in  = len(graph.inlet_streams(node.tag))
+        actual_out = len(graph.outlet_streams(node.tag))
 
-        if len(actual_inlets) < len(required_inlets):
-            issues.append(ValidationIssue(
-                "GRAPH", "MISSING_INLET", node.tag,
-                f"{node.unit_type} needs ≥{len(required_inlets)} inlet(s), "
-                f"has {len(actual_inlets)}", "ERROR"))
+        if actual_in < req_in:
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.unit(node.tag),
+                               f"{node.unit_type} needs ≥{req_in} inlet(s), has {actual_in}",
+                               RepairStrategy.TOPOLOGY_FIX))
+        if actual_out < req_out:
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.unit(node.tag),
+                               f"{node.unit_type} needs ≥{req_out} outlet(s), has {actual_out}",
+                               RepairStrategy.TOPOLOGY_FIX))
+        if isinstance(node, SeparatorNode) and actual_out != 2:
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.unit(node.tag),
+                               f"Vessel must have exactly 2 outlets, has {actual_out}",
+                               RepairStrategy.TOPOLOGY_FIX))
 
-        if len(actual_outlets) < len(required_outlets):
-            issues.append(ValidationIssue(
-                "GRAPH", "MISSING_OUTLET", node.tag,
-                f"{node.unit_type} needs ≥{len(required_outlets)} outlet(s), "
-                f"has {len(actual_outlets)}", "ERROR"))
-
-        # Vessel must have exactly 2 outlets (vapour + liquid)
-        if node.unit_type == "Vessel" and len(actual_outlets) != 2:
-            issues.append(ValidationIssue(
-                "GRAPH", "VESSEL_OUTLET_COUNT", node.tag,
-                f"Vessel must have exactly 2 outlets (vapour port=0, liquid port=1), "
-                f"has {len(actual_outlets)}", "ERROR"))
-
-    # Duplicate src_port: two outlet streams on the same port of the same unit
+    # Duplicate src_port
     for node in graph.units():
-        seen_ports: set[int] = set()
-        for stream in graph.outlet_streams(node.tag):
-            port = stream.src_port
-            if port in seen_ports:
-                issues.append(ValidationIssue(
-                    "GRAPH", "DUPLICATE_SRC_PORT", node.tag,
-                    f"two outlet streams both use src_port={port}", "ERROR"))
-            seen_ports.add(port)
+        seen: set[int] = set()
+        for s in graph.outlet_streams(node.tag):
+            if s.src_port in seen:
+                issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                                   ErrorTarget.unit(node.tag, "src_port"),
+                                   f"two outlets both use src_port={s.src_port}",
+                                   RepairStrategy.PORT_REPAIR))
+            seen.add(s.src_port)
 
     return issues
 
@@ -203,51 +218,156 @@ _T_MIN_K  = 50.0
 _T_MAX_K  = 2000.0
 _P_MIN_PA = 100.0
 _P_MAX_PA = 1e8
+_FLOW_TOL = 0.05   # 5% relative tolerance for mass balance checks
 
 def _physics_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
 
-    for stream in graph.streams():
-        if stream.T is not None and not (_T_MIN_K < stream.T < _T_MAX_K):
-            issues.append(ValidationIssue(
-                "PHYSICS", "UNPHYSICAL_T", stream.tag,
-                f"T={stream.T} K outside valid range ({_T_MIN_K}–{_T_MAX_K} K). "
-                "Ensure all temperatures are in Kelvin (25°C = 298.15 K).", "ERROR"))
-
-        if stream.P is not None and not (_P_MIN_PA < stream.P < _P_MAX_PA):
-            issues.append(ValidationIssue(
-                "PHYSICS", "UNPHYSICAL_P", stream.tag,
-                f"P={stream.P} Pa outside valid range ({_P_MIN_PA}–{_P_MAX_PA:.0e} Pa). "
-                "Ensure all pressures are in Pascals (1 atm = 101325 Pa).", "ERROR"))
+    # ── 3a: T/P range checks ──────────────────────────────────────────────────
+    for s in graph.streams():
+        if s.T is not None and not (_T_MIN_K < s.T < _T_MAX_K):
+            issues.append(_err("PHYSICS", ErrorType.UNPHYSICAL_VALUES,
+                               ErrorTarget.stream(s.tag, "T"),
+                               f"T={s.T} K out of range — use Kelvin (25°C=298.15 K)",
+                               RepairStrategy.UNIT_CONVERSION))
+        if s.P is not None and not (_P_MIN_PA < s.P < _P_MAX_PA):
+            issues.append(_err("PHYSICS", ErrorType.UNPHYSICAL_VALUES,
+                               ErrorTarget.stream(s.tag, "P"),
+                               f"P={s.P} Pa out of range — use Pascals (1 atm=101325 Pa)",
+                               RepairStrategy.UNIT_CONVERSION))
 
     for node in graph.units():
         t_out = node.params.get("T_out")
-        if t_out is not None and not (_T_MIN_K < t_out < _T_MAX_K):
-            issues.append(ValidationIssue(
-                "PHYSICS", "UNPHYSICAL_T_OUT", node.tag,
-                f"T_out={t_out} K outside valid range. "
-                "Ensure T_out is in Kelvin.", "ERROR"))
-
+        if t_out is not None and not (_T_MIN_K < float(t_out) < _T_MAX_K):
+            issues.append(_err("PHYSICS", ErrorType.UNPHYSICAL_VALUES,
+                               ErrorTarget.unit(node.tag, "T_out"),
+                               f"T_out={t_out} K out of range",
+                               RepairStrategy.UNIT_CONVERSION))
         p_out = node.params.get("P_out")
-        if p_out is not None and not (_P_MIN_PA < p_out < _P_MAX_PA):
-            issues.append(ValidationIssue(
-                "PHYSICS", "UNPHYSICAL_P_OUT", node.tag,
-                f"P_out={p_out} Pa outside valid range.", "ERROR"))
-
+        if p_out is not None and not (_P_MIN_PA < float(p_out) < _P_MAX_PA):
+            issues.append(_err("PHYSICS", ErrorType.UNPHYSICAL_VALUES,
+                               ErrorTarget.unit(node.tag, "P_out"),
+                               f"P_out={p_out} Pa out of range",
+                               RepairStrategy.UNIT_CONVERSION))
         eff = node.params.get("efficiency")
-        if eff is not None and not (0.0 < eff <= 1.0):
-            issues.append(ValidationIssue(
-                "PHYSICS", "INVALID_EFFICIENCY", node.tag,
-                f"efficiency={eff} must be in (0, 1]", "ERROR"))
+        if eff is not None and not (0.0 < float(eff) <= 1.0):
+            issues.append(_err("PHYSICS", ErrorType.UNPHYSICAL_VALUES,
+                               ErrorTarget.unit(node.tag, "efficiency"),
+                               f"efficiency={eff} not in (0, 1]",
+                               RepairStrategy.DEFAULT_FILL))
 
-    # Warn on Vessel with no feed temperature defined — may cause ZERO_OUTLET
+    # ── 3b: Thermodynamic feasibility ─────────────────────────────────────────
     for node in graph.units():
-        if node.unit_type == "Vessel":
-            inlets = graph.inlet_streams(node.tag)
+        inlets = graph.inlet_streams(node.tag)
+        feed_T = next((s.T for s in inlets if s.T is not None), None)
+        feed_P = next((s.P for s in inlets if s.P is not None), None)
+
+        # Cooler: T_out must be below feed T
+        if isinstance(node, CoolerNode):
+            t_out = node.params.get("T_out")
+            if t_out is not None and feed_T is not None and float(t_out) >= feed_T:
+                issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
+                                   ErrorTarget.unit(node.tag, "T_out"),
+                                   f"Cooler T_out={t_out} K ≥ feed T={feed_T} K",
+                                   RepairStrategy.CONDITION_FIX))
+
+        # Heater: T_out must be above feed T
+        if isinstance(node, HeaterNode):
+            t_out = node.params.get("T_out")
+            if t_out is not None and feed_T is not None and float(t_out) <= feed_T:
+                issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
+                                   ErrorTarget.unit(node.tag, "T_out"),
+                                   f"Heater T_out={t_out} K ≤ feed T={feed_T} K",
+                                   RepairStrategy.CONDITION_FIX))
+
+        # Pump: P_out must be above feed P
+        if isinstance(node, PumpNode):
+            p_out = node.params.get("P_out")
+            if p_out is not None and feed_P is not None and float(p_out) <= feed_P:
+                issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
+                                   ErrorTarget.unit(node.tag, "P_out"),
+                                   f"Pump P_out={p_out} Pa ≤ feed P={feed_P} Pa",
+                                   RepairStrategy.CONDITION_FIX))
+
+        # Compressor/Expander: P_out in right direction
+        if isinstance(node, CompressorNode):
+            p_out = node.params.get("P_out")
+            if p_out is not None and feed_P is not None and float(p_out) <= feed_P:
+                issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
+                                   ErrorTarget.unit(node.tag, "P_out"),
+                                   f"Compressor P_out={p_out} Pa ≤ feed P={feed_P} Pa",
+                                   RepairStrategy.CONDITION_FIX))
+
+        if isinstance(node, ExpanderNode):
+            p_out = node.params.get("P_out")
+            if p_out is not None and feed_P is not None and float(p_out) >= feed_P:
+                issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
+                                   ErrorTarget.unit(node.tag, "P_out"),
+                                   f"Expander P_out={p_out} Pa ≥ feed P={feed_P} Pa",
+                                   RepairStrategy.CONDITION_FIX))
+
+        # Vessel: warn if feed T is likely below bubble point
+        if isinstance(node, SeparatorNode):
             if inlets and all(s.T is None for s in inlets):
-                issues.append(ValidationIssue(
-                    "PHYSICS", "VESSEL_NO_FEED_T", node.tag,
-                    "Vessel has no feed stream with T defined — "
-                    "may produce zero vapour if feed is sub-bubble-point", "WARNING"))
+                issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
+                                   ErrorTarget.unit(node.tag),
+                                   "Vessel has no feed T — may produce zero vapour",
+                                   RepairStrategy.CONDITION_FIX,
+                                   ErrorSeverity.WARNING))
+
+    # ── 3c: Phase consistency ─────────────────────────────────────────────────
+    for node in graph.units():
+        # Pump requires liquid inlet
+        if isinstance(node, PumpNode):
+            for s in graph.inlet_streams(node.tag):
+                if s.phase == "vapour":
+                    issues.append(_err("PHYSICS", ErrorType.PHASE_MISMATCH,
+                                       ErrorTarget.unit(node.tag),
+                                       f"Pump inlet stream '{s.tag}' is vapour (liquid required)",
+                                       RepairStrategy.TOPOLOGY_FIX))
+
+        # Compressor/Expander require vapour inlet
+        if isinstance(node, (CompressorNode, ExpanderNode)):
+            for s in graph.inlet_streams(node.tag):
+                if s.phase == "liquid":
+                    issues.append(_err("PHYSICS", ErrorType.PHASE_MISMATCH,
+                                       ErrorTarget.unit(node.tag),
+                                       f"{node.unit_type} inlet stream '{s.tag}' is liquid (vapour required)",
+                                       RepairStrategy.TOPOLOGY_FIX))
+
+        # Vessel: vapour outlet must be on port 0, liquid on port 1
+        if isinstance(node, SeparatorNode):
+            for s in graph.outlet_streams(node.tag):
+                if s.src_port == 0 and s.phase == "liquid":
+                    issues.append(_err("PHYSICS", ErrorType.INVALID_TOPOLOGY,
+                                       ErrorTarget.unit(node.tag, "src_port"),
+                                       f"Stream '{s.tag}' phase=liquid on port 0 (should be vapour)",
+                                       RepairStrategy.PORT_REPAIR))
+                if s.src_port == 1 and s.phase == "vapour":
+                    issues.append(_err("PHYSICS", ErrorType.INVALID_TOPOLOGY,
+                                       ErrorTarget.unit(node.tag, "src_port"),
+                                       f"Stream '{s.tag}' phase=vapour on port 1 (should be liquid)",
+                                       RepairStrategy.PORT_REPAIR))
+
+    # ── 3d: Mass balance (when flows are defined) ─────────────────────────────
+    for node in graph.units():
+        # Skip splitters (flow split is intentional) and separators (multi-phase)
+        if isinstance(node, (SplitterNode, SeparatorNode)):
+            continue
+        inlets  = graph.inlet_streams(node.tag)
+        outlets = graph.outlet_streams(node.tag)
+        in_flows  = [s.flow for s in inlets  if s.flow is not None]
+        out_flows = [s.flow for s in outlets if s.flow is not None]
+        if not in_flows or not out_flows:
+            continue
+        total_in  = sum(in_flows)
+        total_out = sum(out_flows)
+        if total_in > 0 and abs(total_in - total_out) / total_in > _FLOW_TOL:
+            issues.append(_err("PHYSICS", ErrorType.MASS_BALANCE,
+                               ErrorTarget.unit(node.tag),
+                               f"inlet flow={total_in:.3f} ≠ outlet flow={total_out:.3f} mol/s "
+                               f"({abs(total_in-total_out)/total_in:.1%} imbalance)",
+                               RepairStrategy.TOPOLOGY_FIX,
+                               ErrorSeverity.WARNING))
 
     return issues

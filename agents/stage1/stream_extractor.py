@@ -64,7 +64,31 @@ Rules:
 - Units never connect directly — every unit-to-unit link needs a stream between them
 - A Vessel has TWO outlet streams: vapour (name containing VAP/VAPOR/GAS) and liquid (name containing LIQ/LIQUID)
 - All temperatures in Kelvin, all pressures in Pascals
-- Reasonable defaults: ambient feed at T=298.15 K, P=101325 Pa unless described otherwise"""
+- Reasonable defaults: ambient feed at T=298.15 K, P=101325 Pa unless described otherwise
+
+Examples:
+
+Process: "Heat ethanol-water feed, then flash separate"
+Units: HT-01 (Heater), V-01 (Vessel)
+Output:
+{"streams": [
+  {"tag": "FEED", "src": null,   "dst": "HT-01", "is_feed": true,
+   "T": 298.15, "P": 101325.0, "flow": 1.0, "composition": {"Ethanol": 0.5, "Water": 0.5}},
+  {"tag": "HOT",  "src": "HT-01","dst": "V-01",  "is_feed": false},
+  {"tag": "VAP",  "src": "V-01", "dst": null,    "is_feed": false},
+  {"tag": "LIQ",  "src": "V-01", "dst": null,    "is_feed": false}
+]}
+
+Process: "Compress methane feed, cool it, then expand"
+Units: CP-01 (Compressor), CL-01 (Cooler), EX-01 (Expander)
+Output:
+{"streams": [
+  {"tag": "FEED",  "src": null,    "dst": "CP-01", "is_feed": true,
+   "T": 298.15, "P": 101325.0, "flow": 1.0, "composition": {"Methane": 1.0}},
+  {"tag": "COMP",  "src": "CP-01", "dst": "CL-01", "is_feed": false},
+  {"tag": "COOL",  "src": "CL-01", "dst": "EX-01", "is_feed": false},
+  {"tag": "EXPND", "src": "EX-01", "dst": null,    "is_feed": false}
+]}"""
 
 
 @dataclass

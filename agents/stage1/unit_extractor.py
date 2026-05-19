@@ -44,7 +44,35 @@ Rules:
 - List units in process flow order (feed to product)
 - Include only units explicitly needed — do not add units not implied by the description
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
-- Do not invent Mixers or Splitters — the system inserts them automatically when needed"""
+- Do not invent Mixers or Splitters — the system inserts them automatically when needed
+
+Examples:
+
+Input: "Heat a feed of ethanol and water to 80°C, then flash it to separate the vapour"
+Compounds: ethanol, water
+Output:
+{"units": [
+  {"tag": "HT-01", "type": "Heater", "role": "heat ethanol-water feed to flash temperature"},
+  {"tag": "V-01",  "type": "Vessel", "role": "flash separation of ethanol and water"}
+]}
+
+Input: "Compress a natural gas stream, cool it, then expand through a turbine"
+Compounds: methane, ethane, propane
+Output:
+{"units": [
+  {"tag": "CP-01", "type": "Compressor", "role": "compress natural gas feed"},
+  {"tag": "CL-01", "type": "Cooler",     "role": "cool compressed gas before expansion"},
+  {"tag": "EX-01", "type": "Expander",   "role": "expand gas through turbine to recover work"}
+]}
+
+Input: "Pump liquid acetone to high pressure, heat it, then flash to recover acetone vapour"
+Compounds: acetone, water
+Output:
+{"units": [
+  {"tag": "PM-01", "type": "Pump",   "role": "raise liquid feed pressure"},
+  {"tag": "HT-01", "type": "Heater", "role": "heat pressurised feed to flash temperature"},
+  {"tag": "V-01",  "type": "Vessel", "role": "flash to separate acetone vapour from liquid"}
+]}"""
 
 
 @dataclass
