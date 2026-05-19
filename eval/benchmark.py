@@ -9,6 +9,17 @@ Provides:
   compare()         — compute delta metrics vs baseline
   run_statistical() — repeat N runs of one case, report mean ± std
   check_expected()  — verify a pipeline result meets BenchmarkCase expectations
+
+Split-aware usage:
+  run_benchmark(orchestrator, split="dev")      # development cases only
+  run_benchmark(orchestrator, split="holdout")  # held-out cases
+  run_benchmark(orchestrator, split="stress")   # stress / adversarial cases
+  run_benchmark(orchestrator, split="all")      # all 60 cases + per-split breakdown
+
+The return value is always a BenchmarkRunResult (from eval.report), which
+carries per-split metrics, a FailureLog, and a formatted-report helper.
+For backward compatibility, the function also accepts and returns the
+(results, metrics) 2-tuple when called as run_benchmark(..., _legacy=True).
 """
 from __future__ import annotations
 
@@ -24,6 +35,9 @@ from eval.benchmark_cases import (
     EASY_CASES, MEDIUM_CASES, HARD_CASES,
     UNDERSPEC_CASES, AMBIGUOUS_CASES, ADVERSARIAL_CASES, EDGE_CASES,
 )
+from eval.dataset import get_cases, split_of, SplitName
+from eval.failure_log import FailureLog
+from eval.report import BenchmarkRunResult
 
 
 # ── Expected-property check ────────────────────────────────────────────────────
@@ -39,26 +53,22 @@ def check_expected(
     """
     checks: dict[str, bool] = {}
 
-    # Package check (skip if expected_pkg is empty)
     if case.expected_pkg and graph is not None:
         checks["pkg_correct"] = (
             getattr(graph, "property_package", "") == case.expected_pkg)
 
-    # Unit subset check
     if case.expected_units and graph is not None:
         actual_types = {u.unit_type for u in graph.units()}
-        # For repeated types (e.g., two Compressors) check count
         from collections import Counter
         expected_counter = Counter(case.expected_units)
-        actual_counter   = Counter(actual_types)   # set: at-least-one check
+        actual_counter   = Counter(actual_types)
         checks["units_present"] = all(
             actual_counter.get(ut, 0) >= 1
             for ut in expected_counter
         )
     elif case.expected_units:
-        checks["units_present"] = False   # no graph available
+        checks["units_present"] = False
 
-    # Adversarial cases: expect the pipeline to flag issues, not crash
     if case.expect_failure:
         outcome = getattr(pipeline_result, "outcome", "UNKNOWN")
         checks["flagged_gracefully"] = outcome not in ("PASS",)
@@ -71,18 +81,38 @@ def check_expected(
 def run_benchmark(
     orchestrator,
     cases:    list[BenchmarkCase] | None = None,
+    split:    SplitName = "all",
     ablation: str  = "full",
     verbose:  bool = False,
     check_expectations: bool = False,
-) -> tuple[list[CaseResult], BenchmarkMetrics]:
+    _legacy:  bool = False,
+) -> "BenchmarkRunResult | tuple[list[CaseResult], BenchmarkMetrics]":
     """
     Run benchmark cases through an OrchestratorV2 instance.
-    Returns (case_results, aggregate_metrics).
+
+    Parameters
+    ----------
+    orchestrator : OrchestratorV2
+    cases        : explicit case list (overrides split)
+    split        : "dev" | "holdout" | "stress" | "all"
+                   Ignored when cases is provided explicitly.
+    ablation     : ablation mode label (informational)
+    verbose      : print per-case progress
+    check_expectations : verify expected_pkg / expected_units
+    _legacy      : return (results, metrics) 2-tuple instead of BenchmarkRunResult
+
+    Returns
+    -------
+    BenchmarkRunResult  (or 2-tuple when _legacy=True)
     """
     from agents import llm as _llm
 
-    cases   = cases or BENCHMARK_CASES
+    # Case selection
+    if cases is None:
+        cases = get_cases(split)
+
     results: list[CaseResult] = []
+    failure_log = FailureLog()
 
     for case in cases:
         t0          = time.time()
@@ -97,7 +127,6 @@ def run_benchmark(
             elapsed    = time.time() - t0
             call_after = getattr(_llm, "get_call_count", lambda: 0)()
 
-            # Expected-property verification
             if check_expectations:
                 graph = getattr(pr, "graph", None)
                 chks  = check_expected(case, pr, graph)
@@ -131,21 +160,57 @@ def run_benchmark(
             )
 
         results.append(result)
+        failure_log.add(result, case)
+
         if verbose:
-            warn_str = f" [{'; '.join(results[-1].warnings[:2])}]" if results[-1].warnings else ""
+            warn_str = (f" [{'; '.join(result.warnings[:2])}]"
+                        if result.warnings else "")
             print(f"[{case.case_id}/{case.tier}] {result.outcome}"
                   f" ir={result.valid_ir} json={result.valid_json}"
                   f" conv={result.converged} repairs={result.repair_iterations}"
                   f" t={result.elapsed_s:.1f}s{warn_str}")
 
-    metrics = compute_metrics(results, ablation)
-    return results, metrics
+    # ── Aggregate metrics ──────────────────────────────────────────────────────
+    metrics_all = compute_metrics(results, ablation)
+
+    if _legacy:
+        return results, metrics_all
+
+    # Per-split sub-metrics (only when split="all" or explicit cases span splits)
+    def _sub(sname: str) -> Optional[BenchmarkMetrics]:
+        sub = [r for r in results if split_of(r.case_id) == sname]
+        return compute_metrics(sub, ablation) if sub else None
+
+    metrics_dev     = _sub("dev")
+    metrics_holdout = _sub("holdout")
+    metrics_stress  = _sub("stress")
+
+    # Generalisation gap
+    gap_ir   = None
+    gap_conv = None
+    if metrics_dev is not None and metrics_holdout is not None:
+        gap_ir   = metrics_holdout.pct_valid_ir  - metrics_dev.pct_valid_ir
+        gap_conv = metrics_holdout.pct_converged - metrics_dev.pct_converged
+
+    return BenchmarkRunResult(
+        split           = split,
+        ablation        = ablation,
+        case_results    = results,
+        metrics_all     = metrics_all,
+        metrics_dev     = metrics_dev,
+        metrics_holdout = metrics_holdout,
+        metrics_stress  = metrics_stress,
+        failure_log     = failure_log,
+        gap_valid_ir    = gap_ir,
+        gap_converged   = gap_conv,
+    )
 
 
 # ── Baseline runner ────────────────────────────────────────────────────────────
 
 def run_baseline(
     cases:   list[BenchmarkCase] | None = None,
+    split:   SplitName = "all",
     model:   str | None = None,
     verbose: bool = False,
 ) -> tuple[list[CaseResult], BenchmarkMetrics]:
@@ -156,8 +221,9 @@ def run_baseline(
     from agents.llm import chat, DEFAULT_MODEL
     from agents import schema as _schema
 
-    model  = model or DEFAULT_MODEL
-    cases  = cases or BENCHMARK_CASES
+    model = model or DEFAULT_MODEL
+    if cases is None:
+        cases = get_cases(split)
     results: list[CaseResult] = []
 
     _BASELINE_SYSTEM = """\
@@ -223,24 +289,24 @@ def run_statistical(
     """Run one case N times and return mean±std statistics."""
     case_results = []
     for _ in range(n_runs):
-        rs, _ = run_benchmark(orchestrator, cases=[case])
-        if rs:
-            case_results.append(rs[0])
+        run = run_benchmark(orchestrator, cases=[case])
+        if run.case_results:
+            case_results.append(run.case_results[0])
 
     def _stat(values):
         m = statistics.mean(values) if values else 0.0
         s = statistics.stdev(values) if len(values) > 1 else 0.0
-        return {"mean": m, "std": s, "min": min(values, default=0),
-                "max": max(values, default=0)}
+        return {"mean": m, "std": s,
+                "min": min(values, default=0), "max": max(values, default=0)}
 
     return {
         "case_id":   case.case_id,
         "n_runs":    n_runs,
-        "converged": _stat([int(r.converged) for r in case_results]),
-        "valid_ir":  _stat([int(r.valid_ir)  for r in case_results]),
-        "repairs":   _stat([r.repair_iterations for r in case_results]),
-        "llm_calls": _stat([r.llm_calls       for r in case_results]),
-        "elapsed_s": _stat([r.elapsed_s        for r in case_results]),
+        "converged": _stat([int(r.converged)         for r in case_results]),
+        "valid_ir":  _stat([int(r.valid_ir)          for r in case_results]),
+        "repairs":   _stat([r.repair_iterations      for r in case_results]),
+        "llm_calls": _stat([r.llm_calls              for r in case_results]),
+        "elapsed_s": _stat([r.elapsed_s              for r in case_results]),
     }
 
 
@@ -251,12 +317,12 @@ def compare(
     baseline_metrics: BenchmarkMetrics,
 ) -> dict:
     return {
-        "delta_valid_json":  system_metrics.pct_valid_json  - baseline_metrics.pct_valid_json,
-        "delta_converged":   system_metrics.pct_converged   - baseline_metrics.pct_converged,
-        "system_valid_json": system_metrics.pct_valid_json,
+        "delta_valid_json":    system_metrics.pct_valid_json  - baseline_metrics.pct_valid_json,
+        "delta_converged":     system_metrics.pct_converged   - baseline_metrics.pct_converged,
+        "system_valid_json":   system_metrics.pct_valid_json,
         "baseline_valid_json": baseline_metrics.pct_valid_json,
-        "n_system":          system_metrics.n_total,
-        "n_baseline":        baseline_metrics.n_total,
+        "n_system":            system_metrics.n_total,
+        "n_baseline":          baseline_metrics.n_total,
     }
 
 
