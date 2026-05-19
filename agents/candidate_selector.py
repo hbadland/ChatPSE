@@ -1,17 +1,19 @@
 """
-Candidate generation and selection (Item 7).
+Candidate generation and selection (Item 7, extended for publication).
 
 Generates N independent semantic parses of the same description, builds N
-FlowsheetGraphs, validates each, then selects the best candidate by a
-lexicographic score:
+FlowsheetGraphs, validates each, then selects the best candidate by the
+multi-factor CandidateScore (ir/scoring.py).
 
-  (valid_ir, valid_json, -repair_count, -issue_count)
+Scoring at selection time (Stage 1–2):
+  valid_ir, valid_json, unit_appropriateness, separation_feasibility,
+  repair_economy, param_completeness, phase_consistency, excess_units_penalty
 
-highest first (True > False, fewer repairs/issues wins).
+Thermo_consistency is updated by the orchestrator after ThermoMapper (Stage 3).
+Converged is updated after DWSIM execution.
 
-The N-best approach costs N×(Stage 1 LLM tokens) but yields a much more
-reliable graph entering Stage 3, particularly on small models that
-occasionally misidentify unit types or miss a stream.
+N=3 is the standard configuration for publication experiments.
+N=1 is used in the REDUCED_AGENTS ablation (equivalent to single-pass).
 """
 from __future__ import annotations
 
@@ -20,7 +22,8 @@ from typing import Optional
 
 from ir.graph import FlowsheetGraph, make_node, EdgeIR
 from ir.normalise import normalise
-from ir.validate import validate
+from ir.validate import validate, ValidationReport
+from ir.scoring import CandidateScore, score_candidate, compute_margin
 from agents.stage1.unit_extractor import UnitExtractor, SemanticUnits
 from agents.stage1.stream_extractor import StreamExtractor, SemanticTopology
 from agents.llm import DEFAULT_MODEL
@@ -28,23 +31,40 @@ from agents.llm import DEFAULT_MODEL
 
 @dataclass
 class Candidate:
-    graph:        FlowsheetGraph
-    sem_units:    SemanticUnits
-    sem_topo:     SemanticTopology
-    issue_count:  int = 0
-    repair_count: int = 0    # normaliser insertions
-    valid_ir:     bool = True
-    valid_json:   bool = True
+    graph:          FlowsheetGraph
+    sem_units:      SemanticUnits
+    sem_topo:       SemanticTopology
+    report:         ValidationReport = field(default_factory=ValidationReport)
+    candidate_score: Optional[CandidateScore] = None
+    repair_count:   int  = 0
 
-    def score(self) -> tuple:
+    # Backward-compatible accessors used by some tests/orchestrator
+    @property
+    def issue_count(self) -> int:
+        return len(self.report.issues)
+
+    @property
+    def valid_ir(self) -> bool:
+        return self.candidate_score.valid_ir >= 1.0 if self.candidate_score else True
+
+    @property
+    def valid_json(self) -> bool:
+        return self.candidate_score.valid_json >= 1.0 if self.candidate_score else True
+
+    def score(self) -> float:
+        """Scalar score for sorting. Wraps CandidateScore.total."""
+        return self.candidate_score.total if self.candidate_score else 0.0
+
+    def score_tuple(self) -> tuple:
+        """Legacy tuple for backward compatibility."""
         return (self.valid_ir, self.valid_json, -self.repair_count, -self.issue_count)
 
 
 class CandidateSelector:
     """
-    Generates N parse candidates and returns the best one.
+    Generates N parse candidates and returns the best by CandidateScore.
 
-    n=1 — identical to single-pass (default in ablation mode)
+    n=1 — single-pass mode (ablation: REDUCED_AGENTS)
     n=3 — standard for publication experiments
     """
 
@@ -61,14 +81,15 @@ class CandidateSelector:
         max_retries: int = 3,
     ) -> Candidate:
         """
-        Generate up to self._n candidates and return the best by score.
-        Falls back to the first valid candidate if ranking produces a tie.
+        Generate up to self._n candidates, score each, return the best.
+        The winning candidate's margin field is set to the gap over second-best.
         """
         candidates: list[Candidate] = []
 
         for i in range(self._n):
             try:
-                cand = self._generate_one(description, compounds, max_retries)
+                cand = self._generate_one(
+                    description, compounds, max_retries, candidate_idx=i)
                 candidates.append(cand)
             except RuntimeError:
                 continue
@@ -77,14 +98,37 @@ class CandidateSelector:
             raise RuntimeError(
                 f"CandidateSelector: all {self._n} generation attempts failed")
 
+        # Compute margins and sort
+        scores = [c.candidate_score for c in candidates if c.candidate_score]
+        compute_margin(scores)
         candidates.sort(key=lambda c: c.score(), reverse=True)
         return candidates[0]
 
-    def _generate_one(
+    def select_top_k(
         self,
         description: str,
         compounds:   list[str],
-        max_retries: int,
+        k:           int = 3,
+        max_retries: int = 3,
+    ) -> list[Candidate]:
+        """Return top-K candidates for multi-candidate repair (Item 6)."""
+        candidates: list[Candidate] = []
+        for i in range(max(self._n, k)):
+            try:
+                cand = self._generate_one(
+                    description, compounds, max_retries, candidate_idx=i)
+                candidates.append(cand)
+            except RuntimeError:
+                continue
+        candidates.sort(key=lambda c: c.score(), reverse=True)
+        return candidates[:k]
+
+    def _generate_one(
+        self,
+        description:   str,
+        compounds:     list[str],
+        max_retries:   int,
+        candidate_idx: int = 0,
     ) -> Candidate:
         sem_units = self._unit_extractor.extract(description, compounds, max_retries)
         sem_topo  = self._stream_extractor.extract(
@@ -95,17 +139,17 @@ class CandidateSelector:
         )
 
         graph, repair_count = _assemble_graph(sem_units, sem_topo, compounds)
-        report = validate(graph)
+        report  = validate(graph)
+        cscore  = score_candidate(
+            graph, report, repair_count, description, candidate_idx)
 
         return Candidate(
-            graph        = graph,
-            sem_units    = sem_units,
-            sem_topo     = sem_topo,
-            issue_count  = len(report.issues),
-            repair_count = repair_count,
-            valid_ir     = all(
-                i.level != "SCHEMA" for i in report.issues),
-            valid_json   = True,
+            graph           = graph,
+            sem_units       = sem_units,
+            sem_topo        = sem_topo,
+            report          = report,
+            candidate_score = cscore,
+            repair_count    = repair_count,
         )
 
 
@@ -126,10 +170,9 @@ def _assemble_graph(
     graph.compounds = list(compounds)
 
     for sem_unit in units.units:
-        unit_type = sem_unit.type
-        if unit_type not in SUPPORTED_UNIT_TYPES:
+        if sem_unit.type not in SUPPORTED_UNIT_TYPES:
             continue
-        node = make_node(unit_type, sem_unit.tag, {},
+        node = make_node(sem_unit.type, sem_unit.tag, {},
                          metadata={"role": sem_unit.role})
         graph.add_unit(node, strict=False)
 
@@ -142,12 +185,8 @@ def _assemble_graph(
             composition = dict(sem_stream.composition),
             metadata    = {"is_feed": sem_stream.is_feed},
         )
-        try:
-            graph.add_stream(edge, sem_stream.src, sem_stream.dst,
-                             enforce_phase=False)
-        except ValueError:
-            graph.add_stream(edge, sem_stream.src, sem_stream.dst,
-                             enforce_phase=False)
+        graph.add_stream(edge, sem_stream.src, sem_stream.dst,
+                         enforce_phase=False)
 
     before = len(graph.unit_tags())
     graph  = normalise(graph)
