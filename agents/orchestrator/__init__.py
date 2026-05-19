@@ -727,6 +727,13 @@ class Orchestrator:
                 f"TopologyLibrary (REBUILD): {format_hint(rebuild_hint)}")
 
         topo_feedback = _build_replan_feedback(report)
+        cond_feedback = _build_condition_feedback(run_history, flowsheet, report)
+        # Distil package feedback into a single CONSTRAINT sentence for ConditionAgent
+        # rather than passing the full multi-line block which dilutes focus for smaller LLMs.
+        pkg_constraint = _distill_package_feedback(run_history, rebuild_package)
+        if pkg_constraint:
+            cond_feedback = pkg_constraint + "\n\n" + cond_feedback
+            topo_feedback = topo_feedback + "\n\n" + pkg_constraint
         try:
             new_fs = self._planner.plan(
                 original_description,
@@ -734,9 +741,7 @@ class Orchestrator:
                 suggested_compositions=(
                     result.basis_result.suggested_compositions or None),
                 topology_feedback=topo_feedback,
-                condition_feedback=_build_condition_feedback(
-                    run_history, flowsheet, report),
-                package_feedback=_build_package_feedback(run_history),
+                condition_feedback=cond_feedback,
                 property_package=rebuild_package,
                 condition_estimate=rebuild_ce or None,
                 # Suppress the library hint when we have topology feedback — passing
@@ -843,8 +848,11 @@ _NBP_K: dict[str, float] = {
     "Methanol":           337.85,
     "Ethanol":            351.44,
     "n-Propanol":         370.35,
+    "1-Propanol":         370.35,   # DWSIM alias
     "Isopropanol":        355.39,
+    "2-Propanol":         355.39,   # DWSIM alias
     "n-Butanol":          390.81,
+    "1-Butanol":          390.81,   # DWSIM alias
     "Isobutanol":         381.04,
     "Water":              373.15,
     "Acetone":            329.15,
@@ -986,7 +994,7 @@ def _build_condition_feedback(
                     f"  ACTION: Set Heater T_out to {t_lo}–{t_hi} K.")
 
     # ── Outlet ≈ feed (no separation despite solver=True) ────────────────────
-    if summaries.count("outlet≈feed") >= 2:
+    if summaries.count("outlet≈feed") >= 1:
         pkg_tried = [r.property_package for r in history
                      if r.execution_summary == "outlet≈feed"]
         is_polar = bool(_POLAR_COMPOUNDS & set(compounds))
@@ -1030,7 +1038,7 @@ def _build_condition_feedback(
             "    the mixture enters the vessel as a two-phase stream.")
 
     # ── Repeated solver divergence ────────────────────────────────────────────
-    if summaries.count("solver_diverged") >= 2:
+    if summaries.count("solver_diverged") >= 1:
         lines.append(
             "CRITICAL — Solver diverged on two or more consecutive iterations:")
         if feed_t is not None:
@@ -1065,6 +1073,36 @@ def _build_condition_feedback(
     return "\n".join(lines) if lines else (
         "Solver failed across multiple property packages. "
         "Regenerate the flowsheet with different topology or operating conditions.")
+
+
+def _distill_package_feedback(
+        history: list[TrialRecord],
+        current_package: str | None,
+) -> str:
+    """
+    Distil multi-trial package failures into a single CONSTRAINT sentence for
+    ConditionAgent.  Keeps feedback short so smaller LLMs stay on-task.
+    """
+    if not history:
+        return ""
+    failed = [r for r in history if r.execution_summary != "pass"]
+    if not failed:
+        return ""
+    reasons = []
+    for r in failed:
+        if r.execution_summary == "outlet≈feed":
+            reasons.append(
+                f"{r.property_package} produced no separation (missing BIPs)")
+        elif r.execution_summary == "zero_vapour":
+            reasons.append(
+                f"{r.property_package} produced zero vapour (T_out below bubble point)")
+        elif r.execution_summary == "solver_diverged":
+            reasons.append(f"{r.property_package} solver diverged")
+    if not reasons:
+        return ""
+    summary = "; ".join(reasons[:3])
+    pkg_note = f" Current package: {current_package}." if current_package else ""
+    return f"CONSTRAINT: prior trials failed — {summary}.{pkg_note} Design conditions to avoid these failures."
 
 
 def _build_package_feedback(history: list[TrialRecord]) -> str:
@@ -1338,16 +1376,17 @@ def _preflight_patch(flowsheet: dict) -> tuple[dict, list[str]]:
 
     Fix A — Sub-bubble-point T_out:
       If any Heater or Cooler T_out ≤ estimated bubble point of its feed, raise
-      T_out to bubble_point + 15 K.  Skips units if bubble point cannot be
-      estimated (unknown compound).
+      T_out to bubble_point + 15 K.
 
     Fix B — Vessel vapour/liquid port inversion by stream name:
-      If src_port=0 connects to a stream whose tag contains a liquid keyword
-      (LIQ, BOT, …) or src_port=1 connects to a vapour keyword (VAP, GAS, …),
-      swap the two src_ports.  Only fires when the name evidence is unambiguous.
+      Swap src_ports when name keywords contradict the expected assignment.
+
+    Fix C — Bare Vessel with liquid feed:
+      If the only unit is a Vessel (no Heater/Cooler) and feed T < bubble point,
+      raise the feed stream T to bubble_point + 15 K so the vessel receives a
+      two-phase mixture rather than all-liquid feed (which produces ZERO_OUTLET).
     """
     import copy
-    from agents.critic import _estimate_bubble_point as _est_bub
 
     fs = copy.deepcopy(flowsheet)
     patches: list[str] = []
@@ -1360,11 +1399,14 @@ def _preflight_patch(flowsheet: dict) -> tuple[dict, list[str]]:
         None,
     )
 
-    # Fix A — sub-bubble-point T_out
+    unit_types = {u.get("type") for u in fs.get("units", [])}
+    has_conditioning = bool(unit_types & {"Heater", "Cooler"})
+
+    # Fix A — sub-bubble-point T_out on Heater/Cooler
     if feed is not None:
         feed_comp = feed.get("composition", {})
         feed_p    = feed.get("P", 101_325.0)
-        t_bub     = _est_bub(compounds, feed_comp, feed_p)
+        t_bub     = _estimate_bubble_point(compounds, feed_comp, feed_p)
         if t_bub is not None:
             for unit in fs.get("units", []):
                 if unit.get("type") not in ("Heater", "Cooler"):
@@ -1377,6 +1419,24 @@ def _preflight_patch(flowsheet: dict) -> tuple[dict, list[str]]:
                         f"{t_out} K ≤ bubble point {t_bub} K — patched to {new_t} K."
                     )
                     unit["T_out"] = new_t
+
+    # Fix C — Bare Vessel with sub-bubble-point feed (no conditioning unit)
+    if not has_conditioning and "Vessel" in unit_types and feed is not None:
+        feed_comp = feed.get("composition", {})
+        feed_p    = feed.get("P", 101_325.0)
+        t_bub     = _estimate_bubble_point(compounds, feed_comp, feed_p)
+        feed_t    = feed.get("T")
+        if t_bub is not None and feed_t is not None and feed_t < t_bub:
+            new_t = round(t_bub + 15.0, 1)
+            for s in fs.get("streams", []):
+                if s.get("tag") == feed.get("tag"):
+                    s["T"] = new_t
+                    break
+            patches.append(
+                f"PRE-FLIGHT: No Heater/Cooler; feed T={feed_t} K < "
+                f"bubble point {t_bub} K — raised feed T to {new_t} K "
+                f"for two-phase Vessel entry."
+            )
 
     # Fix B — Vessel port inversion by stream-name heuristic
     conns = [list(c) for c in fs.get("connections", [])]

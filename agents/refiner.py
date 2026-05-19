@@ -23,14 +23,14 @@ the Orchestrator's convergence analysis and paper results.
 from __future__ import annotations
 import copy
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
 from agents import schema
 from agents.critic import CriticReport, _estimate_bubble_point
-from agents.llm import chat, DEFAULT_MODEL
+from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from agents.physics_check import physics_validate, has_errors
-from context import DWSIM_KNOWLEDGE
 
 # ── Change record ─────────────────────────────────────────────────────────────
 
@@ -71,36 +71,96 @@ class RefinementResult:
 
 # ── LLM system prompt ─────────────────────────────────────────────────────────
 
-_SYSTEM = (
-    "You are a chemical process simulation expert. You receive a DWSIM flowsheet "
-    "JSON and a diagnostic report from the Critic Agent. Your job is to make the "
-    "MINIMAL changes needed to fix the reported failures — do not change anything "
-    "that is not causing a failure.\n\n"
-    "Output ONLY valid JSON — no markdown, no explanation:\n"
-    "{\n"
-    '  "changes": [\n'
-    '    {"target": "<stream:TAG|unit:TAG|global>",\n'
-    '     "field": "<field name>",\n'
-    '     "old_value": <old>,\n'
-    '     "new_value": <new>,\n'
-    '     "reason": "<one sentence>",\n'
-    '     "failure_code": "<CRITIC code>"}\n'
-    "  ],\n"
-    '  "updated_flowsheet": { <full updated flowsheet JSON> }\n'
-    "}\n\n"
-    "Fix priorities by failure code:\n"
-    "  SOLVER_FAIL    → simplify initial conditions; reduce temperature steps\n"
-    "  MASS_BALANCE   → check all intermediate streams appear in connections\n"
-    "  UNPHYSICAL_T   → convert to Kelvin (add 273.15 if value looks like °C)\n"
-    "  UNPHYSICAL_P   → convert to Pascals (×1e5 if value looks like bar)\n"
-    "  ENERGY_UNPHYS  → fix T_out so Heater T_out > inlet, Cooler T_out < inlet\n"
-    "  ZERO_OUTLET    → check feed T/P are within two-phase region\n"
-    "  NO_SEPARATION  → switch property_package to Raoult's Law for topology test\n"
-    "  WRONG_PHASE_DIR→ swap src_port 0↔1 in the connections list\n"
-    "  COMP_SUM       → renormalise mole fractions so they sum to 1.0\n\n"
-    "---\n"
-    + DWSIM_KNOWLEDGE
-)
+_SYSTEM = """\
+You are a chemical process simulation expert. You receive a DWSIM flowsheet state
+and a diagnostic report. Patch ONLY the broken fields.
+
+Output ONLY this JSON object (no markdown, no explanation):
+{
+  "patches": [
+    {"target": "unit",   "tag": "<TAG>", "field": "<field>", "new_value": <value>},
+    {"target": "stream", "tag": "<TAG>", "field": "<field>", "new_value": <value>},
+    {"target": "global",                 "field": "<field>", "new_value": <value>}
+  ],
+  "reasoning": "<one sentence: what was changed and why>"
+}
+
+MUST: patch ONLY the broken values — do NOT include unchanged fields.
+MUST: "target" is exactly one of: "unit", "stream", "global".
+MUST: "tag" must match a tag shown in the flowsheet state ("unit"/"stream" targets).
+MUST: temperatures in Kelvin, pressures in Pascals, flows in mol/s.
+MUST: if "field" is "composition", "new_value" must be a dict summing to exactly 1.0.
+
+Fix guide by failure code (patch only the minimum fields needed):
+  SOLVER_FAIL     → reduce temperature step: lower unit T_out closer to feed T
+  UNPHYSICAL_T    → add 273.15 to any T < 100K (was entered as °C)
+  UNPHYSICAL_P    → multiply P by 1e5 if looks like bar, by 1000 if looks like kPa
+  ENERGY_UNPHYS   → Heater: raise T_out above inlet T; Cooler: lower T_out below inlet T
+  ZERO_OUTLET     → raise Heater/Cooler T_out above mixture bubble point + 15K;
+                    if no heater/cooler, raise feed stream T above bubble point.
+                    Bubble points at 1 atm:
+                    Methane 112K | Ethane 185K | Propane 231K | n-Butane 273K |
+                    Diethyl Ether 308K | n-Pentane 309K | DCM 313K |
+                    Acetone 329K | Chloroform 334K | MeOH 338K | THF 339K |
+                    n-Hexane 342K | EtOAc 350K | EtOH 352K | Benzene 353K |
+                    Cyclohexane 354K | IPA 356K | n-PrOH 370K | Water 373K |
+                    Toluene 384K | n-Butanol 391K | n-Octane 399K.
+  NO_SEPARATION   → global property_package → "Raoult's Law"
+  COMP_SUM        → stream composition → renormalised dict summing to 1.0
+  MASS_BALANCE    → check connections list; patch stream tags to match unit ports\
+"""
+
+_FEW_SHOT_PATCHES = """\
+━━━ EXAMPLE 1 — ZERO_OUTLET: HT-01 T_out below bubble point ━━━━━━━━━━━━━━━━━━
+Failure: [CRITICAL] ZERO_OUTLET @ stream:VAP — Terminal outlet flow = 0.0 mol/s
+Diagnosis: HT-01 T_out=310K is below methanol/water bubble point (~355K); all-liquid feed.
+Flowsheet state:
+  Global: property_package='NRTL'  compounds=['Methanol','Water']
+  Stream FEED: T=298.15K  P=101325Pa  flow=1.0mol/s  {Methanol:0.5, Water:0.5}
+  Unit HT-01 (Heater): T_out=310.0  dP=0.0
+Output:
+{"patches": [{"target": "unit", "tag": "HT-01", "field": "T_out", "new_value": 368.0}],
+ "reasoning": "HT-01 T_out raised 310→368K — above methanol/water bubble point ~355K to produce two-phase feed at V-01."}
+
+━━━ EXAMPLE 2 — UNPHYSICAL_T: feed T entered in Celsius ━━━━━━━━━━━━━━━━━━━━━━
+Failure: [CRITICAL] UNPHYSICAL_T @ stream:FEED — T=25.0K (below 100K)
+Diagnosis: FEED temperature 25K was entered in °C; must be 298.15K.
+Flowsheet state:
+  Stream FEED: T=25.0K  P=101325Pa  flow=1.0mol/s  {Benzene:0.5, Toluene:0.5}
+Output:
+{"patches": [{"target": "stream", "tag": "FEED", "field": "T", "new_value": 298.15}],
+ "reasoning": "FEED T corrected 25→298.15K (value was in Celsius, +273.15)."}
+
+━━━ EXAMPLE 3 — SOLVER_FAIL: T_out step too large ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Failure: [CRITICAL] SOLVER_FAIL — Solver failed to converge
+Diagnosis: HT-01 T_out=600K is too large a temperature step from 298K; reduce to near bubble point.
+Flowsheet state:
+  Stream FEED: T=298.15K  P=101325Pa  flow=1.0mol/s  {Ethanol:0.5, Water:0.5}
+  Unit HT-01 (Heater): T_out=600.0  dP=0.0
+Output:
+{"patches": [{"target": "unit", "tag": "HT-01", "field": "T_out", "new_value": 365.0}],
+ "reasoning": "HT-01 T_out reduced 600→365K — smaller step reduces solver stiffness; ethanol/water bubble point ~352K."}
+
+━━━ EXAMPLE 4 — NO_SEPARATION: NRTL without BIPs ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Failure: [CRITICAL] NO_SEPARATION @ stream:VAP — outlet composition matches feed
+Diagnosis: NRTL has no binary interaction parameters for this pair; outlet equals feed.
+Flowsheet state:
+  Global: property_package='NRTL'  compounds=['Hexane','Heptane']
+Output:
+{"patches": [{"target": "global", "field": "property_package", "new_value": "Raoult's Law"}],
+ "reasoning": "Switched NRTL→Raoult's Law for topology verification; NRTL lacks BIPs for hexane/heptane."}
+
+━━━ EXAMPLE 5 — MASS_BALANCE: Mixer outlet zero because one inlet flow=0 ━━━━━
+Failure: [CRITICAL] MASS_BALANCE @ unit:MX-01 — outlet flow = 0.0 mol/s
+Diagnosis: FEED-B stream flow=0.0; both Mixer inlets must have non-zero flow.
+Flowsheet state:
+  Stream FEED-A: T=298.15K  P=101325Pa  flow=1.0mol/s  {Methanol:1.0}
+  Stream FEED-B: T=298.15K  P=101325Pa  flow=0.0mol/s  {Water:1.0}
+  Unit MX-01 (Mixer):
+Output:
+{"patches": [{"target": "stream", "tag": "FEED-B", "field": "flow", "new_value": 1.0}],
+ "reasoning": "FEED-B flow raised 0→1.0 mol/s — MX-01 outlet was zero because the second inlet had no flow."}
+"""
 
 
 # ── Refiner Agent ─────────────────────────────────────────────────────────────
@@ -120,7 +180,7 @@ class RefinerAgent:
         self,
         flowsheet: dict,
         report: CriticReport,
-        max_retries: int = 2,
+        max_retries: int = 3,
         run_history: list | None = None,
     ) -> RefinementResult:
         """
@@ -150,24 +210,35 @@ class RefinerAgent:
                     )
                 # Physics errors remain after deterministic fixes — fall through to Stage 2 LLM.
 
-        # Stage 2 — LLM
+        # Stage 2 — LLM patch
         base_prompt = _build_prompt(fs, report, run_history=run_history)
         prompt = base_prompt
 
         for attempt in range(max_retries):
             try:
-                raw = chat(prompt, system=_SYSTEM, model=self._model)
-                updated_fs, llm_changes, reasoning = _parse_llm_response(raw)
+                raw = chat(prompt, system=_SYSTEM, model=self._model,
+                           temperature=retry_temperature(attempt), thinking=True)
+                patches, reasoning = _parse_patch_response(raw)
             except Exception as e:
                 prompt = _retry_prompt(base_prompt, str(e))
                 continue
+
+            updated_fs, patch_changes = _apply_patches(fs, patches)
 
             errors = schema.validate(updated_fs)
             if errors:
                 prompt = _retry_prompt(base_prompt, "\n".join(errors))
                 continue
 
-            all_changes.extend(llm_changes)
+            if updated_fs == fs:
+                prompt = _retry_prompt(
+                    base_prompt,
+                    "The patches produced no change — the flowsheet is IDENTICAL to the input.\n"
+                    "You MUST patch the broken values flagged in the failure report."
+                )
+                continue
+
+            all_changes.extend(patch_changes)
             return RefinementResult(
                 success=True,
                 updated_flowsheet=updated_fs,
@@ -534,6 +605,40 @@ def _set_global(flowsheet: dict, field: str, value) -> dict:
     return fs
 
 
+def _format_flowsheet_compact(flowsheet: dict) -> str:
+    """Compact human-readable flowsheet state — much shorter than full JSON."""
+    lines = [
+        "Global:",
+        f"  compounds       : {flowsheet.get('compounds', [])}",
+        f"  property_package: {flowsheet.get('property_package', '')!r}",
+        "",
+        "Streams:",
+    ]
+    for s in flowsheet.get("streams", []):
+        tag = s["tag"]
+        if "T" in s:
+            comp = s.get("composition", {})
+            comp_str = ", ".join(f"{k}: {v}" for k, v in comp.items())
+            lines.append(
+                f"  {tag}: T={s['T']}K  P={s['P']}Pa  "
+                f"flow={s.get('flow', '?')}mol/s  {{{comp_str}}}"
+            )
+        else:
+            lines.append(f"  {tag}: (no conditions — intermediate/product)")
+    lines += ["", "Units:"]
+    for u in flowsheet.get("units", []):
+        tag   = u["tag"]
+        utype = u.get("type", "?")
+        params = {k: v for k, v in u.items() if k not in ("tag", "type")}
+        params_str = "  ".join(f"{k}={v}" for k, v in params.items())
+        lines.append(f"  {tag} ({utype}): {params_str}")
+    lines += ["", "Connections:"]
+    for c in flowsheet.get("connections", []):
+        if len(c) >= 4:
+            lines.append(f"  {c[0]} → {c[1]}  src_port={c[2]}  dst_port={c[3]}")
+    return "\n".join(lines)
+
+
 def _build_prompt(
         flowsheet: dict,
         report: CriticReport,
@@ -542,65 +647,145 @@ def _build_prompt(
     history_block = ""
     if run_history:
         lines = [
-            "TRIAL HISTORY — what has already been attempted and failed.",
-            "Do NOT repeat a fix that appears here. Use this to choose a"
-            " DIFFERENT approach:\n",
+            "TRIAL HISTORY — already attempted and failed. Do NOT repeat these fixes:\n",
         ]
         for rec in run_history:
             codes = ", ".join(rec.failure_codes) if rec.failure_codes else "none"
             lines.append(
                 f"  Iteration {rec.iteration}: pkg={rec.property_package}"
-                f"  outcome={rec.execution_summary}"
-                f"  codes=[{codes}]"
+                f"  outcome={rec.execution_summary}  codes=[{codes}]"
                 + (f"  refiner={rec.refiner_outcome}" if rec.refiner_outcome else "")
             )
             if rec.diagnosis:
-                lines.append(f"    ↳ {rec.diagnosis[:120]}")
+                lines.append(f"    ↳ {rec.diagnosis[:200]}")
         history_block = "\n".join(lines) + "\n\n"
 
+    signals_text = "\n".join(
+        f"  [{s.severity}] {s.code} @ {s.location}: {s.evidence}"
+        for s in report.signals
+    )
+    fixes_text = "\n".join(f"  - {f}" for f in report.suggested_fixes)
+
     return (
-        history_block
-        + f"Critic diagnosis: {report.diagnosis}\n"
-        + f"Failure codes: {report.failure_codes}\n"
-        + f"Routing: {report.routing}\n"
-        + f"Suggested fixes:\n"
-        + "\n".join(f"  - {f}" for f in report.suggested_fixes)
-        + f"\n\nSignals:\n"
-        + "\n".join(
-            f"  [{s.severity}] {s.code} @ {s.location}: {s.evidence}"
-            for s in report.signals)
-        + f"\n\nFlowsheet to fix:\n{json.dumps(flowsheet, indent=2)}\n\n"
-        "Apply the minimal changes to fix the failures and output JSON as specified."
+        _FEW_SHOT_PATCHES
+        + "\n━━━ NOW FIX THIS FLOWSHEET ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        + history_block
+        + f"FAILURE REPORT:\n"
+        + f"  Diagnosis : {report.diagnosis}\n"
+        + f"  Codes     : {report.failure_codes}\n"
+        + f"  Signals:\n{signals_text}\n"
+        + f"  Suggested fixes:\n{fixes_text}\n"
+        + f"\nCurrent flowsheet state:\n{_format_flowsheet_compact(flowsheet)}\n\n"
+        + 'TASK: patch ONLY the broken fields.\n'
+        + 'Return ONLY: {"patches": [...], "reasoning": "<one sentence>"}'
     )
 
 
-def _parse_llm_response(raw: str) -> tuple[dict, list[RefinementChange], str]:
-    """Parse LLM JSON response into (updated_flowsheet, changes, reasoning)."""
+def _parse_patch_response(raw: str) -> tuple[list[dict], str]:
+    """Parse patch-format LLM response. Returns (patches, reasoning)."""
     text = raw.strip()
     if text.startswith("```"):
         lines = text.splitlines()
-        text = "\n".join(l for l in lines if not l.strip().startswith("```"))
-    parsed = json.loads(text.strip())
+        text = "\n".join(ln for ln in lines if not ln.strip().startswith("```"))
+    text = text.strip()
 
-    updated_fs = parsed["updated_flowsheet"]
-    changes = [
-        RefinementChange(
-            target=c.get("target", ""),
-            field=c.get("field", ""),
-            old_value=c.get("old_value"),
-            new_value=c.get("new_value"),
-            reason=c.get("reason", ""),
-            failure_code=c.get("failure_code", ""),
-        )
-        for c in parsed.get("changes", [])
-    ]
-    reasoning = "; ".join(c.get("reason", "") for c in parsed.get("changes", []))
-    return updated_fs, changes, reasoning
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if not match:
+        raise ValueError(
+            'No JSON object found. Return {"patches": [...], "reasoning": "..."}')
+    parsed = json.loads(match.group(0))
+
+    if not isinstance(parsed, dict):
+        raise ValueError(f"Expected JSON object, got {type(parsed).__name__}")
+    if "patches" not in parsed:
+        raise ValueError(
+            'Missing "patches" key — return {"patches": [...], "reasoning": "..."}')
+
+    patches = parsed["patches"]
+    if not isinstance(patches, list):
+        raise ValueError('"patches" must be a list')
+    if not patches:
+        raise ValueError('"patches" list is empty — include at least one patch')
+
+    _VALID_TARGETS = {"unit", "stream", "global"}
+    for i, p in enumerate(patches):
+        if not isinstance(p, dict):
+            raise ValueError(f"Patch {i} must be a dict, got {type(p).__name__}")
+        for key in ("target", "field", "new_value"):
+            if key not in p:
+                raise ValueError(f"Patch {i} missing required key '{key}': {p}")
+        if p["target"] not in _VALID_TARGETS:
+            raise ValueError(
+                f"Patch {i} 'target' must be one of {_VALID_TARGETS}, "
+                f"got: {p['target']!r}")
+        if p["target"] in ("unit", "stream") and "tag" not in p:
+            raise ValueError(
+                f"Patch {i} with target='{p['target']}' must include 'tag'")
+
+    return patches, parsed.get("reasoning", "")
+
+
+def _apply_patches(
+        flowsheet: dict,
+        patches: list[dict],
+) -> tuple[dict, list[RefinementChange]]:
+    """Apply a patch list to a copy of the flowsheet. Returns (updated_fs, changes)."""
+    fs = copy.deepcopy(flowsheet)
+    changes: list[RefinementChange] = []
+
+    for patch in patches:
+        target    = patch["target"]
+        field     = patch["field"]
+        new_value = patch["new_value"]
+        tag       = patch.get("tag", "")
+
+        if target == "global":
+            old_value  = fs.get(field)
+            fs[field]  = new_value
+            changes.append(RefinementChange(
+                target="global", field=field,
+                old_value=old_value, new_value=new_value,
+                reason=patch.get("reason", ""), failure_code="",
+            ))
+
+        elif target == "stream":
+            for s in fs.get("streams", []):
+                if s["tag"] == tag:
+                    old_value = s.get(field)
+                    s[field]  = new_value
+                    changes.append(RefinementChange(
+                        target=f"stream:{tag}", field=field,
+                        old_value=old_value, new_value=new_value,
+                        reason=patch.get("reason", ""), failure_code="",
+                    ))
+                    break
+
+        elif target == "unit":
+            for u in fs.get("units", []):
+                if u["tag"] == tag:
+                    old_value = u.get(field)
+                    u[field]  = new_value
+                    changes.append(RefinementChange(
+                        target=f"unit:{tag}", field=field,
+                        old_value=old_value, new_value=new_value,
+                        reason=patch.get("reason", ""), failure_code="",
+                    ))
+                    break
+
+    return fs, changes
 
 
 def _retry_prompt(base: str, errors: str) -> str:
     return (
-        f"{base}\n\n"
-        f"Your previous output had errors:\n{errors}\n\n"
-        "Fix them and output valid JSON only as specified."
+        f"CORRECTION REQUIRED — fix EXACTLY these errors:\n"
+        f"  {errors}\n\n"
+        f"Key rules:\n"
+        f"  - 'patches' must be a non-empty list of patch objects.\n"
+        f"  - Each patch: "
+        f'{{\"target\": \"unit\"|\"stream\"|\"global\", '
+        f'\"tag\": \"<TAG>\", \"field\": \"<field>\", \"new_value\": <value>}}\n'
+        f"  - Temperatures in Kelvin, pressures in Pascals, flows in mol/s.\n"
+        f"  - Do NOT return a full flowsheet — return ONLY the patch list.\n\n"
+        f"Failure context and flowsheet state:\n{base}\n\n"
+        'Return ONLY: {"patches": [...], "reasoning": "<one sentence>"}'
     )

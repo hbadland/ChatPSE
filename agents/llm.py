@@ -1,6 +1,6 @@
 """
 Provider-agnostic LLM client.
-Supports Google Gemini, Anthropic Claude, and OpenAI GPT.
+Supports Google Gemini, Anthropic Claude, OpenAI GPT, Groq, and Ollama (OpenAI-compatible).
 
 Usage:
     from agents.llm import chat, LLMClient
@@ -9,6 +9,8 @@ Usage:
     reply = chat("explain VLE", model="gemini-2.5-flash")
     reply = chat("explain VLE", model="claude-sonnet-4-6")
     reply = chat("explain VLE", model="gpt-4o")
+    reply = chat("explain VLE", model="llama-3.3-70b-versatile")   # Groq
+    reply = chat("explain VLE", model="qwen3:14b")                 # Ollama
 
     # Multi-turn
     client = LLMClient(system="You are a thermodynamics expert.",
@@ -19,9 +21,13 @@ Required environment variables (only for providers you use):
     GOOGLE_API_KEY
     ANTHROPIC_API_KEY
     OPENAI_API_KEY
+    GROQ_API_KEY     (for Groq models — llama-3.x, qwen-qwq, gemma2-, mixtral-8)
+    OLLAMA_API_KEY   (optional — Ollama accepts any value; defaults to "ollama")
+    OLLAMA_BASE_URL  (optional — defaults to http://localhost:11434/v1)
 """
 from __future__ import annotations
 import os
+import re
 import time
 
 # ── Retry / rate-limit handling ───────────────────────────────────────────────
@@ -45,12 +51,19 @@ def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
             err = str(e).lower()
             is_transient = any(m in err for m in _RATE_LIMIT_MARKERS)
             if is_transient and attempt < max_retries - 1:
-                delay = min(base_delay * (2 ** attempt), 120.0)  # cap at 2 min
+                delay = min(base_delay * (2 ** attempt), 120.0)
                 print(f"  [llm] rate limit hit — waiting {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
                 time.sleep(delay)
                 continue
             raise
-    raise RuntimeError("Max retries exceeded")  # unreachable but satisfies linters
+    raise RuntimeError("Max retries exceeded")
+
+
+# ── Thinking-token stripping ──────────────────────────────────────────────────
+
+def _strip_thinking(text: str) -> str:
+    """Remove <think>...</think> blocks emitted by Qwen3 thinking mode."""
+    return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
 
 
 # ── Provider routing ───────────────────────────────────────────────────────────
@@ -58,8 +71,16 @@ def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
 _GOOGLE    = {"gemini"}
 _ANTHROPIC = {"claude"}
 _OPENAI    = {"gpt", "o1", "o3"}
+# Groq model names use hyphen-version format (llama-3.x, qwen-qwq, gemma2-, mixtral-8).
+# Must be checked BEFORE _OLLAMA since Ollama uses the same base names without hyphens
+# (e.g. llama3:8b vs llama-3.3-70b-versatile).
+_GROQ   = {"llama-3", "qwen-qwq", "gemma2-", "mixtral-8", "deepseek-r1-distill"}
+_OLLAMA = {"qwen", "llama", "mistral", "phi", "deepseek", "gemma"}
 
 DEFAULT_MODEL = "gemini-2.5-flash"
+
+_OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "http://localhost:11434/v1")
+_GROQ_BASE_URL   = "https://api.groq.com/openai/v1"
 
 
 def _provider(model: str) -> str:
@@ -70,9 +91,15 @@ def _provider(model: str) -> str:
         return "anthropic"
     if any(m.startswith(p) for p in _OPENAI):
         return "openai"
+    if any(m.startswith(p) for p in _GROQ):
+        return "groq"
+    if any(m.startswith(p) for p in _OLLAMA):
+        return "ollama"
     raise ValueError(
         f"Cannot infer provider from model name '{model}'. "
-        "Prefix must be gemini/claude/gpt/o1/o3.")
+        "Prefix must be gemini/claude/gpt/o1/o3/"
+        "llama-3/qwen-qwq/gemma2-/mixtral-8 (Groq) or "
+        "qwen/llama/mistral/phi/deepseek/gemma (Ollama).")
 
 
 # ── Call counter (for benchmarking) ───────────────────────────────────────────
@@ -87,14 +114,33 @@ def get_call_count() -> int:
     return _call_count
 
 
+# ── Retry temperature schedule ─────────────────────────────────────────────────
+
+def retry_temperature(attempt: int) -> float:
+    """
+    Temperature schedule for agent retry loops.
+
+    attempt=0 is the first try — temperature=0 gives deterministic output
+    (most reliable for structured JSON generation).
+    attempt=1+ raises to 0.3 to break wrong-but-internally-consistent outputs
+    that a deterministic model will reproduce identically on each retry.
+
+    Capped at 0.3: higher values destabilise small-model (Qwen3:14b) JSON
+    generation without meaningfully improving semantic correctness.
+    """
+    return 0.0 if attempt == 0 else 0.3
+
+
 # ── One-shot ───────────────────────────────────────────────────────────────────
 
 def chat(prompt: str, system: str = "", model: str = DEFAULT_MODEL,
-         max_tokens: int = 8192, temperature: float | None = None) -> str:
+         max_tokens: int = 8192, temperature: float | None = None,
+         thinking: bool = False) -> str:
     """Send a single prompt and return the text response.
 
     temperature=0 gives deterministic outputs (recommended for generation agents).
     Leave as None to use the provider default (usually ~1.0).
+    thinking=True prepends /think token for Ollama models that support it.
     """
     global _call_count
     _call_count += 1
@@ -103,6 +149,10 @@ def chat(prompt: str, system: str = "", model: str = DEFAULT_MODEL,
         return _google_chat(prompt, system, model, max_tokens, temperature)
     if provider == "anthropic":
         return _anthropic_chat(prompt, system, model, max_tokens, temperature)
+    if provider == "groq":
+        return _groq_chat(prompt, system, model, max_tokens, temperature)
+    if provider == "ollama":
+        return _ollama_chat(prompt, system, model, max_tokens, temperature, thinking)
     return _openai_chat(prompt, system, model, max_tokens, temperature)
 
 
@@ -150,17 +200,61 @@ def _openai_chat(prompt: str, system: str, model: str, max_tokens: int,
         messages=messages, **kwargs).choices[0].message.content)
 
 
+def _groq_chat(prompt: str, system: str, model: str, max_tokens: int,
+               temperature: float | None) -> str:
+    from openai import OpenAI
+    client = OpenAI(api_key=_key("GROQ_API_KEY"), base_url=_GROQ_BASE_URL)
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    messages.append({"role": "user", "content": prompt})
+    kwargs: dict = {}
+    if temperature is not None:
+        kwargs["temperature"] = temperature
+    raw = _with_retry(lambda: client.chat.completions.create(
+        model=model, max_tokens=max_tokens,
+        messages=messages, **kwargs).choices[0].message.content)
+    return _strip_thinking(raw)
+
+
+_OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "600"))
+
+
+def _ollama_chat(prompt: str, system: str, model: str, max_tokens: int,
+                 temperature: float | None, thinking: bool = False) -> str:
+    from openai import OpenAI
+    api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
+    client = OpenAI(api_key=api_key, base_url=_OLLAMA_BASE_URL, timeout=_OLLAMA_TIMEOUT)
+    messages = []
+    if system:
+        messages.append({"role": "system", "content": system})
+    think_token = "/think" if thinking else "/no_think"
+    messages.append({"role": "user", "content": f"{think_token}\n{prompt}"})
+    kwargs: dict = {}
+    if temperature is not None:
+        kwargs["temperature"] = temperature
+    raw = _with_retry(lambda: client.chat.completions.create(
+        model=model, max_tokens=max_tokens,
+        messages=messages,
+        extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
+        **kwargs).choices[0].message.content,
+        max_retries=3, base_delay=1.0)
+    return _strip_thinking(raw)
+
+
 # ── Multi-turn ─────────────────────────────────────────────────────────────────
 
 class LLMClient:
     """Stateful multi-turn chat session, provider-agnostic."""
 
     def __init__(self, system: str = "", model: str = DEFAULT_MODEL,
-                 max_tokens: int = 8192, temperature: float | None = None):
+                 max_tokens: int = 8192, temperature: float | None = None,
+                 thinking: bool = False):
         self._system      = system
         self._model       = model
         self._max_tokens  = max_tokens
         self._temperature = temperature
+        self._thinking    = thinking
         self._provider    = _provider(model)
         self._history: list[dict] = []
 
@@ -170,6 +264,10 @@ class LLMClient:
             reply = self._google_send()
         elif self._provider == "anthropic":
             reply = self._anthropic_send()
+        elif self._provider == "groq":
+            reply = self._groq_send()
+        elif self._provider == "ollama":
+            reply = self._ollama_send(self._thinking)
         else:
             reply = self._openai_send()
         self._history.append({"role": "assistant", "content": reply})
@@ -221,6 +319,47 @@ class LLMClient:
         return _with_retry(lambda: client.chat.completions.create(
             model=self._model, max_tokens=self._max_tokens,
             messages=messages, **kwargs).choices[0].message.content)
+
+    def _groq_send(self) -> str:
+        from openai import OpenAI
+        client = OpenAI(api_key=_key("GROQ_API_KEY"), base_url=_GROQ_BASE_URL)
+        messages = []
+        if self._system:
+            messages.append({"role": "system", "content": self._system})
+        messages.extend(self._history)
+        kwargs: dict = {}
+        if self._temperature is not None:
+            kwargs["temperature"] = self._temperature
+        raw = _with_retry(lambda: client.chat.completions.create(
+            model=self._model, max_tokens=self._max_tokens,
+            messages=messages, **kwargs).choices[0].message.content)
+        return _strip_thinking(raw)
+
+    def _ollama_send(self, thinking: bool = False) -> str:
+        from openai import OpenAI
+        api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
+        client = OpenAI(api_key=api_key, base_url=_OLLAMA_BASE_URL,
+                        timeout=_OLLAMA_TIMEOUT)
+        messages = []
+        if self._system:
+            messages.append({"role": "system", "content": self._system})
+        # Inject /think or /no_think on the first user turn only
+        history = list(self._history)
+        if history and history[0]["role"] == "user":
+            think_token = "/think" if thinking else "/no_think"
+            history[0] = dict(history[0],
+                              content=f"{think_token}\n{history[0]['content']}")
+        messages.extend(history)
+        kwargs: dict = {}
+        if self._temperature is not None:
+            kwargs["temperature"] = self._temperature
+        raw = _with_retry(lambda: client.chat.completions.create(
+            model=self._model, max_tokens=self._max_tokens,
+            messages=messages,
+            extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
+            **kwargs).choices[0].message.content,
+            max_retries=3, base_delay=1.0)
+        return _strip_thinking(raw)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 
 from agents import schema
@@ -175,9 +176,15 @@ class PlannerAgent:
                     suggested_compositions=suggested_compositions,
                     condition_feedback=extra_feedback or None,
                 )
-            except ValueError as exc:
-                raise ValueError(
-                    f"ConditionAgent failed on attempt {attempt + 1}: {exc}") from exc
+            except (ValueError, TypeError) as exc:
+                last_errors = [str(exc)]
+                extra_feedback = (
+                    f"CONDITION ERROR — conditions could not be generated "
+                    f"(attempt {attempt + 1}):\n"
+                    f"  {exc}\n"
+                    "Review the units and feed streams and return valid conditions."
+                )
+                continue
 
             flowsheet = self._assembler.assemble(
                 compounds=compounds,
@@ -235,41 +242,141 @@ class PlannerAgent:
         """
         Surgical revision: fix exactly one unit in an existing flowsheet.
 
-        Uses the legacy single-shot LLM path so the model sees the full
-        current flowsheet and makes a minimal targeted change.
+        Returns a patch for the broken unit's parameters only — the model
+        never sees or reproduces the full flowsheet, eliminating silent
+        field corruption from small models.
         """
-        constraint = _build_legacy_constraint(compounds, suggested_compositions)
-        fs_json    = json.dumps(flowsheet, indent=2)
+        from agents.chem_data import estimate_bubble_point
+
+        # Find the broken unit to show its current parameters
+        broken_unit = next(
+            (u for u in flowsheet.get("units", []) if u["tag"] == broken_unit_name),
+            None,
+        )
+        current_params = (
+            {k: v for k, v in broken_unit.items() if k not in ("tag", "type")}
+            if broken_unit else {}
+        )
+        unit_type = broken_unit.get("type", "unknown") if broken_unit else "unknown"
+
+        # Build compact feed context for bubble-point reasoning
+        feed_summary = []
+        for s in flowsheet.get("streams", []):
+            if "T" in s:
+                comp = s.get("composition", {})
+                comp_str = ", ".join(f"{k}: {v}" for k, v in comp.items())
+                feed_summary.append(
+                    f"  {s['tag']}: T={s['T']}K  P={s['P']}Pa  {{{comp_str}}}")
+
+        # Compute bubble point and inject concrete target temperatures
+        bubble_hint = ""
+        feed_stream = next(
+            (s for s in flowsheet.get("streams", [])
+             if "T" in s and s.get("composition")),
+            None,
+        )
+        if feed_stream:
+            t_bub = estimate_bubble_point(
+                compounds,
+                feed_stream.get("composition", {}),
+                feed_stream.get("P", 101_325.0),
+            )
+            if t_bub is not None:
+                bubble_hint = (
+                    f"\nEstimated mixture bubble point: {t_bub} K "
+                    f"at {feed_stream.get('P', 101325.0):.0f} Pa"
+                )
+                if unit_type in ("Heater", "Cooler"):
+                    lo, hi = round(t_bub + 15, 0), round(t_bub + 25, 0)
+                    bubble_hint += (
+                        f"\n→ {broken_unit_name} T_out target: "
+                        f"{lo}–{hi} K (bubble_point + 15–25 K)"
+                    )
+
+        _SYSTEM_REVISE = (
+            "You are a chemical process unit parameter expert.\n"
+            "Fix ONLY the parameters of the specified broken unit.\n\n"
+            "Output ONLY this JSON object (no markdown, no explanation):\n"
+            '{"new_params": {<corrected unit parameters>}, '
+            '"reasoning": "<one sentence>"}\n\n'
+            "Unit parameter formats:\n"
+            "  Heater/Cooler  : {\"T_out\": <K>, \"dP\": 0.0}\n"
+            "  Pump/Compressor: {\"P_out\": <Pa>, \"efficiency\": 0.75}\n"
+            "  Expander       : {\"P_out\": <Pa>, \"efficiency\": 0.75}\n"
+            "  Vessel/Mixer   : {\"dP\": 0.0}\n\n"
+            "MUST: temperatures in Kelvin, pressures in Pascals.\n"
+            "MUST: Heater/Cooler T_out must be above the mixture bubble point + 15 K.\n"
+            "MUST: Compressor/Pump P_out must exceed feed pressure.\n"
+            "MUST: Expander P_out must be below feed pressure.\n\n"
+            "━━━ EXAMPLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "UNIT TO FIX: HT-01 (Heater)\n"
+            'Current parameters: {"T_out": 310.0, "dP": 0.0}\n'
+            "PROBLEM: T_out=310 K is below the methanol/water bubble point.\n"
+            "Feed stream conditions:\n"
+            "  FEED: T=298.15K  P=101325Pa  {Methanol: 0.5, Water: 0.5}\n"
+            "Estimated mixture bubble point: 355.0 K at 101325 Pa\n"
+            "→ HT-01 T_out target: 370–380 K (bubble_point + 15–25 K)\n"
+            'Output: {"new_params": {"T_out": 372.0, "dP": 0.0}, '
+            '"reasoning": "HT-01 T_out raised 310→372K — above methanol/water bubble point ~355K."}\n'
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+        )
 
         base_prompt = (
-            _REVISE_EXAMPLE
-            + f"Now perform the same revision for:\n\n"
-            + f"{constraint}"
-            + f"Process description: {description}\n\n"
-            + f"CURRENT FLOWSHEET:\n{fs_json}\n\n"
-            + f"PROBLEM:\n"
-            + f"Unit '{broken_unit_name}' is causing a simulation failure:\n"
-            + f"  {reason}\n\n"
-            + f"INSTRUCTIONS:\n"
-            + f"1. Identify the root cause for unit '{broken_unit_name}'.\n"
-            + f"2. Correct ONLY that unit (type, parameters, or outlet conditions).\n"
-            + f"3. Keep ALL other units, streams, and connections EXACTLY as "
-            + f"shown — do not add, remove, or rename any element.\n"
-            + f"4. Return the COMPLETE corrected flowsheet as valid JSON.\n"
-            + f"5. Output ONLY the JSON — no explanation, no markdown fences.\n"
+            f"UNIT TO FIX: {broken_unit_name} ({unit_type})\n"
+            f"Current parameters: {json.dumps(current_params)}\n\n"
+            f"PROBLEM: {reason}\n\n"
+            f"Feed stream conditions:\n"
+            + ("\n".join(feed_summary) if feed_summary else "  (none specified)")
+            + bubble_hint
+            + f"\n\nCompounds: {compounds}\n"
+            f"Description: {description}\n\n"
+            f"Output ONLY: "
+            '{"new_params": {...}, "reasoning": "<one sentence>"}'
         )
-        prompt      = base_prompt
-        last_errors: list[str] = []
 
-        for _ in range(3):
-            raw = chat(prompt, system=self._system, model=self._model, temperature=0)
-            prompt, flowsheet_out, last_errors = self._legacy_validate(base_prompt, raw)
-            if flowsheet_out is not None:
-                return flowsheet_out
+        import copy as _copy
+        last_error = ""
+        prompt = base_prompt
+        for attempt in range(3):
+            try:
+                raw = chat(prompt, system=_SYSTEM_REVISE, model=self._model,
+                           temperature=0.0 if attempt == 0 else 0.3)
+                raw = raw.strip()
+                if raw.startswith("```"):
+                    raw = "\n".join(
+                        ln for ln in raw.splitlines()
+                        if not ln.strip().startswith("```")).strip()
+                m = re.search(r'\{.*\}', raw, re.DOTALL)
+                if not m:
+                    raise ValueError("No JSON object in response")
+                parsed = json.loads(m.group(0))
+                new_params = parsed.get("new_params")
+                if not isinstance(new_params, dict) or not new_params:
+                    raise ValueError(
+                        f'"new_params" must be a non-empty dict, got: {new_params}')
+                updated = _copy.deepcopy(flowsheet)
+                for u in updated.get("units", []):
+                    if u["tag"] == broken_unit_name:
+                        for k, v in new_params.items():
+                            u[k] = v
+                        break
+                errors = schema.validate(updated)
+                if errors:
+                    raise ValueError(f"Schema errors after patch: {errors[0]}")
+                return updated
+            except Exception as exc:
+                last_error = str(exc)
+                prompt = (
+                    f"CORRECTION REQUIRED — previous output had an error:\n"
+                    f"  {last_error}\n\n"
+                    f"Return ONLY: "
+                    f'{{\"new_params\": {{...}}, \"reasoning\": \"<one sentence>\"}}\n\n'
+                    + base_prompt
+                )
 
         raise ValueError(
             f"Planner.revise() failed after 3 attempts for unit '{broken_unit_name}'. "
-            f"Last errors: {last_errors}")
+            f"Last error: {last_error}")
 
     # ── Image path (Gemini only — legacy single-shot) ─────────────────────────
 

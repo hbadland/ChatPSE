@@ -52,7 +52,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 
-from agents.llm import chat, DEFAULT_MODEL
+from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from context import COMPOUND_DATABASE
 
 # ── Full DWSIM compound list (for fuzzy validation of LLM-proposed names) ─────
@@ -252,7 +252,8 @@ Output ONLY valid JSON -- no markdown fences, no prose:
 }
 
 Rules:
-- Use exact DWSIM names from the compound database below. Title-case matters.
+- MUST use compound names verbatim from the database below — exact spelling and capitalisation required.
+- MUST NOT invent, paraphrase, abbreviate, or translate compound names not in the database.
 - If a compound is in the Unsupported section, set status = "unsupported".
 - If a compound is not in the database, set status = "unverified" and make your
   best guess at the DWSIM name.
@@ -262,6 +263,34 @@ Rules:
 ---
 $database
 """)
+
+
+# ── Few-shot example for Stage 2 LLM ─────────────────────────────────────────
+
+_FEW_SHOT_BASIS = """\
+━━━ EXAMPLE — VERIFY + COMPLETE + EXTRACT ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Stage 1 anchors: {"He": "Helium", "ethanol": "Ethanol"}
+Process description: He mixed 70/30 ethanol and water then flashed the blend.
+
+Expected output:
+{
+  "confirmed": ["Ethanol"],
+  "rejected": [
+    {"proposed": "Helium", "original_text": "He",
+     "reason": "He is a pronoun — Helium is not present in this process"}
+  ],
+  "additional": [
+    {"original_text": "water", "dwsim_name": "Water",
+     "is_mixture": false, "mixture_components": [], "mole_fractions": [],
+     "status": "ok", "note": null}
+  ],
+  "mixture_expansions": [],
+  "concentration_hints": ["Feed is 70/30 ethanol/water molar split"],
+  "normalised_description": "He mixed 70/30 Ethanol and Water then flashed the blend."
+}
+
+━━━ NOW PROCESS THE ACTUAL DESCRIPTION ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+"""
 
 
 # ── Basis Agent ────────────────────────────────────────────────────────────────
@@ -393,9 +422,10 @@ class BasisAgent:
             ) if anchors else "  (none)"
         )
         prompt = (
-            f"Stage 1 anchors (verify these):\n{anchor_summary}\n\n"
-            f"Process description:\n{description}\n\n"
-            "Perform VERIFY → COMPLETE → EXTRACT and return JSON."
+            _FEW_SHOT_BASIS
+            + f"Stage 1 anchors (verify these):\n{anchor_summary}\n\n"
+            + f"Process description:\n{description}\n\n"
+            + "Perform VERIFY → COMPLETE → EXTRACT and return JSON."
         )
         if feedback:
             feedback_block = "\n".join(f"  - {f}" for f in feedback)
@@ -404,13 +434,21 @@ class BasisAgent:
                 f"compound names that caused them):\n{feedback_block}"
             )
 
-        try:
-            raw    = chat(prompt, system=self._system, model=self._model, temperature=0)
-            parsed = _parse_llm_response(raw)
-        except Exception as exc:
+        last_exc: Exception | None = None
+        parsed = None
+        for attempt in range(2):
+            try:
+                raw    = chat(prompt, system=self._system, model=self._model,
+                              temperature=retry_temperature(attempt), thinking=False)
+                parsed = _parse_llm_response(raw)
+                break
+            except Exception as exc:
+                last_exc = exc
+
+        if parsed is None:
             # Graceful degradation — never silently drop Stage 1 results
             warnings = [
-                f"LLM verifier-completer failed ({exc}). "
+                f"LLM verifier-completer failed ({last_exc}). "
                 "Using Stage 1 anchors only — manual review recommended."
             ]
             return self._build_from_anchors(
@@ -689,4 +727,8 @@ def _parse_llm_response(raw: str) -> dict:
     if text.startswith("```"):
         lines = text.splitlines()
         text  = "\n".join(ln for ln in lines if not ln.strip().startswith("```"))
-    return json.loads(text.strip())
+    text = text.strip()
+    match = re.search(r'\{.*\}', text, re.DOTALL)
+    if match:
+        return json.loads(match.group(0))
+    return json.loads(text)

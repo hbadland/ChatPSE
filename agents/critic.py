@@ -23,7 +23,7 @@ import math
 from dataclasses import dataclass, field
 
 from agents.executor import ExecutionResult, StreamResult
-from agents.llm import chat, DEFAULT_MODEL
+from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from agents.physics_check import physics_validate
 from context import FAILURE_TAXONOMY
 
@@ -142,27 +142,75 @@ def _estimate_bubble_point(compounds: list[str], composition: dict[str, float],
 
 # ── LLM system prompt ─────────────────────────────────────────────────────────
 
-_SYSTEM = (
-    "You are a chemical process simulation diagnostic expert. "
-    "You receive DWSIM simulation results, a list of detected failure signals, "
-    "and the flowsheet definition. Your job is to diagnose the root cause, "
-    "decide where to route the failure for fixing, and suggest specific fixes.\n\n"
-    "Output ONLY valid JSON — no markdown, no explanation:\n"
+_VALID_ROUTINGS = {"REFINER", "THERMO", "BASIS", "HUMAN", "PASS"}
+
+# ── Call 1: free-text diagnosis ───────────────────────────────────────────────
+
+_SYSTEM_DIAGNOSE = (
+    "You are a chemical process simulation diagnostic expert.\n"
+    "You receive failure signals, stream results, and the flowsheet state.\n"
+    "Your ONLY task: state the root cause in ONE sentence.\n\n"
+    "MUST: name the SPECIFIC stream tag, unit tag, compound, or parameter.\n"
+    "MUST: include the actual value and what it should be.\n"
+    "MUST: do NOT suggest fixes — diagnosis only.\n\n"
+    "Output ONLY one sentence — no JSON, no bullets, no explanation.\n\n"
+    "Good diagnosis examples:\n"
+    '  "HT-01 T_out=310K is below the methanol/water bubble point (~355K); '
+    'stream:VAP receives all-liquid feed so its flow is zero."\n'
+    '  "stream:FEED T=25K — value was entered in Celsius; must be 298.15K."\n'
+    '  "NRTL used for hexane/heptane without binary interaction parameters; '
+    'outlet composition equals feed."\n'
+    '  "K-01 P_out=80000Pa is below feed P=101325Pa — compressor must raise pressure."\n'
+    "---\n"
+    + FAILURE_TAXONOMY
+)
+
+# ── Call 2: routing + fixes, given the confirmed diagnosis ────────────────────
+
+_SYSTEM_ROUTE = (
+    "You are a chemical process routing expert.\n"
+    "You receive a confirmed diagnosis and the failure signals.\n"
+    "Decide where to route for fixing and suggest targeted patches.\n\n"
+    "Output ONLY valid JSON (no markdown, no explanation):\n"
     "{\n"
-    '  "diagnosis": "<one clear sentence explaining the root cause>",\n'
     '  "routing": "<REFINER|THERMO|BASIS|HUMAN|PASS>",\n'
-    '  "suggested_fixes": ["<specific fix 1>", "<specific fix 2>"],\n'
+    '  "suggested_fixes": ["<specific fix naming the tag and field>", ...],\n'
     '  "confidence": <0.0-1.0>,\n'
     '  "severity": "<CRITICAL|WARNING|PASS>"\n'
     "}\n\n"
-    "Routing rules:\n"
-    "  REFINER → topology, conditions, units, port assignments\n"
-    "  THERMO  → wrong property package, missing binary parameters\n"
-    "  BASIS   → wrong compound name (DWSIM cannot find compound)\n"
-    "  HUMAN   → fundamentally infeasible, cannot be fixed automatically\n"
-    "  PASS    → results are physically credible despite warnings\n\n"
-    "---\n"
-    + FAILURE_TAXONOMY
+    'MUST: "routing" MUST be exactly one of: REFINER, THERMO, BASIS, HUMAN, PASS.\n'
+    'MUST: "severity" MUST be exactly one of: CRITICAL, WARNING, PASS.\n'
+    'MUST: each fix must name the specific tag and field to change.\n\n'
+    "Routing decision guide:\n"
+    "  REFINER → unit T_out/P_out wrong, stream T/P wrong, port wrong,\n"
+    "            temperature/pressure unit conversion, T step too large,\n"
+    "            solver failed due to bad initial conditions\n"
+    "  THERMO  → wrong property package for the pair, NRTL/UNIQUAC missing BIPs,\n"
+    "            outlet composition equals feed (no separation)\n"
+    "  BASIS   → compound name not recognised by DWSIM (AddCompound failed)\n"
+    "  HUMAN   → thermodynamically infeasible at stated conditions\n"
+    "  PASS    → results are physically credible despite minor warnings\n\n"
+    "Examples:\n"
+    "  Diagnosis: T_out below bubble point\n"
+    '  → {"routing":"REFINER","suggested_fixes":["Raise HT-01 T_out to ~370K '
+    '(above methanol/water bubble point ~355K)"],"confidence":0.95,"severity":"CRITICAL"}\n\n'
+    "  Diagnosis: NRTL missing binary interaction parameters\n"
+    '  → {"routing":"THERMO","suggested_fixes":["Switch property_package to '
+    "Raoult's Law for topology verification\"],"
+    '"confidence":0.9,"severity":"CRITICAL"}\n\n'
+    "  Diagnosis: feed T entered in Celsius\n"
+    '  → {"routing":"REFINER","suggested_fixes":["Convert stream:FEED T from 25 '
+    'to 298.15K"],"confidence":0.95,"severity":"CRITICAL"}\n\n'
+    "  Diagnosis: DWSIM solver failed to converge — HT-01 T_out=600K is too large "
+    "a temperature step from feed 298K\n"
+    '  → {"routing":"REFINER","suggested_fixes":["Reduce HT-01 T_out from 600K '
+    'to ~370K (near bubble point) to reduce solver stiffness"],'
+    '"confidence":0.85,"severity":"CRITICAL"}\n\n'
+    "  Diagnosis: compound 'Etanol' not recognised by DWSIM AddCompound — "
+    "likely a spelling error for Ethanol\n"
+    '  → {"routing":"BASIS","suggested_fixes":["Correct compound name from '
+    "'Etanol' to exact DWSIM name 'Ethanol'\"],"
+    '"confidence":0.9,"severity":"CRITICAL"}\n'
 )
 
 
@@ -244,7 +292,23 @@ class CriticAgent:
                     signals=signals,
                 )
 
-        # Stage 2 — LLM interpretation
+        # Stage 2 — LLM interpretation (skip when routing is unambiguous)
+        if _is_unambiguous(signals):
+            parsed = _deterministic_fallback(signals)
+            codes = list({s.code for s in signals})
+            severity = ("CRITICAL" if any(s.severity == "CRITICAL" for s in signals)
+                        else "WARNING")
+            return CriticReport(
+                passed=False,
+                routing=parsed["routing"],
+                failure_codes=codes,
+                severity=parsed.get("severity", severity),
+                diagnosis=parsed.get("diagnosis", ""),
+                suggested_fixes=parsed.get("suggested_fixes", []),
+                confidence=float(parsed.get("confidence", 0.8)),
+                iteration=iteration,
+                signals=signals,
+            )
         return self._run_stage2(signals, result, flowsheet, iteration)
 
     def _run_stage2(
@@ -254,29 +318,83 @@ class CriticAgent:
         flowsheet: dict,
         iteration: int,
     ) -> CriticReport:
-        """LLM interprets the failure signals and produces a structured report."""
-
+        """
+        Two-call LLM diagnosis:
+          Call 1 — free-text sentence naming the specific root cause.
+          Call 2 — routing + fixes + confidence + severity, given the diagnosis.
+        """
         signal_text = "\n".join(
             f"  [{s.severity}] {s.code} @ {s.location}: {s.evidence}"
             for s in signals
         )
         stream_text = _format_streams(result)
-        prompt = (
+        flowsheet_text = _format_flowsheet_compact(flowsheet)
+
+        # ── Call 1: diagnosis ──────────────────────────────────────────────────
+        diag_prompt = (
             f"Iteration: {iteration}\n\n"
-            f"Failure signals detected:\n{signal_text}\n\n"
+            f"Failure signals:\n{signal_text}\n\n"
             f"Stream results:\n{stream_text}\n\n"
-            f"Flowsheet:\n{json.dumps(flowsheet, indent=2)}\n\n"
-            "Diagnose the root cause and output JSON as specified."
+            f"Flowsheet state:\n{flowsheet_text}\n\n"
+            "State the root cause in one sentence. "
+            "Name the specific stream/unit/compound and the exact wrong value."
         )
 
-        try:
-            raw = chat(prompt, system=_SYSTEM, model=self._model)
-            parsed = _parse_llm_response(raw)
-        except Exception as e:
-            # LLM failed — fall back to deterministic routing
+        diagnosis = ""
+        _diag_prompt = diag_prompt
+        for attempt in range(2):
+            try:
+                raw = chat(_diag_prompt, system=_SYSTEM_DIAGNOSE,
+                           model=self._model, thinking=False,
+                           temperature=retry_temperature(attempt))
+                diagnosis = raw.strip().split("\n")[0].strip()
+                if diagnosis:
+                    break
+                _diag_prompt = (
+                    "CORRECTION REQUIRED — your previous response was empty or "
+                    "multi-line.\n"
+                    "Output EXACTLY ONE SENTENCE naming: the specific tag, the "
+                    "exact wrong value, and why it causes the failure.\n\n"
+                    + diag_prompt
+                )
+            except Exception as e:
+                _diag_prompt = (
+                    f"CORRECTION REQUIRED — previous attempt failed ({e}).\n"
+                    "Output EXACTLY ONE SENTENCE: name the specific stream/unit/"
+                    "compound and the exact wrong value.\n\n"
+                    + diag_prompt
+                )
+        if not diagnosis:
+            diagnosis = _deterministic_fallback(signals).get("diagnosis", "")
+
+        # ── Call 2: routing + fixes ────────────────────────────────────────────
+        route_prompt = (
+            f"Confirmed diagnosis: {diagnosis}\n\n"
+            f"Failure signals:\n{signal_text}\n\n"
+            "Decide the routing and suggest specific fixes. Output JSON as specified."
+        )
+
+        parsed = None
+        for attempt in range(2):
+            try:
+                raw = chat(route_prompt, system=_SYSTEM_ROUTE,
+                           model=self._model, thinking=False,
+                           temperature=retry_temperature(attempt))
+                parsed = _parse_llm_response(raw)
+                if parsed.get("routing") not in _VALID_ROUTINGS:
+                    parsed["routing"] = _fallback_routing(signals)
+                break
+            except Exception as e:
+                route_prompt = (
+                    f"CORRECTION REQUIRED — previous output was invalid: {e}\n\n"
+                    f"Return ONLY valid JSON with keys: routing, suggested_fixes, "
+                    f"confidence, severity.\n\n"
+                    f"Confirmed diagnosis: {diagnosis}\n"
+                    f"Failure signals:\n{signal_text}"
+                )
+        if parsed is None:
             parsed = _deterministic_fallback(signals)
 
-        # Merge Stage 1 codes with Stage 2 routing
         codes = list({s.code for s in signals})
         severity = ("CRITICAL" if any(s.severity == "CRITICAL" for s in signals)
                     else "WARNING")
@@ -286,7 +404,7 @@ class CriticAgent:
             routing=parsed.get("routing", _fallback_routing(signals)),
             failure_codes=codes,
             severity=parsed.get("severity", severity),
-            diagnosis=parsed.get("diagnosis", ""),
+            diagnosis=diagnosis,
             suggested_fixes=parsed.get("suggested_fixes", []),
             confidence=float(parsed.get("confidence", 0.7)),
             iteration=iteration,
@@ -634,6 +752,36 @@ def _check_near_unity_alpha(
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+def _format_flowsheet_compact(flowsheet: dict) -> str:
+    """Compact human-readable flowsheet state for LLM diagnosis prompts."""
+    lines = [
+        f"Global: property_package={flowsheet.get('property_package')!r}  "
+        f"compounds={flowsheet.get('compounds', [])}",
+        "Streams:",
+    ]
+    for s in flowsheet.get("streams", []):
+        tag = s["tag"]
+        if "T" in s:
+            comp = s.get("composition", {})
+            comp_str = ", ".join(f"{k}: {v}" for k, v in comp.items())
+            lines.append(
+                f"  {tag}: T={s['T']}K  P={s['P']}Pa  "
+                f"flow={s.get('flow', '?')}mol/s  {{{comp_str}}}"
+            )
+        else:
+            lines.append(f"  {tag}: (no conditions)")
+    lines.append("Units:")
+    for u in flowsheet.get("units", []):
+        params = {k: v for k, v in u.items() if k not in ("tag", "type")}
+        params_str = "  ".join(f"{k}={v}" for k, v in params.items())
+        lines.append(f"  {u['tag']} ({u.get('type', '?')}): {params_str}")
+    lines.append("Connections:")
+    for c in flowsheet.get("connections", []):
+        if len(c) >= 4:
+            lines.append(f"  {c[0]} → {c[1]}  src_port={c[2]}")
+    return "\n".join(lines)
+
+
 def _format_streams(result: ExecutionResult) -> str:
     lines = []
     for tag, s in result.stream_results.items():
@@ -644,27 +792,59 @@ def _format_streams(result: ExecutionResult) -> str:
     return "\n".join(lines) if lines else "  No stream results available."
 
 
+def _is_unambiguous(signals: list[FailureSignal]) -> bool:
+    """Return True only when every CRITICAL code has a deterministic fix that doesn't need LLM root-cause analysis.
+
+    Codes excluded from 'unambiguous' because their root cause varies and LLM adds real value:
+      SOLVER_FAIL   — wrong connection, missing stream, bad unit params, DWSIM crash, etc.
+      NUMERIC_FAIL  — NaN from wrong compound/T/P — cause matters for the fix
+      MASS_BALANCE  — structural: usually a missing or duplicate connection
+      NO_SEPARATION — could be package issue, topology issue, or conditions issue
+    """
+    _DETERMINISTIC = {
+        "UNPHYSICAL_T", "UNPHYSICAL_P", "ENERGY_UNPHYSICAL",
+        "COMP_SUM", "WRONG_PHASE_DIR",
+    }
+    codes = {s.code for s in signals if s.severity == "CRITICAL"}
+    if not codes:
+        return False
+    return codes.issubset(_DETERMINISTIC)
+
+
 def _parse_llm_response(raw: str) -> dict:
     text = raw.strip()
     if text.startswith("```"):
         lines = text.splitlines()
         text = "\n".join(l for l in lines if not l.strip().startswith("```"))
-    return json.loads(text.strip())
+    text = text.strip()
+    import re as _re
+    match = _re.search(r'\{.*\}', text, _re.DOTALL)
+    if match:
+        return json.loads(match.group(0))
+    return json.loads(text)
 
 
 def _deterministic_fallback(signals: list[FailureSignal]) -> dict:
     routing = _fallback_routing(signals)
-    codes = [s.code for s in signals]
+    critical = [s for s in signals if s.severity == "CRITICAL"]
+    # Build a diagnosis from actual signal evidence, not just code names
+    if critical:
+        primary = critical[0]
+        diagnosis = f"{primary.code} @ {primary.location}: {primary.evidence[:250]}"
+        if len(critical) > 1:
+            extras = ", ".join(s.code for s in critical[1:])
+            diagnosis += f" (also: {extras})"
+    else:
+        diagnosis = f"Failures: {[s.code for s in signals]}"
     return {
         "routing": routing,
-        "diagnosis": f"Deterministic fallback. Failures: {codes}",
+        "diagnosis": diagnosis,
         "suggested_fixes": [
-            f"Address {s.code} at {s.location}: {s.evidence}"
-            for s in signals if s.severity == "CRITICAL"
+            f"Fix {s.code} at {s.location}: {s.evidence}"
+            for s in critical
         ],
-        "confidence": 0.6,
-        "severity": ("CRITICAL" if any(s.severity == "CRITICAL" for s in signals)
-                     else "WARNING"),
+        "confidence": 0.7,
+        "severity": ("CRITICAL" if critical else "WARNING"),
     }
 
 
