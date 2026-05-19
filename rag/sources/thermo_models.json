@@ -1,0 +1,76 @@
+[
+  {
+    "package": "Raoult's Law",
+    "use_when": ["ideal mixtures", "chemically similar compounds", "topology testing"],
+    "compound_classes": ["ALKANES with ALKANES", "AROMATICS with similar MW AROMATICS"],
+    "forbidden_with": [
+      "ALCOHOL with water", "ALCOHOL with HYDROCARBON", "ALCOHOL with KETONE",
+      "KETONE with water", "KETONE with CHLORINATED",
+      "ESTER with water", "ESTER with ALCOHOL", "ESTER with HYDROCARBON",
+      "ETHER with water", "ETHER with ALCOHOL",
+      "CHLORINATED with KETONE", "CHLORINATED with ETHER", "CHLORINATED with AROMATIC",
+      "any AZEOTROPE pair"
+    ],
+    "pressure_regime": "low (<3 bar)",
+    "priority": 5
+  },
+  {
+    "package": "NRTL",
+    "use_when": [
+      "polar non-ideal VLE", "hydrogen-bonding mixtures", "azeotropic systems",
+      "alcohol/water", "ketone/water", "ester/water"
+    ],
+    "requires_bips": true,
+    "compound_classes": ["ALCOHOLS", "KETONES", "ESTERS", "ETHERS", "POLAR_OTHER"],
+    "known_azeotropes": [
+      "ethanol/water", "methanol/water", "1-propanol/water", "2-propanol/water",
+      "1-butanol/water", "ethyl acetate/ethanol", "ethyl acetate/water",
+      "acetone/chloroform", "acetone/methanol", "diethyl ether/water",
+      "n-hexane/ethanol", "benzene/cyclohexane", "THF/water", "acetonitrile/water"
+    ],
+    "pressure_regime": "low-to-medium (<10 bar)",
+    "priority": 2
+  },
+  {
+    "package": "UNIQUAC",
+    "use_when": [
+      "partially miscible systems", "liquid-liquid extraction", "LLE",
+      "size-asymmetric polar mixtures"
+    ],
+    "requires_bips": true,
+    "compound_classes": ["ALCOHOLS", "ESTERS", "POLAR_OTHER"],
+    "pressure_regime": "low-to-medium (<10 bar)",
+    "priority": 3
+  },
+  {
+    "package": "Peng-Robinson",
+    "use_when": [
+      "hydrocarbons", "light gases", "high-pressure VLE", "gas-phase systems",
+      "non-polar at high pressure"
+    ],
+    "forbidden_with": [
+      "ALCOHOL at low pressure (<3 bar)",
+      "KETONE at low pressure (<3 bar)",
+      "polar mixtures at ambient pressure"
+    ],
+    "compound_classes": ["ALKANES", "LIGHT_GASES", "AROMATICS at high P"],
+    "pressure_regime": "any, but optimal >3 bar",
+    "priority": 2
+  },
+  {
+    "package": "Soave-Redlich-Kwong",
+    "use_when": [
+      "light hydrocarbons", "high-temperature gas phase", "natural gas at moderate pressure"
+    ],
+    "compound_classes": ["ALKANES", "LIGHT_GASES"],
+    "pressure_regime": ">3 bar",
+    "priority": 4
+  },
+  {
+    "package": "Lee-Kesler-Plöcker",
+    "use_when": ["cryogenic systems", "natural gas processing", "T < 200 K"],
+    "compound_classes": ["LIGHT_GASES", "ALKANES at cryogenic T"],
+    "pressure_regime": "any cryogenic",
+    "priority": 4
+  }
+]

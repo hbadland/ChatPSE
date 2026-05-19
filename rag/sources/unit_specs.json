@@ -1,0 +1,98 @@
+[
+  {
+    "unit_type": "Heater",
+    "description": "Raises stream temperature to a specified outlet temperature.",
+    "required_params": [
+      {"name": "T_out", "unit": "K", "description": "Outlet temperature", "min": 100, "max": 1500}
+    ],
+    "optional_params": [
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop across unit", "default": 0.0}
+    ],
+    "notes": "CalcMode is set to OutletTemperature automatically. T_out must be above the bubble point of the feed to produce any vapour in a downstream Vessel.",
+    "phase": "any"
+  },
+  {
+    "unit_type": "Cooler",
+    "description": "Reduces stream temperature to a specified outlet temperature.",
+    "required_params": [
+      {"name": "T_out", "unit": "K", "description": "Outlet temperature", "min": 100, "max": 1500}
+    ],
+    "optional_params": [
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop across unit", "default": 0.0}
+    ],
+    "notes": "T_out must be below the feed temperature. For flash separation downstream, T_out must be above the bubble point.",
+    "phase": "any"
+  },
+  {
+    "unit_type": "Vessel",
+    "description": "Flash separator producing vapour (port 0) and liquid (port 1).",
+    "required_params": [],
+    "optional_params": [
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop", "default": 0.0}
+    ],
+    "ports": {"vapour_out": 0, "liquid_out": 1, "inlet": 0},
+    "notes": "Requires VLE-capable property package. Feed must be in the two-phase region (T between bubble and dew point). NRTL/UNIQUAC require BIPs or outlet will equal feed.",
+    "phase": "mixed feed → vapour + liquid"
+  },
+  {
+    "unit_type": "Mixer",
+    "description": "Combines multiple inlet streams into one outlet.",
+    "required_params": [],
+    "optional_params": [
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop", "default": 0.0}
+    ],
+    "notes": "All inlets must contain the same set of compounds. Auto-inserted by normaliser when a unit receives >1 inlet.",
+    "phase": "any"
+  },
+  {
+    "unit_type": "Splitter",
+    "description": "Splits total flow by fixed ratio. Does not perform phase separation.",
+    "required_params": [
+      {"name": "split_fractions", "unit": "dimensionless", "description": "Dict {stream_tag: fraction}. Fractions must sum to 1.0."}
+    ],
+    "optional_params": [
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop", "default": 0.0}
+    ],
+    "notes": "Auto-inserted by normaliser when a unit has >1 outlet. Equal split assumed by default.",
+    "phase": "any"
+  },
+  {
+    "unit_type": "Pump",
+    "description": "Raises liquid stream pressure.",
+    "required_params": [
+      {"name": "P_out", "unit": "Pa", "description": "Outlet pressure", "min": 1000, "max": 1e8}
+    ],
+    "optional_params": [
+      {"name": "efficiency", "unit": "dimensionless", "description": "Isentropic efficiency", "default": 0.75, "min": 0.1, "max": 1.0},
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop override (use P_out instead)", "default": 0.0}
+    ],
+    "notes": "Liquid-only. P_out must be greater than inlet pressure.",
+    "phase": "liquid"
+  },
+  {
+    "unit_type": "Compressor",
+    "description": "Raises gas/vapour stream pressure.",
+    "required_params": [
+      {"name": "P_out", "unit": "Pa", "description": "Outlet pressure", "min": 1000, "max": 1e8}
+    ],
+    "optional_params": [
+      {"name": "efficiency", "unit": "dimensionless", "description": "Isentropic efficiency", "default": 0.75, "min": 0.1, "max": 1.0},
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop override", "default": 0.0}
+    ],
+    "notes": "Gas-phase only. Use Peng-Robinson or SRK for best results.",
+    "phase": "vapour"
+  },
+  {
+    "unit_type": "Expander",
+    "description": "Reduces gas/vapour stream pressure, producing work.",
+    "required_params": [
+      {"name": "P_out", "unit": "Pa", "description": "Outlet pressure", "min": 1000, "max": 1e8}
+    ],
+    "optional_params": [
+      {"name": "efficiency", "unit": "dimensionless", "description": "Isentropic efficiency", "default": 0.75, "min": 0.1, "max": 1.0},
+      {"name": "dP", "unit": "Pa", "description": "Pressure drop override", "default": 0.0}
+    ],
+    "notes": "Gas-phase expansion. P_out must be less than inlet pressure.",
+    "phase": "vapour"
+  }
+]
