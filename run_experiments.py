@@ -72,44 +72,35 @@ def _check_api_key(model: str) -> None:
 
 class OrchestratorAdapter:
     """
-    Wraps the existing Orchestrator so it satisfies the interface expected
-    by run_benchmark():
+    Wraps OrchestratorV2 (IR-based pipeline) so it satisfies the interface
+    expected by run_benchmark():
 
         orchestrator.run(description, compounds) -> result
         result.outcome        — "PASS" | "HUMAN" | "MAX_ITER" | ...
-        result.ir_valid       — bool
-        result.json_valid     — bool
-        result.converged      — bool
-        result.iterations     — list (length = repair count)
+        result.ir_valid       — bool  (ir_report.valid)
+        result.json_valid     — bool  (final_flowsheet is not None)
+        result.converged      — bool  (final_execution.solved)
+        result.iterations     — list[IterationRecord]
         result.warnings       — list[str]
+
+    compounds is accepted for API compatibility but ignored — OrchestratorV2
+    derives compounds from BasisAgent internally.
     """
 
     def __init__(self, model: str = "qwen3:14b",
                  max_iterations: int = 6) -> None:
-        from agents.orchestrator import Orchestrator
-        from agents import schema as _schema
-        self._orch   = Orchestrator(model=model, max_iterations=max_iterations)
-        self._schema = _schema
+        from agents.orchestrator_v2 import OrchestratorV2
+        self._orch = OrchestratorV2(model=model, max_iterations=max_iterations)
 
     def run(self, description: str, compounds: list[str] | None = None):
         pr = self._orch.run(description)
-        # Derive json_valid from schema validation of the final flowsheet
-        json_valid = False
-        if pr.final_flowsheet:
-            try:
-                errs = self._schema.validate(pr.final_flowsheet)
-                json_valid = len(errs) == 0
-            except Exception:
-                json_valid = False
 
-        # Derive converged from execution result
-        converged = False
-        if pr.final_execution is not None:
-            converged = getattr(pr.final_execution, "solved", False)
-
-        pr.ir_valid   = json_valid   # v1 has no IR layer; use json_valid as proxy
-        pr.json_valid = json_valid
-        pr.converged  = converged
+        # Map PipelineResult fields to the names run_benchmark() reads via getattr
+        pr.ir_valid   = (pr.ir_report.valid
+                         if pr.ir_report is not None else False)
+        pr.json_valid = pr.final_flowsheet is not None
+        pr.converged  = (getattr(pr.final_execution, "solved", False)
+                         if pr.final_execution is not None else False)
         return pr
 
 
@@ -143,8 +134,8 @@ def exp1_baseline_vs_system(model: str, verbose: bool) -> None:
     from eval.dataset import get_cases
 
     cases = get_cases("all")
-    print(f"Running baseline on {len(cases)} cases …")
-    baseline_results, baseline_metrics = run_baseline(cases=cases, verbose=verbose)
+    print(f"Running baseline on {len(cases)} cases …  (model={model})")
+    baseline_results, baseline_metrics = run_baseline(cases=cases, model=model, verbose=verbose)
     print(baseline_metrics)
 
     print(f"\nRunning full system on {len(cases)} cases …")
