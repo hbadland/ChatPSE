@@ -3,17 +3,24 @@ Experiment runner.
 
 Run inside the VSCode Dev Container terminal:
 
-    PYTHONPATH=. ANTHROPIC_API_KEY=<key> python3.9 run_experiments.py
+    PYTHONPATH=. python3.9 run_experiments.py                        # all experiments, qwen3:14b
+    PYTHONPATH=. python3.9 run_experiments.py --exp 1                # single experiment
+    PYTHONPATH=. python3.9 run_experiments.py --model gemini-2.5-flash --exp 1  # different model
 
-Or run a single experiment:
+Provider / model selection
+    Ollama  (default): qwen3:14b, llama3:8b, mistral, phi3, ...
+    Google:            gemini-2.5-flash  (needs GOOGLE_API_KEY)
+    Anthropic:         claude-sonnet-4-6 (needs ANTHROPIC_API_KEY)
+    Groq:              llama-3.3-70b-versatile (needs GROQ_API_KEY)
 
-    PYTHONPATH=. ANTHROPIC_API_KEY=<key> python3.9 run_experiments.py --exp 1
+For Ollama the container talks to Ollama on the host via host.docker.internal.
+No API key is needed.
 
 Experiments
 -----------
 1  Baseline vs System  — all 60 cases; compares single-LLM baseline to full pipeline
 2  Split breakdown     — system on dev / holdout / stress separately
-3  Robustness          — scoring perturbation (N=10), prompt perturbation (N=10), multi-trial (N=5)
+3  Robustness          — scoring perturbation (N=10), prompt perturbation, multi-trial (N=5)
 4  Real cases          — 3 real industrial descriptions
 
 Results are written to results/exp<N>_<timestamp>.txt and printed to stdout.
@@ -30,12 +37,34 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
-# ── Lazy imports (fail fast with helpful message) ─────────────────────────────
-def _check_api_key() -> None:
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+_OLLAMA_PREFIXES = ("qwen", "llama", "mistral", "phi", "deepseek", "gemma")
+_KEY_MAP = {
+    "google":    "GOOGLE_API_KEY",
+    "anthropic": "ANTHROPIC_API_KEY",
+    "openai":    "OPENAI_API_KEY",
+    "groq":      "GROQ_API_KEY",
+}
+
+
+def _check_api_key(model: str) -> None:
+    m = model.lower()
+    if any(m.startswith(p) for p in _OLLAMA_PREFIXES):
+        return   # Ollama needs no API key
+    if m.startswith("gemini"):
+        provider = "google"
+    elif m.startswith("claude"):
+        provider = "anthropic"
+    elif m.startswith(("gpt", "o1", "o3")):
+        provider = "openai"
+    elif any(m.startswith(p) for p in ("llama-3", "qwen-qwq", "gemma2-", "mixtral-8")):
+        provider = "groq"
+    else:
+        return
+    env_var = _KEY_MAP[provider]
+    if not os.environ.get(env_var):
         sys.exit(
-            "ERROR: ANTHROPIC_API_KEY is not set.\n"
-            "  export ANTHROPIC_API_KEY=sk-ant-..."
+            f"ERROR: {env_var} is not set (required for model '{model}').\n"
+            f"  export {env_var}=..."
         )
 
 
@@ -55,7 +84,7 @@ class OrchestratorAdapter:
         result.warnings       — list[str]
     """
 
-    def __init__(self, model: str = "gemini-2.5-flash",
+    def __init__(self, model: str = "qwen3:14b",
                  max_iterations: int = 6) -> None:
         from agents.orchestrator import Orchestrator
         from agents import schema as _schema
@@ -240,8 +269,8 @@ def main() -> None:
         description="Run benchmark experiments (must be run inside the Dev Container).")
     parser.add_argument("--exp", type=int, choices=[1, 2, 3, 4],
                         help="Run only this experiment number (default: all)")
-    parser.add_argument("--model", default="gemini-2.5-flash",
-                        help="LLM model to use (default: gemini-2.5-flash)")
+    parser.add_argument("--model", default="qwen3:14b",
+                        help="LLM model to use (default: qwen3:14b via Ollama)")
     parser.add_argument("--verbose", action="store_true",
                         help="Print per-case progress")
     parser.add_argument("--n-scoring", type=int, default=10,
@@ -252,7 +281,7 @@ def main() -> None:
                         help="Multi-trial repeats (exp 3)")
     args = parser.parse_args()
 
-    _check_api_key()
+    _check_api_key(args.model)
 
     run_all = args.exp is None
     if run_all or args.exp == 1:
