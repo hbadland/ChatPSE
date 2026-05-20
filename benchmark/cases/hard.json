@@ -1,0 +1,171 @@
+[
+  {
+    "id": "HARD_01",
+    "name": "Near-azeotrope ethanol-water enrichment",
+    "tier": "hard",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Process an ethanol-water feed at 92 mol% ethanol — close to the atmospheric azeotrope (89.4 mol%) — by heating from 25°C to 78°C and flashing in a separator at 1 atm. The system must correctly predict near-azeotropic VLE behaviour.",
+    "compounds": ["Ethanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 1,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 348, "T_max_K": 360}
+      ]
+    },
+    "notes": "Tight thermodynamic margin. At 92 mol% ethanol the VLE curve is nearly flat — small T errors invert vapour/liquid compositions. BIP accuracy is critical."
+  },
+  {
+    "id": "HARD_02",
+    "name": "Compression train with conflicting temperature requirements",
+    "tier": "hard",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Design a two-stage compression-cooling train for methane-ethane gas (70/30 mol%) at inlet conditions of 1 bar and -10°C. First stage: compress to 5 bar and intercool to 30°C. Second stage: compress to 25 bar and cool to -20°C for partial liquefaction. The inter-stage and final temperatures impose conflicting constraints on which compressor outlet is physically achievable.",
+    "compounds": ["Methane", "Ethane"],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": ["Compressor", "Cooler", "Compressor", "Cooler"],
+      "connections": [
+        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"],
+        ["COOL-01", "COMP-02"], ["COMP-02", "COOL-02"], ["COOL-02", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 4,
+      "n_units_max": 6,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "n_units_of_type", "unit_type": "Compressor", "count_min": 2},
+        {"type": "n_units_of_type", "unit_type": "Cooler", "count_min": 2},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP-01"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP-02"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL-02", "T_min_K": 240, "T_max_K": 270}
+      ]
+    },
+    "notes": "Strong coupling: final cooler target -20°C is below ethane bp at 25 bar (-35°C). System must resolve two-stage P/T trajectory without violating saturation constraints."
+  },
+  {
+    "id": "HARD_03",
+    "name": "Cryogenic natural gas liquefaction segment",
+    "tier": "hard",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Liquefy a light natural gas feed (85 mol% methane, 10% ethane, 5% propane) at 30 bar. Cool the high-pressure gas from 20°C to -100°C using a cryogenic cooler, separate the partially liquefied stream in a flash vessel, and pump the liquid fraction to 50 bar.",
+    "compounds": ["Methane", "Ethane", "Propane"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Cooler", "Vessel", "Pump"],
+      "connections": [
+        ["FEED", "COOL-01"], ["COOL-01", "VES-01"],
+        ["VES-01", "GAS-OUT"], ["VES-01", "LIQ-01"],
+        ["LIQ-01", "PUMP-01"], ["PUMP-01", "LNG"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 163, "T_max_K": 185},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "PUMP"}
+      ]
+    },
+    "notes": "Cryogenic regime. Methane bp=-161°C at 1 atm, but at 30 bar it's -100°C. Lee-Kesler-Plöcker or PR required. Tight margin between methane bubble point and target temperature."
+  },
+  {
+    "id": "HARD_04",
+    "name": "Five-unit dependency chain with tight margins",
+    "tier": "hard",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Process a mixed hydrocarbon-polar feed of ethanol and propane (50/50 mol%) at 5 bar: heat from 10°C to 60°C, perform a primary flash separation, cool the vapour to -10°C to partially condense propane, flash again to recover liquid propane, and pump the ethanol-rich liquid bottoms from the first flash to 8 bar.",
+    "compounds": ["Ethanol", "Propane"],
+    "reference_structure": {
+      "n_units": 5,
+      "unit_types": ["Heater", "Vessel", "Cooler", "Vessel", "Pump"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-1"], ["VES-01", "LIQ-1"],
+        ["VAP-1", "COOL-01"], ["COOL-01", "VES-02"],
+        ["VES-02", "PROPANE-OUT"], ["VES-02", "MIX-OUT"],
+        ["LIQ-1", "PUMP-01"], ["PUMP-01", "ETHANOL-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 4,
+      "n_units_max": 6,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "n_units_of_type", "unit_type": "Vessel", "count_min": 2},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"}
+      ]
+    },
+    "notes": "Strong multi-unit coupling: heater T_out sets VES-01 split which determines vapour flow to COOL-01 and liquid flow to PUMP-01. VLE coupling between ethanol and propane requires careful package selection."
+  },
+  {
+    "id": "HARD_05",
+    "name": "Close-boiling hexane-cyclohexane near-azeotrope",
+    "tier": "hard",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Partially separate a hexane-cyclohexane mixture (50/50 mol%) — which forms a near-azeotrope at 77.6°C — by heating from 20°C to 75°C and flashing at 1 atm. The system must handle near-azeotropic VLE where relative volatility is close to 1.0.",
+    "compounds": ["n-Hexane", "Cyclohexane"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 338, "T_max_K": 358},
+        {"type": "separation_quality_below", "unit_tag_pattern": "VES", "max_enrichment": 0.15}
+      ]
+    },
+    "notes": "Hexane bp=69°C, cyclohexane bp=81°C, azeotrope at 77.6°C. Below the azeotrope, relative volatility<1.1. System must not over-predict separation quality. UNIQUAC or PR with mixing rules."
+  }
+]

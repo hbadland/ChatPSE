@@ -1,0 +1,160 @@
+[
+  {
+    "id": "EASY_01",
+    "name": "Heat then flash acetone-water",
+    "tier": "easy",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Heat an acetone and water feed (70 mol% acetone) from 20°C to 70°C at 1 atm, then flash-separate vapour from liquid in a vessel.",
+    "compounds": ["Acetone", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"}
+      ]
+    },
+    "notes": "Acetone bp=56°C, water bp=100°C. Heating to 70°C gives partial vaporisation of acetone-rich phase."
+  },
+  {
+    "id": "EASY_02",
+    "name": "Cool then pump liquid propane",
+    "tier": "easy",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Cool a propane stream from 50°C to 0°C to fully condense it, then pump the liquid from 2 bar to 10 bar.",
+    "compounds": ["Propane"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Cooler", "Pump"],
+      "connections": [
+        ["FEED", "COOL-01"], ["COOL-01", "PUMP-01"], ["PUMP-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "PUMP"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 250, "T_max_K": 285}
+      ]
+    },
+    "notes": "Propane bp=-42°C at 1 atm. At 2 bar propane bp≈-12°C so 0°C gives liquid. Weak coupling: cooler feeds pump."
+  },
+  {
+    "id": "EASY_03",
+    "name": "Heat propanol-water to partial vaporisation",
+    "tier": "easy",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Heat an equimolar 1-propanol and water feed from 25°C to 95°C at atmospheric pressure, then collect the vapour-liquid mixture in a separator.",
+    "compounds": ["1-Propanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 355, "T_max_K": 390}
+      ]
+    },
+    "notes": "1-Propanol bp=97°C, water bp=100°C. Near-bubble-point heating gives limited vapour. NRTL required."
+  },
+  {
+    "id": "EASY_04",
+    "name": "Compress then cool propylene refrigerant",
+    "tier": "easy",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Compress propylene vapour from 1 bar to 12 bar in a compressor, then cool the high-pressure gas to 30°C to condense it.",
+    "compounds": ["Propylene"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Compressor", "Cooler"],
+      "connections": [
+        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"], ["COOL-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 290, "T_max_K": 320}
+      ]
+    },
+    "notes": "Propylene bp=-47°C. At 12 bar condenser temperature ~30°C is above the bp so liquid product forms."
+  },
+  {
+    "id": "EASY_05",
+    "name": "Pump then heat benzene liquid",
+    "tier": "easy",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Pump liquid benzene from 1 atm to 15 bar, then heat the pressurised liquid to 120°C.",
+    "compounds": ["Benzene"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Pump", "Heater"],
+      "connections": [
+        ["FEED", "PUMP-01"], ["PUMP-01", "HT-01"], ["HT-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "PUMP"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 380, "T_max_K": 420}
+      ]
+    },
+    "notes": "Benzene bp=80°C at 1 atm. At 15 bar, bp≈200°C, so 120°C stays as subcooled liquid. Pump must precede heater."
+  }
+]

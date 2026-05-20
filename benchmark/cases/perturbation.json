@@ -1,0 +1,473 @@
+[
+  {
+    "id": "PERT_SAN03_base",
+    "name": "Base: heat+flash benzene-toluene (valid)",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "perturbation_type": null,
+    "perturbation_magnitude": 0,
+    "base_id": "SAN_03",
+    "recovery_expected": true,
+    "domain": "hydrocarbon",
+    "description": "Heat an equimolar benzene and toluene mixture from 25°C to 100°C at 1 atm, then flash-separate in a vessel.",
+    "compounds": ["Benzene", "Toluene"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"}
+      ]
+    },
+    "notes": "Unperturbed base case. Should converge on first attempt."
+  },
+  {
+    "id": "PERT_SAN03_T+20",
+    "name": "Mild over-heating: benzene-toluene heater +20K",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 20,
+    "perturbation_direction": "+",
+    "base_id": "SAN_03",
+    "recovery_expected": true,
+    "domain": "hydrocarbon",
+    "description": "Heat an equimolar benzene and toluene mixture from 25°C to 120°C at 1 atm, then flash. The outlet temperature is 20K above the nominal case — both components are near-fully vaporised.",
+    "compounds": ["Benzene", "Toluene"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 375, "T_max_K": 415}
+      ]
+    },
+    "notes": "Mild perturbation. System should converge with minimal repair. Vapour fraction increases markedly."
+  },
+  {
+    "id": "PERT_SAN03_T+80",
+    "name": "Severe over-heating: benzene-toluene heater +80K",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "severe",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 80,
+    "perturbation_direction": "+",
+    "base_id": "SAN_03",
+    "recovery_expected": true,
+    "domain": "hydrocarbon",
+    "description": "Heat an equimolar benzene and toluene mixture from 25°C to 180°C at 1 atm — well above the toluene boiling point (111°C). Flash the superheated vapour in a vessel. The system must detect that complete vaporisation occurs before the flash.",
+    "compounds": ["Benzene", "Toluene"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 430, "T_max_K": 480},
+        {"type": "single_phase_vapor_ok", "unit_tag_pattern": "VES"}
+      ]
+    },
+    "notes": "Severe perturbation. At 180°C both components are fully vaporised — separator produces near-zero liquid. System must not flag this as a physics error."
+  },
+  {
+    "id": "PERT_SAN03_T-20",
+    "name": "Under-heating: benzene-toluene heater -20K",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 20,
+    "perturbation_direction": "-",
+    "base_id": "SAN_03",
+    "recovery_expected": true,
+    "domain": "hydrocarbon",
+    "description": "Heat an equimolar benzene and toluene mixture from 25°C to 80°C at 1 atm — just below benzene boiling point. The mixture is barely at the bubble point. Flash in a vessel.",
+    "compounds": ["Benzene", "Toluene"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 345, "T_max_K": 365}
+      ]
+    },
+    "notes": "Mild under-heating. Near the bubble point, vapour fraction is low but nonzero. Should converge."
+  },
+  {
+    "id": "PERT_SAN03_invalid",
+    "name": "Invalid: heater outlet below inlet temperature",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "severe",
+    "perturbation_type": "invalid_assignment",
+    "perturbation_magnitude": null,
+    "base_id": "SAN_03",
+    "recovery_expected": true,
+    "domain": "hydrocarbon",
+    "description": "Process benzene and toluene through a heater and flash vessel, but specify the heater outlet temperature as 10°C — below the feed temperature of 25°C. The heater is acting as a cooler, which is physically contradictory.",
+    "compounds": ["Benzene", "Toluene"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"}
+      ]
+    },
+    "notes": "Tests detection and repair of an invalid parameter assignment. The system must recognise T_out < T_in for a heater as unphysical and correct it."
+  },
+  {
+    "id": "PERT_EASY01_base",
+    "name": "Base: heat+flash acetone-water (valid)",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "perturbation_type": null,
+    "perturbation_magnitude": 0,
+    "base_id": "EASY_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Heat an acetone and water feed (70 mol% acetone) from 20°C to 70°C at 1 atm, then flash-separate.",
+    "compounds": ["Acetone", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [{"type": "two_phase_outlet", "unit_tag_pattern": "VES"}]
+    },
+    "notes": "Unperturbed base. Acetone bp=56°C, so heating to 70°C gives partial vaporisation."
+  },
+  {
+    "id": "PERT_EASY01_T+30",
+    "name": "Moderate over-heating: acetone-water heater +30K",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 30,
+    "perturbation_direction": "+",
+    "base_id": "EASY_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Heat an acetone and water feed (70 mol% acetone) from 20°C to 100°C at 1 atm, then flash-separate. Temperature is 30K above base — acetone is fully vaporised, water partially.",
+    "compounds": ["Acetone", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 360, "T_max_K": 390}
+      ]
+    },
+    "notes": "At 100°C acetone (bp=56°C) is entirely in vapour phase. Water partially vaporises depending on composition."
+  },
+  {
+    "id": "PERT_EASY01_P+50pct",
+    "name": "Pressure increase: acetone-water at 1.5 atm",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "mild",
+    "perturbation_type": "pressure",
+    "perturbation_magnitude": 50,
+    "perturbation_direction": "+",
+    "base_id": "EASY_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Heat an acetone and water feed (70 mol% acetone) from 20°C to 70°C at 1.5 atm (50% above base pressure), then flash-separate. Higher pressure raises bubble point, reducing vapour fraction.",
+    "compounds": ["Acetone", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [{"type": "two_phase_outlet", "unit_tag_pattern": "VES"}]
+    },
+    "notes": "Pressure perturbation shifts the bubble point. Should still produce two phases at 70°C and 1.5 atm."
+  },
+  {
+    "id": "PERT_EASY01_T-25",
+    "name": "Under-heating: acetone-water heater -25K",
+    "tier": "perturbation",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 25,
+    "perturbation_direction": "-",
+    "base_id": "EASY_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Heat an acetone and water feed (70 mol% acetone) from 20°C to only 45°C at 1 atm — below the acetone boiling point of 56°C. The flash produces little or no vapour.",
+    "compounds": ["Acetone", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 300, "T_max_K": 330}
+      ]
+    },
+    "notes": "Below-bubble-point heating. At 45°C the mixture is subcooled, vapour fraction near zero. Should converge but flash is trivial."
+  },
+  {
+    "id": "PERT_EASY01_invalid",
+    "name": "Invalid: flash vessel operating below feed bubble point",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "severe",
+    "perturbation_type": "invalid_assignment",
+    "perturbation_magnitude": null,
+    "base_id": "EASY_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Heat an acetone and water feed to 70°C then flash in a vessel set to 10°C — well below the flash inlet temperature. This temperature assignment on the separator is physically contradictory since the inlet stream is at 70°C.",
+    "compounds": ["Acetone", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [{"type": "temp_consistency_inlet_outlet", "unit_tag_pattern": "VES"}]
+    },
+    "notes": "Separator temperature below inlet temperature is unphysical in an adiabatic flash. System must detect and correct."
+  },
+  {
+    "id": "PERT_MED01_base",
+    "name": "Base: ethanol-water separation train (valid)",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "perturbation_type": null,
+    "perturbation_magnitude": 0,
+    "base_id": "MED_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol) at 1 atm: heat from 25°C to 78°C, flash-separate in a vessel, cool the liquid bottoms to 30°C, then pump to 3 bar.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [{"type": "two_phase_outlet", "unit_tag_pattern": "VES"}]
+    },
+    "notes": "Unperturbed medium-difficulty base."
+  },
+  {
+    "id": "PERT_MED01_T+40",
+    "name": "Over-heating: ethanol-water heater +40K",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 40,
+    "perturbation_direction": "+",
+    "base_id": "MED_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol) at 1 atm: heat from 25°C to 118°C (40K above base), flash-separate, cool bottoms, pump. At 118°C essentially all ethanol and much of the water vaporise — flash split changes drastically.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 375, "T_max_K": 410},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"}
+      ]
+    },
+    "notes": "Strong perturbation for medium-coupling case. Heater over-shoot propagates: less liquid enters cooler, reducing cooler duty and changing pump inlet conditions."
+  },
+  {
+    "id": "PERT_MED01_T-30",
+    "name": "Under-heating: ethanol-water heater -30K",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 30,
+    "perturbation_direction": "-",
+    "base_id": "MED_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol) at 1 atm: heat from 25°C to only 48°C (30K below base) — below the ethanol boiling point. Flash produces very little vapour. Cool bottoms to 30°C and pump.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 315, "T_max_K": 340}
+      ]
+    },
+    "notes": "Under-heating means negligible flash. Cooler has minimal duty. Tests whether pipeline handles near-zero vapour fractions gracefully."
+  },
+  {
+    "id": "PERT_MED01_P_doubled",
+    "name": "Pressure doubling: ethanol-water at 2 atm",
+    "tier": "perturbation",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "mild",
+    "perturbation_type": "pressure",
+    "perturbation_magnitude": 100,
+    "perturbation_direction": "+",
+    "base_id": "MED_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol) at 2 atm (double base pressure): heat from 25°C to 78°C, flash-separate (bubble point is higher at 2 atm, so less vapour forms), cool bottoms to 30°C, pump to 4 bar.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [{"type": "two_phase_outlet", "unit_tag_pattern": "VES"}]
+    },
+    "notes": "At 2 atm the ethanol-water bubble point rises above 78°C — very little vapour forms. Tests pressure perturbation propagation through the whole 4-unit train."
+  },
+  {
+    "id": "PERT_MED01_invalid",
+    "name": "Invalid: pump before cooler (wrong order)",
+    "tier": "perturbation",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "severe",
+    "perturbation_type": "invalid_assignment",
+    "perturbation_magnitude": null,
+    "base_id": "MED_01",
+    "recovery_expected": true,
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol): heat to 78°C, flash-separate, then pump the liquid bottoms to 3 bar BEFORE cooling them. The pump is operating on a hot two-phase stream, which is unphysical for a liquid pump.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Cooler"}
+      ]
+    },
+    "notes": "Topology error: hot two-phase stream entering a liquid pump causes cavitation. System must detect invalid phase at pump inlet and either correct topology or add a cooler before the pump."
+  },
+  {
+    "id": "PERT_HARD01_base",
+    "name": "Base: near-azeotrope ethanol-water (valid)",
+    "tier": "perturbation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "perturbation_type": null,
+    "perturbation_magnitude": 0,
+    "base_id": "HARD_01",
+    "recovery_expected": true,
+    "domain": "azeotrope",
+    "description": "Process an ethanol-water feed at 92 mol% ethanol — near the atmospheric azeotrope — by heating from 25°C to 78°C and flashing in a separator at 1 atm.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"}
+      ]
+    },
+    "notes": "High-difficulty base. Requires accurate NRTL BIPs for near-azeotropic behaviour."
+  },
+  {
+    "id": "PERT_HARD01_T+10",
+    "name": "Mild over-heating: near-azeotrope ethanol-water +10K",
+    "tier": "perturbation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 10,
+    "perturbation_direction": "+",
+    "base_id": "HARD_01",
+    "recovery_expected": true,
+    "domain": "azeotrope",
+    "description": "Process an ethanol-water feed at 92 mol% ethanol by heating to 88°C (+10K above nominal) and flashing. Near the azeotrope, even a 10K error in heater temperature can invert the vapour-liquid split.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 355, "T_max_K": 375}
+      ]
+    },
+    "notes": "Critical case: near-azeotrope VLE is highly sensitive to temperature. +10K may push composition to wrong side of azeotrope curve. Tests whether BIPs and repair prevent composition inversion."
+  },
+  {
+    "id": "PERT_HARD01_T-10",
+    "name": "Mild under-heating: near-azeotrope ethanol-water -10K",
+    "tier": "perturbation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "mild",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 10,
+    "perturbation_direction": "-",
+    "base_id": "HARD_01",
+    "recovery_expected": true,
+    "domain": "azeotrope",
+    "description": "Process an ethanol-water feed at 92 mol% ethanol by heating to only 68°C (-10K below nominal). At this temperature, the mixture may not reach its bubble point — near-zero vapour fraction expected.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 333, "T_max_K": 353}
+      ]
+    },
+    "notes": "At 68°C the 92 mol% ethanol mixture may be subcooled (bubble point ~78°C). Tests flash with near-zero vapour or all-liquid result."
+  },
+  {
+    "id": "PERT_HARD01_invalid_pkg",
+    "name": "Invalid package: near-azeotrope with Raoult's Law",
+    "tier": "perturbation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "severe",
+    "perturbation_type": "invalid_assignment",
+    "perturbation_magnitude": null,
+    "base_id": "HARD_01",
+    "recovery_expected": true,
+    "domain": "azeotrope",
+    "description": "Process an ethanol-water feed at 92 mol% ethanol — near-azeotrope — using Raoult's Law as the property package. This is physically incorrect (the mixture has strong non-ideal interactions) and will produce wrong VLE predictions.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "property_package_class", "package_class": "activity_coefficient"}
+      ]
+    },
+    "notes": "Critical: using Raoult's Law for ethanol-water completely misses the azeotrope. The system must detect the wrong package and switch to NRTL with BIPs. Tests the thermo-package repair path."
+  },
+  {
+    "id": "PERT_HARD01_T+80",
+    "name": "Severe over-heating: near-azeotrope ethanol-water +80K",
+    "tier": "perturbation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "severe",
+    "perturbation_type": "temperature",
+    "perturbation_magnitude": 80,
+    "perturbation_direction": "+",
+    "base_id": "HARD_01",
+    "recovery_expected": true,
+    "domain": "azeotrope",
+    "description": "Process an ethanol-water feed at 92 mol% ethanol by heating to 158°C — 80K above the azeotrope boiling point. At this temperature the mixture is entirely superheated vapour. Flash separation produces no liquid.",
+    "compounds": ["Ethanol", "Water"],
+    "expected": {
+      "convergence_expected": true,
+      "recovery_success": true,
+      "physics_checks": [
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 420, "T_max_K": 445}
+      ]
+    },
+    "notes": "Severe perturbation. Entire mixture is vapour at 158°C and 1 atm. Flash vessel produces no liquid product. Tests handling of all-vapour flash."
+  }
+]

@@ -1,0 +1,150 @@
+[
+  {
+    "id": "SAN_01",
+    "name": "Heat ethanol-water feed",
+    "tier": "sanity",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Heat an equimolar ethanol and water feed mixture from 25°C to 80°C at atmospheric pressure.",
+    "compounds": ["Ethanol", "Water"],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": ["Heater"],
+      "connections": [["FEED", "HT-01"], ["HT-01", "PRODUCT"]]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 340, "T_max_K": 370}
+      ]
+    },
+    "notes": "Minimal regression case. One heater, polar mixture, activity-coefficient package required."
+  },
+  {
+    "id": "SAN_02",
+    "name": "Compress pure methane",
+    "tier": "sanity",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Compress pure methane gas from 1 atm to 5 bar in an adiabatic compressor.",
+    "compounds": ["Methane"],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": ["Compressor"],
+      "connections": [["FEED", "COMP-01"], ["COMP-01", "PRODUCT"]]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "COMP"}
+      ]
+    },
+    "notes": "Single-compound EOS regression. Adiabatic compression must raise both T and P."
+  },
+  {
+    "id": "SAN_03",
+    "name": "Heat then flash benzene-toluene",
+    "tier": "sanity",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Heat an equimolar benzene and toluene mixture from 25°C to 100°C at 1 atm, then flash-separate the vapour from the liquid in a vessel.",
+    "compounds": ["Benzene", "Toluene"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 355, "T_max_K": 400}
+      ]
+    },
+    "notes": "Canonical two-unit heat+flash regression. VLE at 100°C for BT gives ~50% vapour."
+  },
+  {
+    "id": "SAN_04",
+    "name": "Compress then cool propane",
+    "tier": "sanity",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Compress propane vapour from 1 bar to 10 bar, then cool the compressed gas to 25°C to partially condense it.",
+    "compounds": ["Propane"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Compressor", "Cooler"],
+      "connections": [
+        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"], ["COOL-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 280, "T_max_K": 320}
+      ]
+    },
+    "notes": "Two-unit refrigerant partial condensation. Propane bp=-42°C, so 10 bar+25°C is near saturation."
+  },
+  {
+    "id": "SAN_05",
+    "name": "Ethanol-water flash with BIP injection",
+    "tier": "sanity",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Flash-separate an ethanol and water mixture at 78°C and 1 atm to produce a vapour-enriched in ethanol. Accurate phase equilibrium is required.",
+    "compounds": ["Ethanol", "Water"],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": ["Vessel"],
+      "connections": [["FEED", "VES-01"], ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "bip_injected", "model": "NRTL"}
+      ]
+    },
+    "notes": "Regression for BIP injection path. NRTL with DECHEMA BIPs mandatory for correct ethanol-water VLE."
+  }
+]

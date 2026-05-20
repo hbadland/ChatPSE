@@ -1,0 +1,220 @@
+"""
+Trajectory logger for benchmark runs.
+
+Each RunLog captures:
+  - the full iteration trajectory (states, candidates, scores per step)
+  - constraint violations per iteration
+  - scoring breakdown per candidate
+  - explore/exploit phase labels per step
+
+Designed for:
+  - paper figures (score convergence curves)
+  - ablation analysis (beam vs greedy trajectories)
+  - debugging (what was tried at each step)
+
+Logs are stored as JSON in results/per_run/<case_id>_<ablation>_<timestamp>.json.
+"""
+from __future__ import annotations
+
+import json
+import os
+import time
+from dataclasses import dataclass, field, asdict
+from typing import Any, Optional
+
+
+# ── Iteration-level record ─────────────────────────────────────────────────────
+
+@dataclass
+class IterationLog:
+    iteration:           int
+    n_errors_before:     int
+    n_errors_after:      int
+    changes:             list[str]
+    candidates_tried:    list[dict]   # {source, param, value, score}
+    constraint_violations: list[str]  # human-readable constraint violations
+    explore_exploit:     str          # "explore" | "exploit" | "unknown"
+    coupling_boosts:     list[str]    # parameters that got coupling boosts
+    cache_hits:          int
+    elapsed_s:           float
+
+
+@dataclass
+class RunLog:
+    """Full trajectory log for one pipeline run."""
+    case_id:        str
+    ablation_mode:  str
+    model:          str
+    timestamp:      str
+    outcome:        str
+    total_elapsed_s: float
+
+    iterations:     list[IterationLog] = field(default_factory=list)
+    ir_report_json: Optional[dict]     = None
+    final_graph_summary: Optional[dict] = None
+    warnings:       list[str]          = field(default_factory=list)
+
+    @property
+    def score_curve(self) -> list[int]:
+        """n_errors_before per iteration — the convergence curve."""
+        return [it.n_errors_before for it in self.iterations]
+
+    @property
+    def n_explore(self) -> int:
+        return sum(1 for it in self.iterations if it.explore_exploit == "explore")
+
+    @property
+    def n_exploit(self) -> int:
+        return sum(1 for it in self.iterations if it.explore_exploit == "exploit")
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["score_curve"]   = self.score_curve
+        d["n_explore"]     = self.n_explore
+        d["n_exploit"]     = self.n_exploit
+        return d
+
+    def save(self, results_dir: str = "results/per_run") -> str:
+        os.makedirs(results_dir, exist_ok=True)
+        fname = f"{self.case_id}_{self.ablation_mode}_{self.timestamp}.json"
+        path  = os.path.join(results_dir, fname)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(self.to_dict(), f, indent=2, default=str)
+        return path
+
+
+# ── Extractor ──────────────────────────────────────────────────────────────────
+
+def extract_run_log(
+    pipeline_result,
+    case_id:      str,
+    ablation_mode: str = "full",
+    model:        str  = "",
+) -> RunLog:
+    """
+    Build a RunLog from an OrchestratorV2 PipelineResult.
+
+    Reads iteration records and extracts as much search-behaviour
+    detail as the PipelineResult exposes.
+    """
+    pr        = pipeline_result
+    timestamp = time.strftime("%Y%m%d_%H%M%S")
+    outcome   = getattr(pr, "outcome", "UNKNOWN")
+    elapsed   = getattr(pr, "total_time_s", 0.0)
+    warnings  = list(getattr(pr, "warnings", []))
+
+    iter_logs: list[IterationLog] = []
+    raw_iters = getattr(pr, "iterations", [])
+
+    for i, rec in enumerate(raw_iters):
+        errors      = list(getattr(rec, "errors", []))
+        changes     = list(getattr(rec, "changes", []))
+        n_before    = len(errors)
+        n_after     = len(getattr(raw_iters[i+1], "errors", []))  \
+                      if i + 1 < len(raw_iters) else 0
+        it_elapsed  = getattr(rec, "elapsed_s", 0.0)
+
+        # Parse explore/exploit from change log
+        phase = "unknown"
+        for chg in changes:
+            if isinstance(chg, str):
+                if "EXPLORE" in chg.upper():
+                    phase = "explore"
+                elif "EXPLOIT" in chg.upper():
+                    phase = "exploit"
+
+        # Constraint violations from errors
+        violations = [str(e) for e in errors]
+
+        # Coupling boosts
+        boosts = [c for c in changes
+                  if isinstance(c, str) and "COUPLING" in c.upper()]
+
+        # Cache hits
+        cache_hits = sum(1 for c in changes
+                         if isinstance(c, str) and "CACHE" in c.upper())
+
+        # Candidate info (best-effort parse)
+        candidates: list[dict] = []
+        for chg in changes:
+            if isinstance(chg, str) and ("→" in chg or ":=" in chg or "->" in chg):
+                candidates.append({"change": chg, "source": "parsed"})
+            elif isinstance(chg, dict):
+                candidates.append(chg)
+
+        iter_logs.append(IterationLog(
+            iteration            = i,
+            n_errors_before      = n_before,
+            n_errors_after       = n_after,
+            changes              = [str(c) for c in changes[:30]],
+            candidates_tried     = candidates[:20],
+            constraint_violations = violations[:20],
+            explore_exploit      = phase,
+            coupling_boosts      = boosts[:10],
+            cache_hits           = cache_hits,
+            elapsed_s            = it_elapsed,
+        ))
+
+    # Graph summary
+    graph = getattr(pr, "final_graph", None)
+    graph_summary: Optional[dict] = None
+    if graph is not None:
+        try:
+            units  = list(graph.units()) if hasattr(graph, "units") else []
+            graph_summary = {
+                "property_package": getattr(graph, "property_package", ""),
+                "n_units": len(units),
+                "unit_types": [getattr(u, "unit_type", str(u)) for u in units],
+                "n_binary_params": len(getattr(graph, "binary_parameters", [])),
+            }
+        except Exception:
+            pass
+
+    # IR report summary
+    ir_report = getattr(pr, "ir_report", None)
+    ir_json: Optional[dict] = None
+    if ir_report is not None:
+        try:
+            issues = getattr(ir_report, "issues", [])
+            ir_json = {
+                "valid": getattr(ir_report, "valid", False),
+                "n_issues": len(issues),
+                "issue_summaries": [str(i)[:120] for i in issues[:10]],
+            }
+        except Exception:
+            pass
+
+    return RunLog(
+        case_id          = case_id,
+        ablation_mode    = ablation_mode,
+        model            = model,
+        timestamp        = timestamp,
+        outcome          = outcome,
+        total_elapsed_s  = elapsed,
+        iterations       = iter_logs,
+        ir_report_json   = ir_json,
+        final_graph_summary = graph_summary,
+        warnings         = warnings[:20],
+    )
+
+
+# ── Log loading ────────────────────────────────────────────────────────────────
+
+def load_run_log(path: str) -> dict:
+    """Load a saved run log JSON as a plain dict."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_all_logs(results_dir: str = "results/per_run") -> list[dict]:
+    """Load all run log JSON files from a directory."""
+    logs = []
+    if not os.path.isdir(results_dir):
+        return logs
+    for fname in sorted(os.listdir(results_dir)):
+        if fname.endswith(".json"):
+            try:
+                logs.append(load_run_log(os.path.join(results_dir, fname)))
+            except Exception:
+                pass
+    return logs

@@ -1,0 +1,177 @@
+[
+  {
+    "id": "MED_01",
+    "name": "Ethanol-water separation train",
+    "tier": "medium",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol) at 1 atm: heat from 25°C to 78°C, flash-separate in a vessel, cool the liquid bottoms to 30°C, then pump the cooled liquid to 3 bar for downstream processing.",
+    "compounds": ["Ethanol", "Water"],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": ["Heater", "Vessel", "Cooler", "Pump"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-01"],
+        ["LIQ-01", "COOL-01"], ["COOL-01", "PUMP-01"], ["PUMP-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "PUMP"}
+      ]
+    },
+    "notes": "Moderate coupling: heater T_out affects flash split which affects cooler duty. NRTL with BIPs required."
+  },
+  {
+    "id": "MED_02",
+    "name": "LPG propane-butane flash separation",
+    "tier": "medium",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Separate a propane-butane-pentane LPG mixture (40/40/20 mol%) at 30°C. First compress from 1 bar to 8 bar, cool the compressed gas to 20°C, then flash-separate in a vessel to recover liquid butane-pentane from vapour propane.",
+    "compounds": ["Propane", "n-Butane", "n-Pentane"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Compressor", "Cooler", "Vessel"],
+      "connections": [
+        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"],
+        ["COOL-01", "VES-01"], ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"}
+      ]
+    },
+    "notes": "Competing constraints: compress raises T so cooler must compensate before flash. Peng-Robinson EOS required."
+  },
+  {
+    "id": "MED_03",
+    "name": "Natural gas dew-point control",
+    "tier": "medium",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Process a natural gas feed (80 mol% methane, 15% ethane, 5% propane) at 50 bar. Cool from 40°C to 5°C to condense heavy components, separate the condensate in a vessel, then pump the liquid condensate to 60 bar.",
+    "compounds": ["Methane", "Ethane", "Propane"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Cooler", "Vessel", "Pump"],
+      "connections": [
+        ["FEED", "COOL-01"], ["COOL-01", "VES-01"],
+        ["VES-01", "GAS-OUT"], ["VES-01", "LIQ-01"],
+        ["LIQ-01", "PUMP-01"], ["PUMP-01", "CONDENSATE"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 270, "T_max_K": 295}
+      ]
+    },
+    "notes": "High-pressure natural gas dew-point control. PR/SRK required. Cooling to 5°C separates ethane/propane condensate."
+  },
+  {
+    "id": "MED_04",
+    "name": "BTX ternary sequential flash",
+    "tier": "medium",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Partially separate a benzene-toluene-xylene mixture (33/33/33 mol%) using two sequential flash drums. Heat the feed to 95°C and flash in the first vessel, then heat the liquid bottoms to 120°C and flash again in the second vessel to recover a xylene-rich product.",
+    "compounds": ["Benzene", "Toluene", "o-Xylene"],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": ["Heater", "Vessel", "Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-1"], ["VES-01", "LIQ-1"],
+        ["LIQ-1", "HT-02"], ["HT-02", "VES-02"],
+        ["VES-02", "VAP-2"], ["VES-02", "LIQ-2"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 4,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "n_units_of_type", "unit_type": "Heater", "count_min": 2},
+        {"type": "n_units_of_type", "unit_type": "Vessel", "count_min": 2},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT-01", "T_min_K": 355, "T_max_K": 385},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT-02", "T_min_K": 385, "T_max_K": 420}
+      ]
+    },
+    "notes": "Ternary BTX partial separation. Benzene bp=80°C, toluene=111°C, xylene=144°C. Two-stage flash enriches xylene."
+  },
+  {
+    "id": "MED_05",
+    "name": "Acetone-methanol separation with recycle feed",
+    "tier": "medium",
+    "difficulty": "medium",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Separate an acetone-methanol mixture (60 mol% acetone) by heating to 65°C, flashing in a separator, then cooling the methanol-rich liquid bottoms to 25°C for product recovery.",
+    "compounds": ["Acetone", "Methanol"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Heater", "Vessel", "Cooler"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-01"],
+        ["LIQ-01", "COOL-01"], ["COOL-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"}
+      ]
+    },
+    "notes": "Acetone bp=56°C, methanol bp=65°C. NRTL with BIPs for acetone-methanol. Competing polar/ketone interactions."
+  }
+]
