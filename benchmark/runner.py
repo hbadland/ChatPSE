@@ -290,7 +290,10 @@ class BenchmarkRunner:
             with apply_ablation(config):
                 pr = orch.run(case.description)
         except Exception as exc:
-            # Construct a minimal failed result
+            import traceback as _tb
+            if self._verbose:
+                print(f"\n  [EXCEPTION] {exc}")
+                _tb.print_exc()
             pr = _make_failed_result(str(exc))
 
         llm_calls = get_call_count()

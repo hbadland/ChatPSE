@@ -37,6 +37,13 @@ class IterationLog:
     coupling_boosts:     list[str]    # parameters that got coupling boosts
     cache_hits:          int
     elapsed_s:           float
+    # Fix 2: coordinate descent instrumentation
+    coord_descent_triggered:      bool          = False
+    coord_descent_level:          int           = -1
+    coord_descent_improvement:    float         = 0.0
+    # Fix 3: per-stage error counts from REPAIR_STAGE_LOG
+    stage_after_beam_errors:      Optional[int] = None
+    stage_after_local_opt_errors: Optional[int] = None
 
 
 @dataclass
@@ -114,6 +121,31 @@ def extract_run_log(
                       if i + 1 < len(raw_iters) else 0
         it_elapsed  = getattr(rec, "elapsed_s", 0.0)
 
+        # Parse structured log entries BEFORE truncating changes
+        cd_triggered        = False
+        cd_level            = -1
+        cd_improvement      = 0.0
+        stage_after_beam    = None
+        stage_after_local   = None
+        for chg in changes:
+            if not isinstance(chg, str):
+                continue
+            if chg.startswith("LOCAL_OPT_LOG:"):
+                try:
+                    p = json.loads(chg[len("LOCAL_OPT_LOG:"):])
+                    cd_triggered   = p.get("triggered", False)
+                    cd_level       = p.get("level", -1)
+                    cd_improvement = p.get("improvement", 0.0)
+                except Exception:
+                    pass
+            elif chg.startswith("REPAIR_STAGE_LOG:"):
+                try:
+                    p = json.loads(chg[len("REPAIR_STAGE_LOG:"):])
+                    stage_after_beam  = p.get("after_beam")
+                    stage_after_local = p.get("after_local_opt")
+                except Exception:
+                    pass
+
         # Parse explore/exploit from change log
         phase = "unknown"
         for chg in changes:
@@ -153,6 +185,11 @@ def extract_run_log(
             coupling_boosts      = boosts[:10],
             cache_hits           = cache_hits,
             elapsed_s            = it_elapsed,
+            coord_descent_triggered      = cd_triggered,
+            coord_descent_level          = cd_level,
+            coord_descent_improvement    = cd_improvement,
+            stage_after_beam_errors      = stage_after_beam,
+            stage_after_local_opt_errors = stage_after_local,
         ))
 
     # Graph summary

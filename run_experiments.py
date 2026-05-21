@@ -260,8 +260,8 @@ def main() -> None:
         description="Run benchmark experiments (must be run inside the Dev Container).")
     parser.add_argument("--exp", type=int, choices=[1, 2, 3, 4],
                         help="Run only this experiment number (default: all)")
-    parser.add_argument("--model", default="qwen3:14b",
-                        help="LLM model to use (default: qwen3:14b via Ollama)")
+    parser.add_argument("--model", default="qwen3:30b-a3b",
+                        help="LLM model to use (default: qwen3:30b-a3b via Ollama)")
     parser.add_argument("--verbose", action="store_true",
                         help="Print per-case progress")
     parser.add_argument("--n-scoring", type=int, default=10,

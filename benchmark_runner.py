@@ -35,8 +35,8 @@ sys.path.insert(0, str(ROOT))
 def main() -> None:
     parser = argparse.ArgumentParser(
         description="CCS Benchmark Runner")
-    parser.add_argument("--model", default="qwen3:14b",
-                        help="LLM model (default: qwen3:14b)")
+    parser.add_argument("--model", default="qwen3:30b-a3b",
+                        help="LLM model (default: qwen3:30b-a3b)")
     parser.add_argument("--tiers", nargs="+",
                         choices=["sanity", "easy", "medium", "hard",
                                  "perturbation", "generalisation"],
@@ -55,10 +55,16 @@ def main() -> None:
                         help="Suppress per-case progress output")
     parser.add_argument("--max-iter", type=int, default=6,
                         help="Stage 4 repair loop limit per case")
+    parser.add_argument("--diagnostics", action="store_true",
+                        help="Run full diagnostic analysis on results and print report")
+    parser.add_argument("--diag-dir", default="results/diagnostics",
+                        help="Output directory for diagnostic JSON + plot data")
     args = parser.parse_args()
 
     from benchmark.runner import BenchmarkRunner, ablation_table
     from benchmark.case_schema import summary
+    from benchmark.diagnostics import DiagnosticEngine
+    from benchmark.visualisation import save_plot_data
 
     # Print dataset summary
     ds = summary()
@@ -71,10 +77,31 @@ def main() -> None:
         verbose        = not args.quiet,
     )
 
+    def _maybe_diagnose(results, label: str) -> None:
+        if not args.diagnostics:
+            return
+        engine = DiagnosticEngine()
+        report = engine.analyse(results)
+        print(report.format())
+        diag_path = report.save(args.diag_dir)
+        plot_path = save_plot_data(report, args.diag_dir)
+        print(f"\nDiagnostics → {diag_path}")
+        print(f"Plot data   → {plot_path}")
+
     if args.case:
-        # Single case
-        result = runner.run_case(args.case, ablation_mode=args.mode)
+        # Single case — wrap into a minimal RunSet so DiagnosticEngine can consume it
+        result  = runner.run_case(args.case, ablation_mode=args.mode)
         print(f"\n{result.metrics}")
+        if args.diagnostics:
+            # Build a one-case RunSet
+            from benchmark.runner import BenchmarkRunSet
+            import time as _t
+            rs_single = BenchmarkRunSet(
+                ablation_mode=args.mode, model=args.model,
+                tiers=[result.case.tier], timestamp=_t.strftime("%Y%m%d_%H%M%S"),
+                case_results=[result],
+            )
+            _maybe_diagnose(rs_single, args.case)
         return
 
     if args.ablation:
@@ -84,10 +111,10 @@ def main() -> None:
         ablation_results = runner.run_ablation(tiers=tiers)
         table = ablation_table(ablation_results)
         print(f"\n{table}")
-        # Save each
         for mode, rs in ablation_results.items():
             path = rs.save()
             print(f"  [{mode}] saved → {path}")
+        _maybe_diagnose(ablation_results, "ablation")
         return
 
     # Standard run
@@ -96,6 +123,7 @@ def main() -> None:
     print(f"\n{md}")
     path = run_set.save()
     print(f"\nSaved → {path}")
+    _maybe_diagnose(run_set, args.mode)
 
 
 if __name__ == "__main__":

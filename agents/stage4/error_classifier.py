@@ -26,8 +26,22 @@ from ir.types import (
 # Keep old name as alias — orchestrator_v2 and tests import ClassifiedError
 ClassifiedError = SimError
 
+_TAXONOMY_COMPACT = """\
+SOLVER_FAIL        → TOPOLOGY_FIX    : solver did not converge; simplify topology
+NUMERIC_FAIL       → THERMO_SWITCH   : NaN/Inf in stream; check T/P units and BIPs
+MASS_BALANCE       → TOPOLOGY_FIX   : outlet flow ≠ feed flow; check connections
+UNPHYSICAL_T       → UNIT_CONVERSION: T < 100 K or > 2000 K; convert °C→K
+UNPHYSICAL_P       → UNIT_CONVERSION: P < 100 Pa or > 1e8 Pa; convert bar/atm→Pa
+ENERGY_UNPHYSICAL  → CONDITION_FIX  : Heater outlet < feed T, or Cooler outlet > feed T
+ZERO_OUTLET        → CONDITION_FIX  : terminal stream flow = 0; check flash conditions
+NO_SEPARATION      → THERMO_SWITCH  : outlet ≈ feed; NRTL/UNIQUAC missing BIPs
+WRONG_PHASE_DIR    → TOPOLOGY_FIX   : heavy in vapour, light in liquid; swap src_port
+COMP_SUM           → TOPOLOGY_FIX   : mole fractions do not sum to 1.0
+PARAM_MISSING      → PARAM_INJECT   : NRTL/UNIQUAC with no binary parameters
+INFEASIBLE         → HUMAN          : same failure after 3+ iterations"""
+
 _SYSTEM = f"""\
-Classify a DWSIM simulation failure and determine the repair strategy.
+Classify a DWSIM simulation failure and assign the repair strategy.
 Return ONLY a JSON object — no explanation, no markdown.
 
 Schema:
@@ -36,15 +50,22 @@ Schema:
     {{
       "error_type": "<MISSING_PARAM|INVALID_TOPOLOGY|CONVERGENCE_FAILURE|INVALID_UNIT_CONFIG|UNPHYSICAL_VALUES|INFEASIBLE>",
       "location": "<unit or stream tag, or 'global'>",
-      "evidence": "<specific values or message>",
+      "evidence": "<specific values or message from the execution summary>",
       "repair_strategy": "<PARAM_INJECT|TOPOLOGY_FIX|THERMO_SWITCH|CONDITION_FIX|UNIT_CONVERSION|DEFAULT_FILL|PORT_REPAIR|HUMAN>",
       "severity": "<CRITICAL|WARNING>"
     }}
   ]
 }}
 
-Taxonomy reference:
-{FAILURE_TAXONOMY[:1500]}"""
+━━━ EXAMPLE ━━━
+Execution: solved=False, error: "NRTL BIP missing for Ethanol/Water", stream FEED: T=298 P=101325
+Output:
+{{"errors": [{{"error_type": "MISSING_PARAM", "location": "global",
+  "evidence": "NRTL BIP missing for Ethanol/Water",
+  "repair_strategy": "PARAM_INJECT", "severity": "CRITICAL"}}]}}
+
+Routing reference (signal → strategy):
+{_TAXONOMY_COMPACT}"""
 
 # Deterministic signal → (ErrorType, RepairStrategy) mapping
 _SIGNAL_MAP: dict[str, tuple[ErrorType, RepairStrategy]] = {

@@ -71,6 +71,23 @@ class RunMetrics:
     recovery_success:    bool  = False   # perturbed case successfully repaired
     n_repair_rounds:     int   = 0       # repair iterations before valid
 
+    # CCS-specific: coupling failure recovery (A)
+    n_error_recurrences:     int   = 0   # errors that were fixed then reappeared
+    error_recurrence_rate:   float = 0.0 # n_recurrences / total_fixes
+
+    # CCS-specific: propagation lag (B)
+    steps_to_full_consistency: int = 0   # iters from last change to first zero-error iter
+
+    # CCS-specific: search efficiency normalisation (C)
+    error_reduction_per_candidate: float = 0.0  # Δerrors / n_candidates_total
+
+    # CCS-specific: recurrence breakdown (Fix 4)
+    error_recurrence_breakdown: dict = field(default_factory=dict)  # oscillation/coupling/propagation counts
+    recurrence_type_ratios:     dict = field(default_factory=dict)  # same keys as fractions
+
+    # Margin model snapshot (Fix 1)
+    margin_snapshot: dict = field(default_factory=dict)
+
     # Physics checks passed
     physics_checks_run:  int  = 0
     physics_checks_passed: int = 0
@@ -94,6 +111,127 @@ class RunMetrics:
         d["explore_exploit_ratio"] = self.explore_exploit_ratio
         d["physics_check_pass_rate"] = self.physics_check_pass_rate
         return d
+
+
+# ── CCS metric helpers ────────────────────────────────────────────────────────
+
+def _error_sig(e) -> str:
+    """Stable string key for an error record (string, dict, or object)."""
+    if isinstance(e, str):
+        return e
+    if isinstance(e, dict):
+        return f"{e.get('type', e.get('code', '?'))}:{e.get('tag', e.get('target', ''))}"
+    for attr in ("error_type", "type", "code"):
+        v = getattr(e, attr, None)
+        if v:
+            tag = getattr(e, "tag", getattr(e, "target", ""))
+            return f"{v}:{tag}"
+    return str(e)
+
+
+def _error_triple(e) -> tuple:
+    """Return (error_type, unit_tag, param) for recurrence classification."""
+    if isinstance(e, str):
+        parts = e.split(":")
+        return (parts[0], parts[1] if len(parts) > 1 else "", "")
+    if isinstance(e, dict):
+        return (
+            e.get("type", e.get("code", "?")),
+            e.get("tag",   e.get("target", "")),
+            e.get("param", e.get("parameter", "")),
+        )
+    etype = ""
+    for attr in ("error_type", "type", "code"):
+        v = getattr(e, attr, None)
+        if v:
+            etype = str(v)
+            break
+    tag   = str(getattr(e, "tag", getattr(e, "target", getattr(e, "unit_tag", ""))))
+    param = str(getattr(e, "param", getattr(e, "parameter", "")))
+    return (etype or "?", tag, param)
+
+
+def _compute_recurrence(iterations) -> tuple:
+    """
+    Count and classify error recurrences.
+
+    Returns (n_recurrences, recurrence_rate, breakdown, ratios).
+      breakdown = {"oscillation": int, "coupling": int, "propagation": int}
+      ratios    = same keys as fractions of n_recurrences
+
+    oscillation — exact (type, tag, param) triple fixed and reappears
+    coupling    — same unit_tag has new errors after the unit was fully fixed
+    """
+    triple_sets: list[set] = []
+    for rec in iterations:
+        triple_sets.append({_error_triple(e) for e in getattr(rec, "errors", [])})
+
+    total_fixes   = 0
+    n_recurrences = 0
+    breakdown = {"oscillation": 0, "coupling": 0, "propagation": 0}
+
+    for i in range(1, len(triple_sets)):
+        prev = triple_sets[i - 1]
+        curr = triple_sets[i]
+        fixed = prev - curr
+        if not fixed:
+            continue
+        total_fixes += len(fixed)
+
+        fixed_tags  = {t[1] for t in fixed}
+        clean_tags  = fixed_tags - {t[1] for t in curr}   # units now fully error-free
+        remaining   = set(fixed)
+
+        for j in range(i + 1, len(triple_sets)):
+            later = triple_sets[j]
+
+            # Oscillation: exact triple reappears
+            osc = remaining & later
+            n_recurrences += len(osc)
+            breakdown["oscillation"] += len(osc)
+            remaining -= osc
+
+            # Coupling: same unit_tag, different error, after unit was fully clean
+            if clean_tags:
+                coup = {t for t in later if t[1] in clean_tags and t not in prev}
+                if coup:
+                    n_recurrences += len(coup)
+                    breakdown["coupling"] += len(coup)
+                    clean_tags -= {t[1] for t in coup}
+
+            if not remaining and not clean_tags:
+                break
+
+    rate = n_recurrences / total_fixes if total_fixes > 0 else 0.0
+    ratios = (
+        {k: round(v / n_recurrences, 3) for k, v in breakdown.items()}
+        if n_recurrences > 0
+        else {"oscillation": 0.0, "coupling": 0.0, "propagation": 0.0}
+    )
+    return n_recurrences, rate, breakdown, ratios
+
+
+def _compute_propagation_lag(iterations, trajectory: list[float]) -> int:
+    """
+    Iterations from the last iteration that made any parameter change to the
+    first subsequent iteration with zero errors.  Returns 0 when no changes
+    were made, or when zero errors were never reached after the last change.
+    """
+    last_change = -1
+    for i, rec in enumerate(iterations):
+        if getattr(rec, "changes", []):
+            last_change = i
+    if last_change < 0:
+        return 0
+    for i in range(last_change + 1, len(trajectory)):
+        if trajectory[i] == 0.0:
+            return i - last_change
+    return 0
+
+
+def _compute_search_efficiency(delta: float, n_candidates: int) -> float:
+    """Error reduction per candidate evaluated.  0 when no candidates recorded."""
+    return delta / n_candidates if n_candidates > 0 else 0.0
 
 
 # ── Extraction from PipelineResult ────────────────────────────────────────────
@@ -171,6 +309,15 @@ def extract_metrics(
     oscillated = not improved and len(trajectory) > 1
     delta      = (trajectory[0] - trajectory[-1]) if trajectory else 0.0
 
+    # CCS-specific metrics
+    iters = getattr(pr, "iterations", [])
+    n_recurrences, recurrence_rate, recurrence_breakdown, recurrence_ratios = _compute_recurrence(iters)
+    steps_consistency = _compute_propagation_lag(iters, trajectory)
+    err_per_candidate = _compute_search_efficiency(delta, n_candidates)
+
+    # Margin snapshot from instrumented pipeline
+    margin_snapshot = getattr(pr, "margin_snapshot", {})
+
     # Beam width from repair configuration
     beam_width = 0
     repair_agent = getattr(pr, "_repair_agent", None)
@@ -231,6 +378,13 @@ def extract_metrics(
         bip_injected        = bip_injected,
         recovery_success    = success and case.perturbation not in ("none",),
         n_repair_rounds     = n_iter,
+        n_error_recurrences              = n_recurrences,
+        error_recurrence_rate            = recurrence_rate,
+        steps_to_full_consistency        = steps_consistency,
+        error_reduction_per_candidate    = err_per_candidate,
+        error_recurrence_breakdown       = recurrence_breakdown,
+        recurrence_type_ratios           = recurrence_ratios,
+        margin_snapshot                  = margin_snapshot,
     )
 
 
@@ -270,6 +424,13 @@ class AggregateMetrics:
     # Robustness (perturbation tier only)
     recovery_rate:        Optional[float] = None
 
+    # CCS-specific
+    mean_recurrence_rate:               float = 0.0
+    mean_steps_to_consistency:          float = 0.0
+    mean_error_reduction_per_candidate: float = 0.0
+    mean_oscillation_recurrence_rate:   float = 0.0
+    mean_coupling_recurrence_rate:      float = 0.0
+
     # Breakdown by sub-group
     by_difficulty:        dict = field(default_factory=dict)
     by_domain:            dict = field(default_factory=dict)
@@ -293,6 +454,13 @@ class AggregateMetrics:
         ]
         if self.recovery_rate is not None:
             lines.append(f"  recovery_rate   : {self.recovery_rate:.1%}")
+        lines += [
+            f"  recurrence_rate : {self.mean_recurrence_rate:.3f}",
+            f"  osc_recur_rate  : {self.mean_oscillation_recurrence_rate:.3f}",
+            f"  coup_recur_rate : {self.mean_coupling_recurrence_rate:.3f}",
+            f"  steps_to_consist: {self.mean_steps_to_consistency:.2f}",
+            f"  err_per_cand    : {self.mean_error_reduction_per_candidate:.3f}",
+        ]
         return "\n".join(lines)
 
 
@@ -345,6 +513,11 @@ def aggregate(
         pct_bip_injected    = rate([m.bip_injected for m in metrics]),
         recovery_rate       = rate([m.recovery_success for m in pert_metrics])
                               if pert_metrics else None,
+        mean_recurrence_rate               = mean([m.error_recurrence_rate for m in metrics]),
+        mean_steps_to_consistency          = mean([m.steps_to_full_consistency for m in metrics]),
+        mean_error_reduction_per_candidate = mean([m.error_reduction_per_candidate for m in metrics]),
+        mean_oscillation_recurrence_rate   = mean([m.recurrence_type_ratios.get("oscillation", 0.0) for m in metrics]),
+        mean_coupling_recurrence_rate      = mean([m.recurrence_type_ratios.get("coupling", 0.0) for m in metrics]),
         by_difficulty       = _group_rate("difficulty"),
         by_domain           = _group_rate("domain"),
         by_tier             = _group_rate("tier"),

@@ -44,7 +44,8 @@ Rules:
 - List units in process flow order (feed to product)
 - Include only units explicitly needed — do not add units not implied by the description
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
-- Do not invent Mixers or Splitters — the system inserts them automatically when needed
+- Include a Mixer only when the description explicitly mentions combining or mixing two feed streams
+- Include a Splitter only when the description explicitly mentions splitting a stream into two fractions
 
 Examples:
 

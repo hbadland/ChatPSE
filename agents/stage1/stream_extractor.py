@@ -156,13 +156,16 @@ class StreamExtractor:
 
     def extract(
         self,
-        description: str,
-        compounds:   list[str],
-        unit_tags:   list[str],
-        unit_roles:  dict[str, str],
-        max_retries: int = 3,
+        description:           str,
+        compounds:             list[str],
+        unit_tags:             list[str],
+        unit_roles:            dict[str, str],
+        max_retries:           int = 3,
+        concentration_hints:   list[str] | None = None,
+        suggested_compositions: dict[str, dict[str, float]] | None = None,
     ) -> SemanticTopology:
-        prompt = _build_prompt(description, compounds, unit_tags, unit_roles)
+        prompt = _build_prompt(description, compounds, unit_tags, unit_roles,
+                               concentration_hints, suggested_compositions)
         unit_tag_set = set(unit_tags)
         last_error = ""
         for attempt in range(max_retries):
@@ -190,20 +193,37 @@ class StreamExtractor:
 
 
 def _build_prompt(
-    description: str,
-    compounds:   list[str],
-    unit_tags:   list[str],
-    unit_roles:  dict[str, str],
+    description:            str,
+    compounds:              list[str],
+    unit_tags:              list[str],
+    unit_roles:             dict[str, str],
+    concentration_hints:    list[str] | None = None,
+    suggested_compositions: dict[str, dict[str, float]] | None = None,
 ) -> str:
     unit_lines = "\n".join(
         f"  {tag}: {unit_roles.get(tag, '')}" for tag in unit_tags)
-    return (
-        f"Process description: {description}\n"
-        f"Compounds: {', '.join(compounds)}\n"
-        f"Units (in flow order):\n{unit_lines}\n\n"
+    parts = [
+        f"Process description: {description}",
+        f"Compounds: {', '.join(compounds)}",
+        f"Units (in flow order):\n{unit_lines}",
+    ]
+    # Inject structured composition information from BasisAgent — avoids
+    # the model having to re-infer feed composition from raw prose.
+    if concentration_hints:
+        hint_block = "\n".join(f"  - {h}" for h in concentration_hints)
+        parts.append(f"Concentration information (use for feed composition):\n{hint_block}")
+    if suggested_compositions:
+        comp_lines = []
+        for alias, comp in suggested_compositions.items():
+            fracs = ", ".join(f"{k}: {v:.3f}" for k, v in comp.items())
+            comp_lines.append(f"  {alias}: {{{fracs}}}")
+        parts.append(
+            "Suggested mole fractions (use directly for feed composition "
+            "if consistent with description):\n" + "\n".join(comp_lines))
+    parts.append(
         "Define the streams connecting these units. "
-        "Include the feed stream(s) with T, P, flow, and composition."
-    )
+        "Include the feed stream(s) with T, P, flow, and composition.")
+    return "\n\n".join(parts)
 
 
 def _parse_stream(s: dict) -> SemanticStream:

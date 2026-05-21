@@ -27,6 +27,19 @@ from benchmark.logger import RunLog, extract_run_log
 from benchmark.physics_eval import run_physics_checks
 from benchmark.ablation import AblationConfig, CONFIGS, ABLATION_MODES, apply_ablation
 from benchmark.runner import BenchmarkRunner, BenchmarkRunSet, CaseRunResult, ablation_table
+from benchmark.diagnostics import (
+    DiagnosticEngine, DiagnosticReport, CaseDiagnostic,
+    extract_case_diagnostic, format_case_diagnostic, format_full_report, interpret,
+    PhysicalValidityReport, ConstraintDiagnostic, SearchTrace, RepairDynamics,
+    TrajectoryCreditAnalysis, MarginModelReport, CoordDescentReport, CouplingReport,
+)
+from benchmark.visualisation import (
+    all_plot_data, save_plot_data,
+    convergence_curves, ablation_bar_data, tier_heatmap, oscillation_frequency,
+    beam_diversity_distribution, margin_stability_over_time,
+    coupling_effectiveness, repair_source_breakdown,
+    generalisation_split, credit_label_distribution,
+)
 
 __all__ = [
     "BenchmarkCaseSpec", "load_all", "load_tier", "load_by_id",
@@ -36,4 +49,15 @@ __all__ = [
     "run_physics_checks",
     "AblationConfig", "CONFIGS", "ABLATION_MODES", "apply_ablation",
     "BenchmarkRunner", "BenchmarkRunSet", "CaseRunResult", "ablation_table",
+    # diagnostics
+    "DiagnosticEngine", "DiagnosticReport", "CaseDiagnostic",
+    "extract_case_diagnostic", "format_case_diagnostic", "format_full_report", "interpret",
+    "PhysicalValidityReport", "ConstraintDiagnostic", "SearchTrace", "RepairDynamics",
+    "TrajectoryCreditAnalysis", "MarginModelReport", "CoordDescentReport", "CouplingReport",
+    # visualisation
+    "all_plot_data", "save_plot_data",
+    "convergence_curves", "ablation_bar_data", "tier_heatmap", "oscillation_frequency",
+    "beam_diversity_distribution", "margin_stability_over_time",
+    "coupling_effectiveness", "repair_source_breakdown",
+    "generalisation_split", "credit_label_distribution",
 ]

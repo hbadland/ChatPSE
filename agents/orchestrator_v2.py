@@ -28,8 +28,13 @@ from agents.stage1 import UnitExtractor, StreamExtractor
 from agents.stage2 import GraphBuilder
 from agents.stage3 import ThermoMapper, ParamMapper
 from agents.stage4 import ErrorClassifier, ClassifiedError, RepairAgent
+from agents.stage4.repair_agent import RepairMemory
+from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
+from agents.rule_store import FailureRuleStore
 
 from ir import FlowsheetGraph, normalise, validate, to_dwsim
+from ir.margin_model import get_global_margin_model
+from ir.consistency import GlobalConsistencyPass
 from ir.validate import ValidationReport
 from rag.retriever import Retriever
 
@@ -59,6 +64,7 @@ class PipelineResult:
     iterations:         list[IterationRecord]      = field(default_factory=list)
     warnings:           list[str]                  = field(default_factory=list)
     total_time_s:       float                      = 0.0
+    margin_snapshot:    dict                       = field(default_factory=dict)
 
     @property
     def passed(self) -> bool:
@@ -98,20 +104,23 @@ class OrchestratorV2:
         self,
         model:          str = DEFAULT_MODEL,
         max_iterations: int = 6,
+        rule_store:     Optional[FailureRuleStore] = None,
     ):
         self._model      = model
         self._retriever  = Retriever()
         self._max_iter   = max_iterations
+        self._rule_store = rule_store or FailureRuleStore()
 
-        self._basis      = BasisAgent(model=model)
-        self._unit_ext   = UnitExtractor(model=model)
-        self._stream_ext = StreamExtractor(model=model)
-        self._builder    = GraphBuilder()
-        self._thermo     = ThermoMapper(model=model, retriever=self._retriever)
-        self._params     = ParamMapper(model=model, retriever=self._retriever)
-        self._executor   = Executor()
-        self._classifier = ErrorClassifier(model=model)
-        self._repair     = RepairAgent(model=model, retriever=self._retriever)
+        self._basis       = BasisAgent(model=model)
+        self._unit_ext    = UnitExtractor(model=model)
+        self._stream_ext  = StreamExtractor(model=model)
+        self._builder     = GraphBuilder()
+        self._thermo      = ThermoMapper(model=model, retriever=self._retriever)
+        self._params      = ParamMapper(model=model, retriever=self._retriever)
+        self._consistency = GlobalConsistencyPass()
+        self._executor    = Executor()
+        self._classifier  = ErrorClassifier(model=model)
+        self._repair      = RepairAgent(model=model, retriever=self._retriever)
 
     def run(self, description: str) -> PipelineResult:
         t_start = time.time()
@@ -129,47 +138,63 @@ class OrchestratorV2:
         compounds = basis.dwsim_compounds
 
         # ── Stage 1: Semantic parsing ──────────────────────────────────────────
+        # Pass concentration_hints and suggested_compositions from BasisAgent
+        # so StreamExtractor does not need to re-derive feed composition from prose.
         try:
             sem_units = self._unit_ext.extract(desc, compounds)
             sem_topo  = self._stream_ext.extract(
                 desc, compounds,
-                unit_tags  = [u.tag  for u in sem_units.units],
-                unit_roles = {u.tag: u.role for u in sem_units.units},
+                unit_tags               = [u.tag  for u in sem_units.units],
+                unit_roles              = {u.tag: u.role for u in sem_units.units},
+                concentration_hints     = basis.concentration_hints or [],
+                suggested_compositions  = basis.suggested_compositions or {},
             )
         except RuntimeError as exc:
             result.warnings.append(f"Stage 1 failed: {exc}")
-            result.outcome    = "PLAN_FAILED"
+            result.outcome      = "PLAN_FAILED"
             result.total_time_s = time.time() - t_start
             return result
 
         # ── Stage 2: IR construction ───────────────────────────────────────────
-        graph = self._builder.build(sem_units, sem_topo, compounds)
-        graph = normalise(graph)
+        graph     = self._builder.build(sem_units, sem_topo, compounds)
+        graph     = normalise(graph)
         ir_report = validate(graph)
         result.ir_report = ir_report
         if not ir_report.valid:
-            result.warnings += [str(i) for i in ir_report.errors()]
-            result.outcome    = "INVALID_IR"
+            result.warnings    += [str(i) for i in ir_report.errors()]
+            result.outcome      = "INVALID_IR"
             result.total_time_s = time.time() - t_start
             return result
         if ir_report.warnings():
             result.warnings += [str(w) for w in ir_report.warnings()]
 
         # ── Stage 3: Simulation mapping ────────────────────────────────────────
+        # ParamMapper: deterministic-first, LLM fallback only for unknown params.
+        # GlobalConsistencyPass: enforce cross-unit T/P constraints + backward pass.
+        # FailureRuleStore: apply any synthesized rules from prior benchmark cases.
         try:
             graph = self._thermo.assign(graph, description=desc)
             graph = self._params.assign(graph, description=desc)
+            graph, consistency_changes = self._consistency.apply(graph)
+            if consistency_changes:
+                result.warnings += [f"[consistency] {c}" for c in consistency_changes]
+
+            # Apply rules synthesized from previous failures (cross-run learning)
+            graph, rule_changes = self._rule_store.apply_to_graph(
+                graph, basis.dwsim_compounds)
+            if rule_changes:
+                result.warnings += [f"[rule] {c}" for c in rule_changes]
         except Exception as exc:
             result.warnings.append(f"Stage 3 failed: {exc}")
-            result.outcome    = "PLAN_FAILED"
+            result.outcome      = "PLAN_FAILED"
             result.total_time_s = time.time() - t_start
             return result
 
-        graph = normalise(graph)
+        graph       = normalise(graph)
         post_report = validate(graph)
         if not post_report.valid:
-            result.warnings += [str(i) for i in post_report.errors()]
-            result.outcome    = "INVALID_JSON"
+            result.warnings    += [str(i) for i in post_report.errors()]
+            result.outcome      = "INVALID_JSON"
             result.total_time_s = time.time() - t_start
             return result
 
@@ -179,16 +204,26 @@ class OrchestratorV2:
         dwsim_json = to_dwsim(graph)
 
         # ── Stage 4: Execution loop ────────────────────────────────────────────
+        # RepairMemory persists across iterations so the agent never repeats a
+        # failed strategy and can detect stagnation.
+        # SimulationHints carries signals from the last DWSIM execution into
+        # the repair agent so it can prioritise actually-failed units.
         tried_packages: set[str] = {graph.property_package}
+        repair_memory             = RepairMemory()
+        sim_hints                 = EMPTY_HINTS
 
         for iteration in range(self._max_iter):
             t_iter    = time.time()
+            repair_memory.tick()
             execution = self._executor.run(dwsim_json)
 
+            # Build simulation hints from the execution result for this iteration
+            sim_hints = SimulationHints.from_execution(execution, iteration=iteration)
+
             if getattr(execution, "solved", False) and _no_critic_failures(execution):
-                result.outcome          = "PASS"
-                result.final_flowsheet  = dwsim_json
-                result.final_execution  = execution
+                result.outcome         = "PASS"
+                result.final_flowsheet = dwsim_json
+                result.final_execution = execution
                 result.iterations.append(IterationRecord(
                     iteration=iteration, errors=[], changes=["PASS"],
                     flowsheet=dwsim_json, execution=execution,
@@ -208,7 +243,12 @@ class OrchestratorV2:
                 break
 
             graph, changes = self._repair.repair(
-                graph, errors, tried_packages, description=desc)
+                graph, errors, tried_packages,
+                description=desc, memory=repair_memory,
+                sim_hints=sim_hints)
+            _record_repairs_in_store(
+                errors, changes, graph, self._rule_store,
+                compounds=basis.dwsim_compounds)
             graph  = normalise(graph)
             post   = validate(graph)
             if not post.valid:
@@ -225,7 +265,8 @@ class OrchestratorV2:
                 flowsheet=dwsim_json, execution=execution,
                 elapsed_s=time.time() - t_iter))
 
-        result.total_time_s = time.time() - t_start
+        result.total_time_s  = time.time() - t_start
+        result.margin_snapshot = get_global_margin_model().snapshot()
         return result
 
 
@@ -235,3 +276,45 @@ def _no_critic_failures(execution) -> bool:
     if report:
         return getattr(report, "passed", False)
     return not getattr(execution, "errors", [])
+
+
+def _record_repairs_in_store(
+    errors:     list,
+    changes:    list[str],
+    graph,
+    store:      "FailureRuleStore",
+    compounds:  Optional[list[str]] = None,
+) -> None:
+    """
+    Parse applied CONDITION_FIX repairs from the change log and record
+    each pattern in the FailureRuleStore for future rule synthesis.
+    """
+    import re
+    from agents.rule_store import _outlet_unit_types
+
+    for change in changes:
+        m = re.match(
+            r"CONDITION_FIX\[.*?\]: (\S+)\.(\w+) .*?→([\d.]+)", change)
+        if m is None:
+            continue
+        unit_tag, param, val_str = m.group(1), m.group(2), m.group(3)
+        try:
+            applied_val = float(val_str)
+        except ValueError:
+            continue
+
+        node = graph.unit(unit_tag)
+        if node is None:
+            continue
+        downstream = _outlet_unit_types(graph, unit_tag)
+        # Use the first downstream type (most relevant constraint)
+        dst_type = next(iter(downstream), None)
+
+        store.record_fix(
+            unit_type       = node.unit_type,
+            error_code      = "CONDITION_FIX",
+            downstream_type = dst_type,
+            param           = param,
+            applied_value   = applied_val,
+            compounds       = compounds,
+        )
