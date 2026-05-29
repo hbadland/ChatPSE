@@ -23,9 +23,20 @@ SUPPORTED_UNIT_TYPES = [
     "Splitter", "Pump", "Compressor", "Expander",
 ]
 
+_EMPTY_ERRORS = ("empty response", "line 1 column 1", "only markdown")
+
+# Stripped fallback used on the final retry when the model returns nothing —
+# avoids the full prompt triggering a long thinking block that exhausts max_tokens.
+_MINIMAL_SYSTEM = (
+    'Return ONLY: {"units": [{"tag": "HT-01", "type": "Heater", "role": "..."}]}'
+    "\nTypes: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander"
+)
+
+
 _SYSTEM = """\
+/no_think
 Extract unit operations from a chemical process description.
-Return ONLY a JSON object — no explanation, no markdown.
+Return ONLY a JSON object — no explanation, no markdown, no <think> blocks.
 
 Schema:
 {
@@ -46,6 +57,8 @@ Rules:
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
 - Include a Mixer only when the description explicitly mentions combining or mixing two feed streams
 - Include a Splitter only when the description explicitly mentions splitting a stream into two fractions
+- IGNORE any preamble, commentary, or metadata about property packages, thermodynamic models,
+  configuration validity, or simulation settings — extract only the physical unit operations
 
 Examples:
 
@@ -73,6 +86,14 @@ Output:
   {"tag": "PM-01", "type": "Pump",   "role": "raise liquid feed pressure"},
   {"tag": "HT-01", "type": "Heater", "role": "heat pressurised feed to flash temperature"},
   {"tag": "V-01",  "type": "Vessel", "role": "flash to separate acetone vapour from liquid"}
+]}
+
+Input: "Invalid package: near-azeotrope with Raoult's Law. Heat a 1-propanol/water feed to 90°C then flash to separate vapour."
+Compounds: 1-Propanol, Water
+Output:
+{"units": [
+  {"tag": "HT-01", "type": "Heater", "role": "heat 1-propanol/water feed to flash temperature"},
+  {"tag": "V-01",  "type": "Vessel", "role": "flash separation of 1-propanol and water"}
 ]}"""
 
 
@@ -120,12 +141,27 @@ class UnitExtractor:
         prompt = _build_prompt(description, compounds)
         last_error = ""
         for attempt in range(max_retries):
+            use_minimal = (
+                attempt == max_retries - 1
+                and any(e in last_error for e in _EMPTY_ERRORS)
+            )
+            if use_minimal:
+                current_prompt = (
+                    f"Process: {description}\n"
+                    f"Compounds: {', '.join(compounds)}\n"
+                    "List the unit operations needed."
+                )
+                current_system = _MINIMAL_SYSTEM
+            else:
+                current_prompt = prompt + (
+                    f"\n\nPrevious error: {last_error}" if last_error else "")
+                current_system = _SYSTEM
             raw = chat(
-                prompt + (f"\n\nPrevious error: {last_error}" if last_error else ""),
-                system=_SYSTEM,
+                current_prompt,
+                system=current_system,
                 model=self._model,
                 temperature=retry_temperature(attempt),
-                max_tokens=1024,
+                max_tokens=4096,
             )
             try:
                 data = _parse_json(raw)
@@ -156,10 +192,13 @@ def _build_prompt(description: str, compounds: list[str]) -> str:
 
 def _parse_json(text: str) -> dict:
     text = text.strip()
-    # Strip markdown fences
+    if not text:
+        raise ValueError("model returned an empty response")
     text = re.sub(r"^```[a-z]*\n?", "", text)
     text = re.sub(r"\n?```$", "", text)
-    # Extract first {...} block
+    text = text.strip()
+    if not text:
+        raise ValueError("response contained only markdown fences")
     m = re.search(r"\{.*\}", text, re.DOTALL)
     if m:
         return json.loads(m.group())

@@ -15,9 +15,26 @@ Property ID reference (discovered empirically):
   PROP_SEP_0 = vessel/flash pressure drop [Pa]
 """
 
+import os
 import sys
+
+# Ensure coreclr is selected before pythonnet initialises (env var is read at
+# import time; setting it here covers the case where nothing set it earlier).
+os.environ.setdefault("PYTHONNET_RUNTIME", "coreclr")
+
 import pythonnet
-pythonnet.load("coreclr")
+try:
+    pythonnet.load("coreclr")
+except RuntimeError as _pn_err:
+    # "already loaded" is fine if coreclr was loaded by the env var path above.
+    # Any other message means a wrong runtime (mono) was initialised first.
+    if "already" not in str(_pn_err).lower():
+        raise RuntimeError(
+            f"pythonnet runtime conflict — coreclr could not be loaded: {_pn_err}. "
+            "Make sure PYTHONNET_RUNTIME=coreclr is set before any pythonnet import, "
+            "or that nothing in the environment auto-imports clr with mono."
+        ) from _pn_err
+
 import clr
 import System
 
@@ -334,19 +351,81 @@ class DWSIMFlowsheet:
 
     # ── Solve & read ──────────────────────────────────────────────────────────
 
-    def solve(self) -> dict:
-        """Run the headless solver. Returns {tag: stream_dict} for all streams."""
-        errors = self._auto.CalculateFlowsheet2(self._sim)
-        solved = bool(self._sim.Solved)
-        results = {"solved": solved, "errors": list(errors) if errors else []}
-        go = self._sim.GraphicObjects
-        for key in go.Keys:
-            gobj = go[key]
-            if str(gobj.ObjectType) == "MaterialStream":
-                tag = str(gobj.Tag)
-                obj = self._sim.GetFlowsheetSimulationObject(tag)
-                results[tag] = self._read_stream(obj)
-        return results
+    def solve(self, timeout: int = 120) -> dict:
+        """Run the headless solver. Returns {tag: stream_dict} for all streams.
+
+        Uses a daemon thread for the timeout so it works inside Singularity
+        containers where signal.SIGALRM is non-functional. The thread is marked
+        daemon so it is reaped when the host process exits; if it stays alive
+        after timeout the stuck .NET call continues in the background but the
+        benchmark loop proceeds to the next case.
+        """
+        import threading
+        import os
+
+        _timeout = int(os.environ.get("DWSIM_SOLVER_TIMEOUT", str(timeout)))
+        _result = [None]
+        _exc    = [None]
+
+        def _worker():
+            try:
+                # Try CalculateFlowsheet first (avoids the error-collection path
+                # in CalculateFlowsheet2 which may deadlock on Linux/coreclr).
+                try:
+                    self._auto.CalculateFlowsheet(self._sim)
+                    errors = []
+                except Exception:
+                    # Fall back to the standard method if CalculateFlowsheet
+                    # is not available on this DWSIM build.
+                    errors = self._auto.CalculateFlowsheet2(self._sim)
+                    errors = list(errors) if errors else []
+
+                solved = bool(self._sim.Solved)
+
+                # CalculateFlowsheet() returns no error list; when unsolved,
+                # harvest error messages from individual unit operation objects.
+                if not solved and not errors:
+                    go = self._sim.GraphicObjects
+                    for key in go.Keys:
+                        gobj = go[key]
+                        if str(gobj.ObjectType) == "MaterialStream":
+                            continue
+                        try:
+                            obj = self._sim.GetFlowsheetSimulationObject(
+                                str(gobj.Tag))
+                            msg = str(getattr(obj, "ErrorMessage", None) or "")
+                            if msg and msg.lower() not in ("", "none"):
+                                errors.append(f"{gobj.Tag}: {msg}")
+                        except Exception:
+                            pass
+                r = {"solved": solved, "errors": errors}
+                go = self._sim.GraphicObjects
+                for key in go.Keys:
+                    gobj = go[key]
+                    if str(gobj.ObjectType) == "MaterialStream":
+                        tag = str(gobj.Tag)
+                        obj = self._sim.GetFlowsheetSimulationObject(tag)
+                        r[tag] = self._read_stream(obj)
+                _result[0] = r
+            except Exception as e:
+                _exc[0] = e
+
+        t = threading.Thread(target=_worker, daemon=True)
+        t.start()
+        t.join(_timeout)
+
+        if t.is_alive():
+            return {
+                "solved": False,
+                "errors": [
+                    f"DWSIM solver timed out after {_timeout}s — "
+                    "CalculateFlowsheet did not return. "
+                    "Likely an infinite loop in the .NET solver for this flowsheet."
+                ],
+            }
+        if _exc[0] is not None:
+            raise _exc[0]
+        return _result[0]
 
     def get_stream(self, tag: str) -> dict:
         obj = self._sim.GetFlowsheetSimulationObject(tag)

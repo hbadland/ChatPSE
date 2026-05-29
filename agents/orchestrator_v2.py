@@ -16,6 +16,7 @@ The orchestrator only manages the loop and aggregates results.
 """
 from __future__ import annotations
 
+import sys
 import time
 from dataclasses import dataclass, field
 from typing import Optional
@@ -127,7 +128,9 @@ class OrchestratorV2:
         result  = PipelineResult(description=description, outcome="MAX_ITER")
 
         # ── Stage 0: Basis ─────────────────────────────────────────────────────
+        print("[ORCH] step: basis.identify START", flush=True)
         basis = self._basis.identify(description)
+        print(f"[ORCH] step: basis.identify END  success={basis.success}", flush=True)
         result.basis_result = basis
         if not basis.success:
             result.outcome    = "BASIS_FAILED"
@@ -136,12 +139,17 @@ class OrchestratorV2:
 
         desc      = basis.normalised_description
         compounds = basis.dwsim_compounds
+        print(f"[ORCH] compounds={compounds}", flush=True)
 
         # ── Stage 1: Semantic parsing ──────────────────────────────────────────
         # Pass concentration_hints and suggested_compositions from BasisAgent
         # so StreamExtractor does not need to re-derive feed composition from prose.
         try:
+            print("[ORCH] step: unit_ext.extract START", flush=True)
             sem_units = self._unit_ext.extract(desc, compounds)
+            print(f"[ORCH] step: unit_ext.extract END  units={[u.tag for u in sem_units.units]}", flush=True)
+
+            print("[ORCH] step: stream_ext.extract START", flush=True)
             sem_topo  = self._stream_ext.extract(
                 desc, compounds,
                 unit_tags               = [u.tag  for u in sem_units.units],
@@ -149,20 +157,59 @@ class OrchestratorV2:
                 concentration_hints     = basis.concentration_hints or [],
                 suggested_compositions  = basis.suggested_compositions or {},
             )
+            print("[ORCH] step: stream_ext.extract END", flush=True)
         except RuntimeError as exc:
+            print(f"[ORCH] Stage 1 EXCEPTION: {exc}", flush=True)
             result.warnings.append(f"Stage 1 failed: {exc}")
             result.outcome      = "PLAN_FAILED"
             result.total_time_s = time.time() - t_start
             return result
 
         # ── Stage 2: IR construction ───────────────────────────────────────────
-        graph     = self._builder.build(sem_units, sem_topo, compounds)
-        graph     = normalise(graph)
+        print("[ORCH] step: builder.build START", flush=True)
+        graph = self._builder.build(sem_units, sem_topo, compounds)
+        print("[ORCH] step: builder.build END", flush=True)
+
+        # Reconcile: augment graph.compounds with any compounds found in stream
+        # compositions that BasisAgent missed (e.g. second compound in a
+        # hyphenated pair like "ethanol-water" where Stage 1 only found "Ethanol").
+        _known_lower = {c.lower() for c in graph.compounds}
+        for _stream in graph.streams():
+            for _name in _stream.composition:
+                if _name.lower() not in _known_lower:
+                    graph.compounds.append(_name)
+                    _known_lower.add(_name.lower())
+                    result.warnings.append(
+                        f"[compounds] '{_name}' found in feed composition "
+                        f"but missing from basis list — added automatically"
+                    )
+        if graph.compounds != list(compounds):
+            print(f"[ORCH] compounds reconciled: {graph.compounds}", flush=True)
+
+        # Back-fill: any stream that already carries composition data must have
+        # every compound in graph.compounds (use 0.0 for absent ones).
+        # pre_execution_check rejects feed streams missing compounds from the
+        # global list — this can happen when reconciliation adds a compound
+        # that only appears in one of several feed streams.
+        for _stream in graph.streams():
+            if _stream.composition:
+                for _name in graph.compounds:
+                    if _name not in _stream.composition:
+                        _stream.composition[_name] = 0.0
+
+        print("[ORCH] step: normalise(graph) #1 START", flush=True)
+        graph = normalise(graph)
+        print("[ORCH] step: normalise(graph) #1 END", flush=True)
+
+        print(f"[ORCH] step: validate(graph) #1 START  graph.compounds={graph.compounds}", flush=True)
         ir_report = validate(graph)
+        print(f"[ORCH] step: validate(graph) #1 END  valid={ir_report.valid}", flush=True)
         result.ir_report = ir_report
         if not ir_report.valid:
             result.warnings    += [str(i) for i in ir_report.errors()]
             result.outcome      = "INVALID_IR"
+            for e in ir_report.errors():
+                print(f"[ORCH] INVALID_IR: {e}", flush=True, file=sys.stderr)
             result.total_time_s = time.time() - t_start
             return result
         if ir_report.warnings():
@@ -173,25 +220,41 @@ class OrchestratorV2:
         # GlobalConsistencyPass: enforce cross-unit T/P constraints + backward pass.
         # FailureRuleStore: apply any synthesized rules from prior benchmark cases.
         try:
+            print("[ORCH] step: thermo.assign START", flush=True)
             graph = self._thermo.assign(graph, description=desc)
+            print(f"[ORCH] step: thermo.assign END  pkg={getattr(graph, 'property_package', '?')}", flush=True)
+
+            print("[ORCH] step: params.assign START", flush=True)
             graph = self._params.assign(graph, description=desc)
+            print("[ORCH] step: params.assign END", flush=True)
+
+            print("[ORCH] step: consistency.apply START", flush=True)
             graph, consistency_changes = self._consistency.apply(graph)
+            print(f"[ORCH] step: consistency.apply END  changes={len(consistency_changes)}", flush=True)
             if consistency_changes:
                 result.warnings += [f"[consistency] {c}" for c in consistency_changes]
 
             # Apply rules synthesized from previous failures (cross-run learning)
+            print("[ORCH] step: rule_store.apply_to_graph START", flush=True)
             graph, rule_changes = self._rule_store.apply_to_graph(
                 graph, basis.dwsim_compounds)
+            print(f"[ORCH] step: rule_store.apply_to_graph END  changes={len(rule_changes)}", flush=True)
             if rule_changes:
                 result.warnings += [f"[rule] {c}" for c in rule_changes]
         except Exception as exc:
+            print(f"[ORCH] Stage 3 EXCEPTION: {type(exc).__name__}: {exc}", flush=True)
             result.warnings.append(f"Stage 3 failed: {exc}")
             result.outcome      = "PLAN_FAILED"
             result.total_time_s = time.time() - t_start
             return result
 
-        graph       = normalise(graph)
+        print("[ORCH] step: normalise(graph) #2 START", flush=True)
+        graph = normalise(graph)
+        print("[ORCH] step: normalise(graph) #2 END", flush=True)
+
+        print(f"[ORCH] step: validate(graph) #2 START  graph.compounds={graph.compounds}", flush=True)
         post_report = validate(graph)
+        print(f"[ORCH] step: validate(graph) #2 END  valid={post_report.valid}", flush=True)
         if not post_report.valid:
             result.warnings    += [str(i) for i in post_report.errors()]
             result.outcome      = "INVALID_JSON"
@@ -201,7 +264,9 @@ class OrchestratorV2:
         result.final_graph = graph
 
         # ── Stage 3→4 bridge: IR → DWSIM JSON ─────────────────────────────────
+        print("[ORCH] step: to_dwsim(graph) START", flush=True)
         dwsim_json = to_dwsim(graph)
+        print("[ORCH] step: to_dwsim(graph) END", flush=True)
 
         # ── Stage 4: Execution loop ────────────────────────────────────────────
         # RepairMemory persists across iterations so the agent never repeats a
@@ -215,7 +280,9 @@ class OrchestratorV2:
         for iteration in range(self._max_iter):
             t_iter    = time.time()
             repair_memory.tick()
+            print(f"[ORCH] step: executor.run iteration={iteration} START", flush=True)
             execution = self._executor.run(dwsim_json)
+            print(f"[ORCH] step: executor.run iteration={iteration} END  solved={getattr(execution, 'solved', '?')}", flush=True)
 
             # Build simulation hints from the execution result for this iteration
             sim_hints = SimulationHints.from_execution(execution, iteration=iteration)
@@ -232,7 +299,7 @@ class OrchestratorV2:
 
             errors = self._classifier.classify(execution, graph)
 
-            if any(e.is_terminal() for e in errors):
+            if any(e.is_terminal for e in errors):
                 result.outcome         = "HUMAN"
                 result.final_flowsheet = dwsim_json
                 result.final_execution = execution
@@ -242,20 +309,30 @@ class OrchestratorV2:
                     elapsed_s=time.time() - t_iter))
                 break
 
-            graph, changes = self._repair.repair(
-                graph, errors, tried_packages,
-                description=desc, memory=repair_memory,
-                sim_hints=sim_hints)
-            _record_repairs_in_store(
-                errors, changes, graph, self._rule_store,
-                compounds=basis.dwsim_compounds)
-            graph  = normalise(graph)
-            post   = validate(graph)
-            if not post.valid:
-                result.warnings += [str(i) for i in post.errors()]
+            try:
+                graph, changes = self._repair.repair(
+                    graph, errors, tried_packages,
+                    description=desc, memory=repair_memory,
+                    sim_hints=sim_hints)
+                _record_repairs_in_store(
+                    errors, changes, graph, self._rule_store,
+                    compounds=basis.dwsim_compounds)
+                graph  = normalise(graph)
+                post   = validate(graph)
+                if not post.valid:
+                    result.warnings += [str(i) for i in post.errors()]
 
-            tried_packages.add(graph.property_package)
-            dwsim_json = to_dwsim(graph)
+                tried_packages.add(graph.property_package)
+                dwsim_json = to_dwsim(graph)
+            except Exception as _repair_exc:
+                print(f"[ORCH] repair/normalise error iter={iteration}: {_repair_exc}",
+                      flush=True, file=sys.stderr)
+                result.warnings.append(f"repair error iter={iteration}: {_repair_exc}")
+                result.iterations.append(IterationRecord(
+                    iteration=iteration, errors=errors, changes=[],
+                    flowsheet=dwsim_json, execution=execution,
+                    elapsed_s=time.time() - t_iter))
+                break
 
             result.final_graph     = graph
             result.final_flowsheet = dwsim_json

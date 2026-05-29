@@ -290,7 +290,8 @@ class BenchmarkRunner:
             with apply_ablation(config):
                 pr = orch.run(case.description)
         except Exception as exc:
-            import traceback as _tb
+            import sys as _sys, traceback as _tb
+            print(f"[RUNNER] EXCEPTION in {case.id}: {exc}", flush=True, file=_sys.stderr)
             if self._verbose:
                 print(f"\n  [EXCEPTION] {exc}")
                 _tb.print_exc()

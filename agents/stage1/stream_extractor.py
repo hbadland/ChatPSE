@@ -25,9 +25,21 @@ from typing import Optional
 
 from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 
+_EMPTY_ERRORS = ("empty response", "line 1 column 1", "only markdown")
+
+_MINIMAL_SYSTEM = (
+    'Return ONLY: {"streams": [{"tag": "FEED", "src": null, "dst": "HT-01", '
+    '"is_feed": true, "T": 298.15, "P": 101325.0, "flow": 1.0, '
+    '"composition": {"Ethanol": 0.5, "Water": 0.5}}]}'
+    "\nFeed streams need T[K], P[Pa], flow[mol/s], composition. "
+    "Other streams need only tag/src/dst."
+)
+
+
 _SYSTEM = """\
+/no_think
 Define the process streams connecting the unit operations.
-Return ONLY a JSON object — no explanation, no markdown.
+Return ONLY a JSON object — no explanation, no markdown, no <think> blocks.
 
 Schema:
 {
@@ -169,16 +181,34 @@ class StreamExtractor:
         unit_tag_set = set(unit_tags)
         last_error = ""
         for attempt in range(max_retries):
+            use_minimal = (
+                attempt == max_retries - 1
+                and any(e in last_error for e in _EMPTY_ERRORS)
+            )
+            if use_minimal:
+                unit_summary = ", ".join(
+                    f"{t}({unit_roles.get(t, '?')})" for t in unit_tags)
+                current_prompt = (
+                    f"Process: {description}\n"
+                    f"Units: {unit_summary}\n"
+                    "Define the connecting streams."
+                )
+                current_system = _MINIMAL_SYSTEM
+            else:
+                current_prompt = prompt + (
+                    f"\n\nPrevious error: {last_error}" if last_error else "")
+                current_system = _SYSTEM
             raw = chat(
-                prompt + (f"\n\nPrevious error: {last_error}" if last_error else ""),
-                system=_SYSTEM,
+                current_prompt,
+                system=current_system,
                 model=self._model,
                 temperature=retry_temperature(attempt),
-                max_tokens=2048,
+                max_tokens=8192,
             )
             try:
-                data  = _parse_json(raw)
+                data    = _parse_json(raw)
                 streams = [_parse_stream(s) for s in data.get("streams", [])]
+                streams = _reconcile_unit_refs(streams, unit_tag_set)
                 result  = SemanticTopology(streams=streams, raw_json=data)
                 errors  = result.validate(unit_tag_set)
                 if not errors:
@@ -202,10 +232,15 @@ def _build_prompt(
 ) -> str:
     unit_lines = "\n".join(
         f"  {tag}: {unit_roles.get(tag, '')}" for tag in unit_tags)
+    exact_tags = ", ".join(unit_tags)
     parts = [
         f"Process description: {description}",
         f"Compounds: {', '.join(compounds)}",
-        f"Units (in flow order):\n{unit_lines}",
+        (
+            f"Units (in flow order):\n{unit_lines}\n"
+            f"  IMPORTANT: src and dst must be EXACTLY one of these tags "
+            f"(or null): {exact_tags}"
+        ),
     ]
     # Inject structured composition information from BasisAgent — avoids
     # the model having to re-infer feed composition from raw prose.
@@ -226,6 +261,56 @@ def _build_prompt(
     return "\n\n".join(parts)
 
 
+def _best_match(ref: str, unit_tags: set[str]) -> Optional[str]:
+    """
+    Try to snap a hallucinated unit reference to the closest known tag.
+
+    Strategy 1 — normalise: strip hyphens/underscores and compare case-insensitively.
+      "HT01" → "ht01" matches "HT-01" → "ht01"
+    Strategy 2 — numeric index: if exactly one known tag shares the same numeric
+      suffix, return it.  "HEATER-01" → "01" → only "HT-01" has "01" → snap.
+    """
+    def _norm(s: str) -> str:
+        return re.sub(r'[-_\s]', '', s).lower()
+
+    ref_norm = _norm(ref)
+    for tag in unit_tags:
+        if _norm(tag) == ref_norm:
+            return tag
+
+    m = re.search(r'\d+', ref)
+    if m:
+        idx = m.group()
+        candidates = [
+            t for t in unit_tags
+            if (nm := re.search(r'\d+', t)) and nm.group() == idx
+        ]
+        if len(candidates) == 1:
+            return candidates[0]
+
+    return None
+
+
+def _reconcile_unit_refs(
+    streams:   list["SemanticStream"],
+    unit_tags: set[str],
+) -> list["SemanticStream"]:
+    """
+    Silently fix src/dst references that don't match the known unit tag list.
+    Leaves unresolvable references untouched so validation can still report them.
+    """
+    for stream in streams:
+        if stream.src and stream.src not in unit_tags:
+            fixed = _best_match(stream.src, unit_tags)
+            if fixed:
+                stream.src = fixed
+        if stream.dst and stream.dst not in unit_tags:
+            fixed = _best_match(stream.dst, unit_tags)
+            if fixed:
+                stream.dst = fixed
+    return streams
+
+
 def _parse_stream(s: dict) -> SemanticStream:
     return SemanticStream(
         tag         = s["tag"],
@@ -241,8 +326,13 @@ def _parse_stream(s: dict) -> SemanticStream:
 
 def _parse_json(text: str) -> dict:
     text = text.strip()
+    if not text:
+        raise ValueError("model returned an empty response")
     text = re.sub(r"^```[a-z]*\n?", "", text)
     text = re.sub(r"\n?```$", "", text)
+    text = text.strip()
+    if not text:
+        raise ValueError("response contained only markdown fences")
     m = re.search(r"\{.*\}", text, re.DOTALL)
     if m:
         return json.loads(m.group())

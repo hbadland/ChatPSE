@@ -23,8 +23,10 @@ Results are saved to results/summaries/ (JSON) and printed as Markdown.
 """
 from __future__ import annotations
 
-import argparse
 import os
+os.environ.setdefault("PYTHONNET_RUNTIME", "coreclr")  # must precede any pythonnet/clr import
+
+import argparse
 import sys
 from pathlib import Path
 

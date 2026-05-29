@@ -110,6 +110,9 @@ class ParamMapper:
         params   = dict(defaults)
 
         if node.unit_type in _DEFAULTS_ONLY:
+            # Preserve existing params (e.g. split_fractions on auto-inserted Splitter).
+            # node.params takes priority over retriever defaults.
+            params.update(node.params)
             return params
 
         # ── Step 1: Description parser ─────────────────────────────────────────
@@ -302,6 +305,11 @@ def _estimate_params(
     """
     est: dict = {}
 
+    # Pressure-changers must always have efficiency; the retriever default may be
+    # absent if the spec file is incomplete.
+    if node.unit_type in ("Pump", "Compressor", "Expander") and "efficiency" not in params:
+        est["efficiency"] = 0.75
+
     if node.unit_type == "Heater" and "T_out" not in params:
         # Use a larger margin when feeding a flash vessel to reduce
         # the likelihood of GlobalConsistencyPass having to correct it.
@@ -378,6 +386,12 @@ def _clamp_param(
         if unit_type == "Expander" and feed_P is not None and value >= feed_P:
             return round(feed_P / 2.0, 0)
         return value
+    if param == "efficiency":
+        if 0 < value <= 1.0:
+            return value
+        if 1.0 < value <= 100.0:
+            return round(value / 100.0, 4)
+        return 0.75
     return value
 
 

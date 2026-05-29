@@ -671,7 +671,7 @@ def _word_match(alias: str, description: str):
     (e.g. 'ethanol' must not fire inside 'diethanolamine').
     Case-insensitive.
     """
-    pattern = r'(?<![A-Za-z0-9\-])' + re.escape(alias) + r'(?![A-Za-z0-9])'
+    pattern = r'(?<![A-Za-z0-9])' + re.escape(alias) + r'(?![A-Za-z0-9])'
     return re.search(pattern, description, re.IGNORECASE)
 
 
@@ -681,7 +681,7 @@ def _substitute(description: str, resolved: dict[str, str | list[str]]) -> str:
     for original, dwsim in sorted(resolved.items(), key=lambda x: len(x[0]), reverse=True):
         replacement = ", ".join(dwsim) if isinstance(dwsim, list) else dwsim
         pattern = re.compile(
-            r'(?<![A-Za-z0-9\-])' + re.escape(original) + r'(?![A-Za-z0-9])',
+            r'(?<![A-Za-z0-9])' + re.escape(original) + r'(?![A-Za-z0-9])',
             re.IGNORECASE,
         )
         result = pattern.sub(replacement, result)

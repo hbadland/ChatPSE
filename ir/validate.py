@@ -165,10 +165,6 @@ def _schema_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
         issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM, G(),
                            "compounds list is empty", RepairStrategy.HUMAN))
 
-    if not graph.property_package:
-        issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM, G(),
-                           "property_package is not set", RepairStrategy.THERMO_SWITCH))
-
     if not graph.units():
         issues.append(_err("SCHEMA", ErrorType.INVALID_TOPOLOGY, G(),
                            "flowsheet has no unit operations", RepairStrategy.HUMAN))
@@ -196,8 +192,14 @@ def _schema_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
                                    ErrorTarget.stream(stream.tag, "composition"),
                                    f"mole fractions sum to {total:.4f}",
                                    RepairStrategy.DEFAULT_FILL))
+            _compounds_lower = {c.lower() for c in graph.compounds}
             for name, frac in comp.items():
-                if name not in graph.compounds:
+                if name not in graph.compounds and name.lower() not in _compounds_lower:
+                    import sys as _sys
+                    print(f"[VALIDATE] compound '{name}' missing: "
+                          f"graph.compounds={graph.compounds!r}, "
+                          f"stream={stream.tag!r}, comp_keys={list(comp)!r}",
+                          flush=True, file=_sys.stderr)
                     issues.append(_err("SCHEMA", ErrorType.MISSING_PARAM,
                                        ErrorTarget.stream(stream.tag, "composition"),
                                        f"compound '{name}' not in compounds list",

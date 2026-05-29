@@ -227,6 +227,7 @@ class Executor:
         # Pre-execution checks
         pre_errors = pre_execution_check(flowsheet)
         if pre_errors:
+            print(f"  [EXEC] pre_check FAILED: {pre_errors}", flush=True, file=sys.stderr)
             return ExecutionResult(
                 solved=False,
                 errors=pre_errors,
@@ -244,6 +245,21 @@ class Executor:
         return result
 
     def _build_and_solve(self, flowsheet: dict) -> ExecutionResult:
+        import sys as _sys
+        import json as _json
+
+        def _chk(label):
+            print(f"  [EXEC] {label}", flush=True, file=_sys.stderr)
+
+        # Dump the flowsheet JSON so we can see exactly what DWSIM receives.
+        # This appears on stderr and does not affect benchmark stdout output.
+        try:
+            print(f"  [EXEC] flowsheet JSON:\n{_json.dumps(flowsheet, indent=2)}",
+                  flush=True, file=_sys.stderr)
+        except Exception:
+            pass
+
+        _chk("importing DWSIMFlowsheet")
         from dwsim.dwsim_wrapper import DWSIMFlowsheet
 
         compounds   = flowsheet["compounds"]
@@ -256,9 +272,12 @@ class Executor:
         has_incoming  = {c[1] for c in conns if len(c) >= 2}
         feed_tags     = {t for t in streams_cfg if t not in has_incoming}
 
+        _chk("DWSIMFlowsheet()")
         sim = DWSIMFlowsheet()
+        _chk("DWSIMFlowsheet() done")
 
         # ── Compounds ─────────────────────────────────────────────────────────
+        _chk(f"add_compounds {compounds}")
         try:
             sim.add_compounds(compounds)
             added = sim._compounds
@@ -276,6 +295,7 @@ class Executor:
                 diagnostics={"stage": "add_compounds"})
 
         # ── Property package ──────────────────────────────────────────────────
+        _chk(f"add_compounds done; set_property_package {default_pp}")
         dwsim_pp = _PP_MAP[default_pp]
         try:
             sim.set_property_package(dwsim_pp)
@@ -324,6 +344,7 @@ class Executor:
                     diagnostics={"stage": "binary_parameter_injection"})
 
         # ── Auto-layout positions ─────────────────────────────────────────────
+        _chk("property_package done; add_streams/units")
         positions = _auto_layout(flowsheet)
 
         # ── Add streams ───────────────────────────────────────────────────────
@@ -364,6 +385,7 @@ class Executor:
                                      "unit": tag})
 
         # ── Connect objects ───────────────────────────────────────────────────
+        _chk("streams/units added; connect")
         warnings: list[str] = early_warnings
         for conn in conns:
             src, dst   = conn[0], conn[1]
@@ -404,7 +426,11 @@ class Executor:
                     diagnostics={"stage": "set_unit_conditions", "unit": tag})
 
         # ── Solve ─────────────────────────────────────────────────────────────
-        raw = sim.solve()
+        import os as _os
+        _timeout = int(_os.environ.get("DWSIM_SOLVER_TIMEOUT", "120"))
+        _chk(f"connected; calling solve(timeout={_timeout}s)")
+        raw = sim.solve(timeout=_timeout)
+        _chk(f"solve() returned: solved={raw.get('solved')} errors={raw.get('errors')}")
         solver_errors = raw.get("errors", [])
         solved = raw.get("solved", False)
 

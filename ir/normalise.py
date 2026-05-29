@@ -11,18 +11,26 @@ Each transform returns a new FlowsheetGraph; the input is never mutated.
 """
 from __future__ import annotations
 
-from ir.graph import FlowsheetGraph, NodeIR, EdgeIR, PORT_SPECS
+from ir.graph import FlowsheetGraph, NodeIR, EdgeIR, PORT_SPECS, make_node
 
 _VAP_KEYWORDS = frozenset({"VAP", "VAPOR", "VAPOUR", "GAS", "TOP", "OVER", "DIST"})
 _LIQ_KEYWORDS = frozenset({"LIQ", "LIQUID", "BOT", "BOTTOM", "BOTT", "BASE"})
 
 
 def normalise(graph: FlowsheetGraph) -> FlowsheetGraph:
+    _compounds        = list(graph.compounds)
+    _property_package = graph.property_package
     g = graph.copy()
     g = _insert_mixers(g)
     g = _insert_splitters(g)
     g = _repair_vessel_ports(g)
     g = _propagate_phases(g)
+    # Defensive: deepcopy of NetworkX graph can silently drop plain-attribute fields
+    # if the graph has no nodes at copy time; re-stamp them from the pre-copy values.
+    if not g.compounds and _compounds:
+        g.compounds = _compounds
+    if not g.property_package and _property_package:
+        g.property_package = _property_package
     return g
 
 
@@ -51,9 +59,9 @@ def _insert_mixers(graph: FlowsheetGraph) -> FlowsheetGraph:
             if g.unit(mixer_tag):
                 continue
 
-            mixer = NodeIR(tag=mixer_tag, unit_type="Mixer",
-                           params={"dP": 0.0},
-                           metadata={"auto_inserted": True})
+            mixer = make_node("Mixer", mixer_tag,
+                              params={"dP": 0.0},
+                              metadata={"auto_inserted": True})
             g.add_unit(mixer)
 
             # Detach each inlet from node, re-attach to mixer
@@ -107,19 +115,21 @@ def _insert_splitters(graph: FlowsheetGraph) -> FlowsheetGraph:
             equal_frac = round(1.0 / n, 6)
             split_fracs = {s.tag: equal_frac for s in outlets}
 
-            splitter = NodeIR(
-                tag=splitter_tag,
-                unit_type="Splitter",
+            splitter = make_node(
+                "Splitter", splitter_tag,
                 params={"dP": 0.0, "split_fractions": split_fracs},
                 metadata={"auto_inserted": True},
             )
             g.add_unit(splitter)
 
-            # Detach each outlet from node, attach to splitter
-            for stream in outlets:
+            # Detach each outlet from node, attach to splitter.
+            # Assign incremental src_ports so they are distinct on the Splitter
+            # (all streams had src_port=0 from the original single-outlet unit).
+            for port_idx, stream in enumerate(outlets):
                 dst = g.stream_dest(stream.tag)
                 g._g.remove_edge(node.tag, stream.tag)
                 g._g.add_edge(splitter_tag, stream.tag)
+                stream.src_port = port_idx
 
             # Add new stream: node → splitter
             link = EdgeIR(tag=link_tag, metadata={"auto_inserted": True})

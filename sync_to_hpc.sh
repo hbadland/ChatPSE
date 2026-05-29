@@ -1,0 +1,11 @@
+#!/bin/bash
+HPC="hgb25@login.cx3.hpc.imperial.ac.uk"
+DEST="/rds/general/user/hgb25/home/multiAgentFlowsheet"
+scp agents/orchestrator_v2.py agents/executor.py agents/llm.py agents/basis.py "$HPC:$DEST/agents/"
+scp agents/stage1/unit_extractor.py agents/stage1/stream_extractor.py "$HPC:$DEST/agents/stage1/"
+scp agents/stage2/graph_builder.py "$HPC:$DEST/agents/stage2/"
+scp agents/stage3/param_mapper.py "$HPC:$DEST/agents/stage3/"
+scp agents/stage4/error_classifier.py "$HPC:$DEST/agents/stage4/"
+scp dwsim/dwsim_wrapper.py "$HPC:$DEST/dwsim/"
+scp ir/validate.py ir/normalise.py "$HPC:$DEST/ir/"
+scp benchmark/runner.py "$HPC:$DEST/benchmark/"

@@ -95,12 +95,29 @@ class ErrorClassifier:
         if any(e.is_terminal for e in errors):
             return errors
         if _all_unambiguous(errors):
-            return errors
+            final = errors
+        else:
+            llm_errors = self._llm_classify(execution, graph)
+            final = llm_errors if llm_errors else errors
 
-        llm_errors = self._llm_classify(execution, graph)
-        if llm_errors:
-            return llm_errors
-        return errors
+        # When NRTL or UNIQUAC fails to converge and no THERMO_SWITCH is already
+        # present, inject one. Topology fixes alone will never unstick a VLE solver
+        # that can't converge for this compound pair.
+        if not getattr(execution, "solved", True):
+            pkg = getattr(graph, "property_package", "")
+            if (pkg in ("NRTL", "UNIQUAC")
+                    and not any(e.repair_strategy == RepairStrategy.THERMO_SWITCH
+                                for e in final)):
+                final = list(final) + [SimError(
+                    error_type      = ErrorType.CONVERGENCE_FAILURE,
+                    target          = ErrorTarget.global_(),
+                    evidence        = (f"{pkg} VLE solver did not converge — "
+                                       "switching property package"),
+                    repair_strategy = RepairStrategy.THERMO_SWITCH,
+                    severity        = ErrorSeverity.CRITICAL,
+                )]
+
+        return final
 
     def _llm_classify(self, execution, graph) -> list[SimError]:
         summary = _execution_summary(execution)
