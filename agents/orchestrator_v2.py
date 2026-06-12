@@ -26,6 +26,14 @@ from agents.executor import Executor
 from agents.llm import DEFAULT_MODEL
 
 from agents.stage1 import UnitExtractor, StreamExtractor
+from agents.stage1.unit_extractor import SemanticUnits
+from agents.stage1.stream_extractor import SemanticTopology
+try:
+    from agents.stage1.topology_chain import TopologyChain as _TopologyChain
+    _TOPOLOGY_CHAIN_AVAILABLE = True
+except ImportError:
+    _TopologyChain = None
+    _TOPOLOGY_CHAIN_AVAILABLE = False
 from agents.stage2 import GraphBuilder
 from agents.stage3 import ThermoMapper, ParamMapper
 from agents.stage4 import ErrorClassifier, ClassifiedError, RepairAgent
@@ -332,10 +340,23 @@ class OrchestratorV2:
                       f"{self._rule_store.num_active()} active rules from {RULES_PATH}",
                       flush=True)
 
-        self._basis       = BasisAgent(model=model)
-        self._unit_ext    = UnitExtractor(model=model)
-        self._stream_ext  = StreamExtractor(model=model)
-        self._builder     = GraphBuilder()
+        self._basis      = BasisAgent(model=model)
+        self._unit_ext   = UnitExtractor(model=model)
+        self._stream_ext = StreamExtractor(model=model)
+        self._builder    = GraphBuilder()
+
+        if _TOPOLOGY_CHAIN_AVAILABLE:
+            try:
+                self._topology_chain = _TopologyChain(model=model)
+            except Exception as _tc_err:
+                print(f"[ORCH] TopologyChain unavailable ({_tc_err}) — "
+                      "validation tier will fall back to standard extractors",
+                      flush=True)
+                self._topology_chain = None
+        else:
+            print("[ORCH] LangChain not installed — validation tier will use standard extractors",
+                  flush=True)
+            self._topology_chain = None
         self._thermo      = ThermoMapper(model=model, retriever=self._retriever)
         self._params      = ParamMapper(model=model, retriever=self._retriever)
         self._consistency = GlobalConsistencyPass()
@@ -435,22 +456,34 @@ class OrchestratorV2:
             desc_for_units = desc
 
         # ── Stage 1: Semantic parsing ──────────────────────────────────────────
-        # Pass concentration_hints and suggested_compositions from BasisAgent
-        # so StreamExtractor does not need to re-derive feed composition from prose.
+        # validation tier + LangChain available → TopologyChain (4 sequential calls)
+        # all other tiers, or LangChain absent    → UnitExtractor + StreamExtractor
         try:
-            print("[ORCH] step: unit_ext.extract START", flush=True)
-            sem_units = self._unit_ext.extract(desc_for_units, compounds, tier=tier)
-            print(f"[ORCH] step: unit_ext.extract END  units={[u.tag for u in sem_units.units]}", flush=True)
+            if tier == "validation" and self._topology_chain is not None:
+                print("[ORCH] step: topology_chain.extract START (validation tier)", flush=True)
+                _tc_units, _tc_streams = self._topology_chain.extract(desc, compounds)
+                sem_units = SemanticUnits(units=_tc_units)
+                sem_topo  = SemanticTopology(streams=_tc_streams)
+                print(
+                    f"[ORCH] step: topology_chain.extract END  "
+                    f"units={[u.tag for u in sem_units.units]}  "
+                    f"streams={[s.tag for s in sem_topo.streams]}",
+                    flush=True,
+                )
+            else:
+                print("[ORCH] step: unit_ext.extract START", flush=True)
+                sem_units = self._unit_ext.extract(desc_for_units, compounds, tier=tier)
+                print(f"[ORCH] step: unit_ext.extract END  units={[u.tag for u in sem_units.units]}", flush=True)
 
-            print("[ORCH] step: stream_ext.extract START", flush=True)
-            sem_topo  = self._stream_ext.extract(
-                desc, compounds,
-                unit_tags               = [u.tag  for u in sem_units.units],
-                unit_roles              = {u.tag: u.role for u in sem_units.units},
-                concentration_hints     = basis.concentration_hints or [],
-                suggested_compositions  = basis.suggested_compositions or {},
-            )
-            print("[ORCH] step: stream_ext.extract END", flush=True)
+                print("[ORCH] step: stream_ext.extract START", flush=True)
+                sem_topo  = self._stream_ext.extract(
+                    desc, compounds,
+                    unit_tags               = [u.tag  for u in sem_units.units],
+                    unit_roles              = {u.tag: u.role for u in sem_units.units},
+                    concentration_hints     = basis.concentration_hints or [],
+                    suggested_compositions  = basis.suggested_compositions or {},
+                )
+                print("[ORCH] step: stream_ext.extract END", flush=True)
 
             # Post-extraction recycle guard: for any is_recycle=True stream whose
             # recycle_target is absent or not an exact unit tag, attempt fuzzy

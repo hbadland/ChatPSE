@@ -6,3 +6,5 @@ pythonnet>=3.0.1
 chromadb
 torch==2.1.0
 sentence-transformers
+langchain
+langchain-community

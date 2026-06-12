@@ -58,10 +58,6 @@ Rules:
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
 - Include a Mixer only when combining two or more feed streams is described
 - Include a Splitter only when splitting a stream into two fractions is described
-- Each distillation column, absorber, or stripper requires at minimum: Heater (reboiler) + Cooler (condenser) + Vessel (separator)
-- A decanter, "liquid-liquid separator", or "liquid-liquid phase splitting" → Vessel
-- A regenerator → Heater (reboiler) + Vessel (separator)
-- flash drum / knockout drum / surge drum → Vessel; heat exchanger → Heater (heating) or Cooler (cooling)
 - Use ConversionReactor for reactor, reformer, converter, shift reactor, methanator, or furnace used for reaction
 - IGNORE preamble about property packages, thermodynamic models, or simulation settings\
 """
@@ -93,10 +89,6 @@ Rules:
 - Include a Splitter only when the description explicitly mentions splitting a stream into two fractions
 - Use ConversionReactor for any unit described as: reactor, reformer, converter, shift reactor, methanator,
   or a furnace/burner used for chemical reaction (not purely for heating)
-- Each distillation column, absorber, or stripper requires at minimum: Heater (reboiler) + Cooler (condenser) + Vessel (separator)
-- A decanter, "liquid-liquid separator", or "liquid-liquid phase splitting" → Vessel
-- A regenerator → Heater (reboiler) + Vessel (separator)
-- flash drum / knockout drum / surge drum → Vessel; heat exchanger → Heater (heating) or Cooler (cooling)
 - IGNORE any preamble, commentary, or metadata about property packages, thermodynamic models,
   configuration validity, or simulation settings — extract only the physical unit operations
 
@@ -188,20 +180,16 @@ _TAG_ABBREV: dict[str, str] = {
 }
 
 # Each tuple: (regex_pattern, [(unit_type, role)]).
-# Applied in order — one match emits all listed unit types (e.g. "column" → Heater+Cooler+Vessel).
+# Applied in order — one match emits all listed unit types (e.g. "column" → Heater+Cooler).
 _KW_UNITS: list[tuple[str, list[tuple[str, str]]]] = [
     (r"\breactor\b|\breformer\b|\bconverter\b|\bshift\s+reactor\b|\bmethanat\w*",
      [("ConversionReactor", "chemical reaction")]),
-    (r"\bcolumn\b|\bstripper\b|\babsorber\b",
-     [("Heater", "column reboiler"), ("Cooler", "column condenser"), ("Vessel", "column separator")]),
-    (r"\bregenerator\b",
-     [("Heater", "regenerator reboiler"), ("Vessel", "regenerator separator")]),
-    (r"\bdecanter\b|\bliquid[- ]liquid\s+(?:separator|splitter|phase\s+split\w*)",
+    (r"\bcolumn\b",
+     [("Heater", "column reboiler"), ("Cooler", "column condenser")]),
+    (r"\bdecanter\b",
      [("Vessel", "liquid-liquid decanter")]),
-    (r"\bvessel\b|\bflash\s+drum\b|\bknockout\s+drum\b|\bsurge\s+drum\b",
+    (r"\bvessel\b|\bflash\s+drum\b",
      [("Vessel", "flash separation")]),
-    (r"\bheat\s+exchanger\b",
-     [("Heater", "heat exchange")]),
     (r"\bheater\b|\breboiler\b|\bfurnace\b",
      [("Heater", "heat duty")]),
     (r"\bcooler\b|\bcondenser\b|\bchiller\b",
