@@ -217,7 +217,7 @@ def _groq_chat(prompt: str, system: str, model: str, max_tokens: int,
     return _strip_thinking(raw)
 
 
-_OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "120"))
+_OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "300"))
 
 
 def _ollama_chat(prompt: str, system: str, model: str, max_tokens: int,

@@ -69,14 +69,30 @@ Schema:
   ]
 }
 
+Optional recycle fields — include ONLY for streams explicitly described as recycled:
+  "is_recycle": true,          (default: false — omit for all normal streams)
+  "recycle_target": "MX-01"   (must be an exact unit tag from the Units list)
+
 Rules:
 - Every unit must have at least one inlet and one outlet stream
 - Feed streams (src=null) MUST include T [K], P [Pa], flow [mol/s], composition (mole fractions summing to 1.0)
 - Intermediate and product streams carry tag, src, dst only — do NOT guess T/P/composition
 - Units never connect directly — every unit-to-unit link needs a stream between them
 - A Vessel has TWO outlet streams: vapour (name containing VAP/VAPOR/GAS) and liquid (name containing LIQ/LIQUID)
-- All temperatures in Kelvin, all pressures in Pascals
-- Reasonable defaults: ambient feed at T=298.15 K, P=101325 Pa unless described otherwise
+- All temperatures in Kelvin, all pressures in Pascals — never use atm, bar, or kPa strings
+- Qualitative pressure defaults (use these exact Pa values when pressure is described in words):
+    "sub-atmospheric" / "below atmospheric" / "below ambient"  → P = 50000
+    "near-atmospheric" / "approximately atmospheric"            → P = 101325
+    "atmospheric"                                               → P = 101325
+    "vacuum"                                                    → P = 10000
+    "moderate pressure" / "medium pressure"                     → P = 300000
+    "high pressure" / "elevated pressure"                       → P = 1000000
+- Reasonable defaults: T=298.15 K, P=101325 Pa unless the description states otherwise
+- Recycle streams: set "is_recycle": true and "recycle_target": "<unit_tag>" ONLY when the
+  description uses one of these exact phrases: "recycled back to", "returned to",
+  "fed back to", "recirculated to", "recycled to". recycle_target MUST be an exact unit
+  tag from the Units list. DEFAULT for all streams: is_recycle=false — when in doubt,
+  do NOT tag as recycle.
 
 Examples:
 
@@ -100,19 +116,58 @@ Output:
   {"tag": "COMP",  "src": "CP-01", "dst": "CL-01", "is_feed": false},
   {"tag": "COOL",  "src": "CL-01", "dst": "EX-01", "is_feed": false},
   {"tag": "EXPND", "src": "EX-01", "dst": null,    "is_feed": false}
+]}
+
+Process: "Feed an acetone-water-chloroform mixture to an extractive distillation column operating at sub-atmospheric pressure. Overhead is condensed; bottoms leave as liquid product."
+Units: HT-01 (Heater — column reboiler), CL-01 (Cooler — column condenser), V-01 (Vessel — column separator)
+Output:
+{"streams": [
+  {"tag": "FEED", "src": null,    "dst": "HT-01", "is_feed": true,
+   "T": 298.15, "P": 50000.0, "flow": 1.0,
+   "composition": {"Acetone": 0.4, "Water": 0.3, "Chloroform": 0.3}},
+  {"tag": "HOT",  "src": "HT-01", "dst": "CL-01", "is_feed": false},
+  {"tag": "COOL", "src": "CL-01", "dst": "V-01",  "is_feed": false},
+  {"tag": "VAP",  "src": "V-01",  "dst": null,    "is_feed": false},
+  {"tag": "LIQ",  "src": "V-01",  "dst": null,    "is_feed": false}
+]}
+
+Process: "Pump a toluene feed to high pressure, heat it in a heat exchanger, then flash in a knockout drum"
+Units: PM-01 (Pump), HT-01 (Heater), V-01 (Vessel)
+Output:
+{"streams": [
+  {"tag": "FEED",   "src": null,    "dst": "PM-01", "is_feed": true,
+   "T": 298.15, "P": 101325.0, "flow": 1.0, "composition": {"Toluene": 1.0}},
+  {"tag": "PUMP",   "src": "PM-01", "dst": "HT-01", "is_feed": false},
+  {"tag": "HOT",    "src": "HT-01", "dst": "V-01",  "is_feed": false},
+  {"tag": "VAP",    "src": "V-01",  "dst": null,    "is_feed": false},
+  {"tag": "LIQ",    "src": "V-01",  "dst": null,    "is_feed": false}
 ]}"""
+
+
+# Ordered most-specific first so the first match wins.
+_PRESSURE_QUALIFIERS: list[tuple[str, float]] = [
+    (r"\bsub[- ]?atmospheric\b|\bbelow\s+atmospheric\b|\bbelow\s+ambient\b", 50_000.0),
+    (r"\bnear[- ]?atmospheric\b|\bapproximately\s+atmospheric\b",            101_325.0),
+    (r"\batmospheric\b",                                                      101_325.0),
+    (r"\bvacuum\b",                                                            10_000.0),
+    (r"\bhigh[- ]?pressure\b|\belevated\s+pressure\b",                     1_000_000.0),
+    (r"\bmoderate[- ]?pressure\b|\bmedium[- ]?pressure\b",                   300_000.0),
+    (r"\blow[- ]?pressure\b",                                                  50_000.0),
+]
 
 
 @dataclass
 class SemanticStream:
-    tag:         str
-    src:         Optional[str]
-    dst:         Optional[str]
-    is_feed:     bool
-    T:           Optional[float] = None
-    P:           Optional[float] = None
-    flow:        Optional[float] = None
-    composition: dict            = field(default_factory=dict)
+    tag:            str
+    src:            Optional[str]
+    dst:            Optional[str]
+    is_feed:        bool
+    T:              Optional[float] = None
+    P:              Optional[float] = None
+    flow:           Optional[float] = None
+    composition:    dict            = field(default_factory=dict)
+    is_recycle:     bool            = False
+    recycle_target: Optional[str]  = None
 
     def validate(self, unit_tags: set[str]) -> list[str]:
         errors = []
@@ -140,6 +195,14 @@ class SemanticStream:
                 if abs(total - 1.0) > 0.01:
                     errors.append(
                         f"Feed stream '{self.tag}' composition sums to {total:.4f}, not 1.0")
+        if self.is_recycle:
+            if not self.recycle_target:
+                errors.append(
+                    f"Stream '{self.tag}' is_recycle=true but recycle_target is null")
+            elif self.recycle_target not in unit_tags:
+                errors.append(
+                    f"Stream '{self.tag}' recycle_target='{self.recycle_target}' "
+                    "not in unit list")
         return errors
 
 
@@ -209,6 +272,7 @@ class StreamExtractor:
                 data    = _parse_json(raw)
                 streams = [_parse_stream(s) for s in data.get("streams", [])]
                 streams = _reconcile_unit_refs(streams, unit_tag_set)
+                _resolve_qualitative_pressure(description, streams)
                 result  = SemanticTopology(streams=streams, raw_json=data)
                 errors  = result.validate(unit_tag_set)
                 if not errors:
@@ -313,15 +377,34 @@ def _reconcile_unit_refs(
 
 def _parse_stream(s: dict) -> SemanticStream:
     return SemanticStream(
-        tag         = s["tag"],
-        src         = s.get("src"),
-        dst         = s.get("dst"),
-        is_feed     = bool(s.get("is_feed", False)),
-        T           = s.get("T"),
-        P           = s.get("P"),
-        flow        = s.get("flow"),
-        composition = s.get("composition", {}),
+        tag            = s["tag"],
+        src            = s.get("src"),
+        dst            = s.get("dst"),
+        is_feed        = bool(s.get("is_feed", False)),
+        T              = s.get("T"),
+        P              = s.get("P"),
+        flow           = s.get("flow"),
+        composition    = s.get("composition", {}),
+        is_recycle     = bool(s.get("is_recycle", False)),
+        recycle_target = s.get("recycle_target"),
     )
+
+
+def _resolve_qualitative_pressure(description: str,
+                                   streams: list["SemanticStream"]) -> None:
+    """Set P on feed streams whose P is None when the description uses a qualitative term."""
+    desc_lower = description.lower()
+    for pattern, pa_value in _PRESSURE_QUALIFIERS:
+        if re.search(pattern, desc_lower):
+            import sys as _sys
+            for s in streams:
+                if s.is_feed and s.P is None:
+                    s.P = pa_value
+                    print(
+                        f"[STREAM_EXT] qualitative pressure '{pattern}' → "
+                        f"stream '{s.tag}' P={pa_value} Pa",
+                        flush=True, file=_sys.stderr)
+            return  # first (most specific) match only
 
 
 def _parse_json(text: str) -> dict:

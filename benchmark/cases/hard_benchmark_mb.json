@@ -1,0 +1,933 @@
+[
+  {
+    "id": "HB_MB_01",
+    "name": "n-Heptane–water heterogeneous flash — missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Heat an n-heptane and water mixture (50 mol% each) at 25°C and 1 atm to 105°C, then flash-separate in a vessel. n-Heptane and water are essentially immiscible and form two separate liquid phases at ambient conditions. Accurate VLE for this heterogeneous system requires NRTL or UNIQUAC with LLE-fitted binary interaction parameters, which are not present in the BIP corpus for this pair.",
+    "compounds": [
+      "n-Heptane",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "n-Heptane",
+        "compound_b": "Water",
+        "model": "NRTL",
+        "note": "Heptane/water LLE-VLE BIP absent from corpus. Only n-Hexane/Water is covered."
+      }
+    ],
+    "source": "Steam distillation pre-assessment. n-Heptane and water are the archetypal immiscible liquid pair. At 105°C both pure bps are exceeded (n-heptane bp=98.4°C, water bp=100°C) and the system enters a heterogeneous vapour-liquid-liquid regime that PR cannot represent.",
+    "notes": "n-Heptane bp=98.4°C, water bp=100°C. Two-liquid-phase system at <98°C; steam distillation regime above both bps. PR fallback treats as single liquid → grossly wrong phase split. Expected system behaviour: CalibrationAgent fails to inject BIPs → THERMO_SWITCH to PR → poor convergence or wrong result.",
+    "expected_repair_iterations": 3,
+    "expected_convergence": false,
+    "skip_reason": "three-phase LLE not supported in current wrapper — heptane/water immiscible pair requires VLLE which NestedLoops flash cannot resolve"
+  },
+  {
+    "id": "HB_MB_02",
+    "name": "Glycerol–methanol heat-flash concentration — missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Concentrate a glycerol and methanol mixture (30 mol% glycerol) at 25°C and 1 atm by heating to 70°C to vaporise methanol preferentially, then flash-separating in a vessel. Glycerol (boiling point 290°C) has extremely high viscosity and strong hydrogen bonding, requiring NRTL or UNIQUAC for accurate vapour-liquid equilibrium. No binary interaction parameters exist for glycerol-methanol in the BIP corpus.",
+    "compounds": [
+      "Glycerol",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Glycerol",
+        "compound_b": "Methanol",
+        "model": "NRTL",
+        "note": "Glycerol is in DWSIM but glycerol/methanol BIP absent. Corpus has glycerol/water only."
+      }
+    ],
+    "source": "Biodiesel glycerol-methanol recovery. Glycerol is the major by-product of transesterification; methanol must be stripped from the crude glycerol phase. The enormous bp difference (225 K) makes this operationally simple but thermodynamically complex due to glycerol's three hydroxyl groups.",
+    "notes": "Glycerol bp=290°C, methanol bp=64.7°C. At 70°C essentially all methanol vaporises and glycerol stays liquid — the physical separation is trivial, but NRTL is required for accurate activity coefficients. PR fallback may converge numerically but gives wrong methanol partial pressure in the liquid phase. No glycerol/methanol BIP in corpus.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MB_03",
+    "name": "Formic acid–n-hexane heat-flash separation — missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Partially separate a formic acid and n-hexane mixture (50 mol% each) at 25°C and 1 atm: heat to 75°C to vaporise n-hexane selectively (formic acid boiling point 100.7°C, n-hexane boiling point 68.7°C), then flash-separate in a vessel. Formic acid and n-hexane are nearly immiscible in the liquid phase. NRTL binary interaction parameters for formic acid and n-hexane are not present in the BIP corpus, though formic acid BIPs with water, methanol, and ethanol are available.",
+    "compounds": [
+      "Formic acid",
+      "n-Hexane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Formic acid",
+        "compound_b": "n-Hexane",
+        "model": "NRTL",
+        "note": "Formic acid/n-hexane BIP absent. Corpus has formic acid with water, methanol, ethanol only."
+      }
+    ],
+    "source": "Formic acid solvent recovery from hydrocarbon extraction. Formic acid and linear alkanes are nearly immiscible — the liquid-phase non-ideality is dominated by the acid's propensity to dimerize and its very low miscibility with nonpolar solvents.",
+    "notes": "Formic acid bp=100.7°C, n-hexane bp=68.7°C. At 75°C, n-hexane is well above its bp and selectively vaporises; formic acid stays mostly liquid. PR fallback cannot model the acid/alkane immiscibility — it will predict partial miscibility where in reality two liquid phases exist. Heat target in [340K, 358K].",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MB_04",
+    "name": "Ethylbenzene–n-heptane heat-flash — PR fallback correct",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Partially separate an ethylbenzene and n-heptane mixture (40 mol% ethylbenzene) at 25°C and 1 atm: heat to 110°C to vaporise n-heptane selectively (n-heptane boiling point 98.4°C, ethylbenzene boiling point 136°C), then flash-separate in a vessel. Although no NRTL binary interaction parameters exist for this pair in the BIP corpus, Peng-Robinson EOS is an adequate description for this near-ideal aromatic-alkane system.",
+    "compounds": [
+      "Ethylbenzene",
+      "n-Heptane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 375,
+          "T_max_K": 395
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Ethylbenzene",
+        "compound_b": "n-Heptane",
+        "model": "NRTL",
+        "note": "No NRTL BIP for ethylbenzene/n-heptane. Corpus has ethylbenzene/water and ethylbenzene/styrene. PR is actually correct here."
+      }
+    ],
+    "source": "Aromatics-alkane partial flash from BTX reformate. Ethylbenzene/n-heptane is a near-ideal aromatic+alkane system with small positive deviations from Raoult's Law. This case tests whether ThermoMapper correctly falls back to PR (rather than trying NRTL and failing) — the PR fallback is the right answer here.",
+    "notes": "Ethylbenzene bp=136°C, n-heptane bp=98.4°C. At 110°C, n-heptane vaporises selectively. Near-ideal system: PR/SRK is the correct thermodynamic model. No NRTL BIP needed or expected. Tests the ThermoMapper's ability to distinguish cases where missing BIPs are a genuine problem vs cases where EOS is simply more appropriate.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_MB_05",
+    "name": "Cumene–n-hexane heat-flash — PR fallback correct",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Partially separate a cumene and n-hexane mixture (35 mol% cumene) at 25°C and 1 atm: heat to 80°C to vaporise n-hexane selectively (n-hexane boiling point 68.7°C, cumene boiling point 152°C), then flash-separate in a vessel. No NRTL binary interaction parameters exist for cumene and n-hexane in the BIP corpus, but Peng-Robinson is adequate for this near-ideal alkylbenzene-alkane system.",
+    "compounds": [
+      "Cumene",
+      "n-Hexane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 345,
+          "T_max_K": 365
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.2
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Cumene",
+        "compound_b": "n-Hexane",
+        "model": "NRTL",
+        "note": "No NRTL BIP for cumene/n-hexane. PR is the appropriate model for this near-ideal system."
+      }
+    ],
+    "source": "Cumene process intermediate separation. Cumene (isopropylbenzene) and n-hexane represent a class of alkylbenzene+alkane separations common in petrochemical processes. The large 83 K boiling point spread (68.7°C vs 152°C) makes this an easy flash separation once the correct EOS is applied.",
+    "notes": "Cumene bp=152°C, n-hexane bp=68.7°C. At 80°C n-hexane is well above its bp and essentially fully vaporises (at 35% cumene feed). Separation is clean due to large bp difference. PR/SRK correct — no NRTL needed. Tests correct EOS selection when BIPs are absent.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_MB_06",
+    "name": "Styrene–n-heptane heat-flash-cool — PR fallback correct",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Separate a styrene and n-heptane mixture (40 mol% styrene) at 25°C and 1 atm using three units: heat to 115°C to vaporise n-heptane selectively (n-heptane boiling point 98.4°C, styrene boiling point 145°C), flash-separate in a vessel, then cool the styrene-rich liquid bottoms to 40°C for product collection. No NRTL BIP exists for styrene and n-heptane, but Peng-Robinson is appropriate for this aromatic-alkane system.",
+    "compounds": [
+      "Styrene",
+      "n-Heptane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 380,
+          "T_max_K": 398
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.15
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Styrene",
+        "compound_b": "n-Heptane",
+        "model": "NRTL",
+        "note": "No NRTL BIP for styrene/n-heptane. Corpus has ethylbenzene/styrene but not styrene with alkanes. PR is correct here."
+      }
+    ],
+    "source": "Styrene monomer recovery from hydrocarbon diluent. Styrene and n-heptane are encountered together in the ethylbenzene dehydrogenation process. Near-ideal VLE makes PR adequate; the vinyl group in styrene introduces slight polarity but insufficient for activity-coefficient models.",
+    "notes": "Styrene bp=145°C, n-heptane bp=98.4°C. At 115°C, n-heptane vaporises selectively. Cooler brings styrene-rich liquid to 40°C for collection. PR/SRK correct — styrene is mildly polar but the aromatic/alkane system is near-ideal. Ethylbenzene/styrene BIP IS in corpus, but styrene/n-heptane is not — tests EOS selection over NRTL fallback.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MB_07",
+    "name": "1-Propanol–n-heptane heat-flash — azeotrope, missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Separate a 1-propanol and n-heptane mixture (50 mol% 1-propanol) at 25°C and 1 atm: heat to 80°C to operate above the minimum-boiling azeotrope (approximately 71.7°C), then flash-separate in a vessel. 1-propanol and n-heptane form a minimum-boiling azeotrope that cannot be predicted by Peng-Robinson EOS. NRTL binary interaction parameters for this pair are not present in the BIP corpus — pairs 1-propanol/n-hexane and 1-propanol/n-octane are covered but not 1-propanol/n-heptane.",
+    "compounds": [
+      "1-Propanol",
+      "n-Heptane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "1-Propanol",
+        "compound_b": "n-Heptane",
+        "model": "NRTL",
+        "note": "BIP for 1-propanol/n-heptane absent. Corpus has 1-propanol/n-hexane and 1-propanol/n-octane — the C7 entry is specifically missing, likely due to incomplete DECHEMA data coverage."
+      }
+    ],
+    "source": "Alcohol-alkane extractive distillation. 1-Propanol and n-heptane have almost identical boiling points (97.2°C vs 98.4°C, a 1.2 K difference), making their minimum-boiling azeotrope particularly important for separation design. PR completely misses the azeotrope — only NRTL with the correct BIP can predict it.",
+    "notes": "1-Propanol bp=97.2°C, n-heptane bp=98.4°C — a 1.2 K spread. Min-boiling azeotrope at ~71.7°C. The near-identical pure boiling points mean the relative volatility in the non-azeotrope region is determined almost entirely by activity coefficients. BIP n-hexane/1-propanol ✓ and n-octane/1-propanol ✓ but n-heptane/1-propanol specifically absent.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MB_08",
+    "name": "2-Butanol–n-hexane heat-flash — alcohol-alkane azeotrope, missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Partially separate a 2-butanol and n-hexane mixture (40 mol% 2-butanol) at 25°C and 1 atm: heat to 70°C to operate above the minimum-boiling azeotrope (approximately 61°C) between secondary butanol and n-hexane, then flash-separate in a vessel. NRTL binary interaction parameters for 2-butanol and n-hexane are not in the BIP corpus — the corpus covers 2-butanol with benzene, toluene, and water, but not with linear alkanes.",
+    "compounds": [
+      "2-Butanol",
+      "n-Hexane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "2-Butanol",
+        "compound_b": "n-Hexane",
+        "model": "NRTL",
+        "note": "2-butanol/n-hexane BIP absent. Corpus has 2-butanol/benzene, 2-butanol/toluene, 2-butanol/water but not 2-butanol with linear alkanes."
+      }
+    ],
+    "source": "sec-Butanol recovery from hydrocarbon solvent. Secondary alcohols with linear alkanes form minimum-boiling azeotropes driven by the large positive deviations from Raoult's Law (secondary OH group vs nonpolar alkane). The azeotrope at ~61°C makes simple distillation impossible without accurate activity coefficients.",
+    "notes": "2-Butanol bp=99.5°C, n-hexane bp=68.7°C. Min-boiling azeotrope at approximately 61°C (337K) — system operates 9 K above the azeotrope at 70°C. PR fallback gives no azeotrope prediction, leading to incorrect vapour composition. BIPs for 2-butanol/benzene and 2-butanol/toluene ARE in corpus but alkane pair is missing.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MB_09",
+    "name": "Methyl acetate–n-hexane heat-flash-cool — ester-alkane azeotrope, missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Partially separate a methyl acetate and n-hexane mixture (50 mol% each) at 25°C and 1 atm using three units: heat to 60°C to operate just above the minimum-boiling azeotrope at 54.8°C (approximately 60 mol% methyl acetate), flash-separate in a vessel, then cool the methyl-acetate-rich liquid bottoms to 25°C. The methyl acetate and n-hexane azeotrope cannot be predicted without NRTL binary interaction parameters, which are absent from the BIP corpus for this pair.",
+    "compounds": [
+      "Methyl acetate",
+      "n-Hexane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Methyl acetate",
+        "compound_b": "n-Hexane",
+        "model": "NRTL",
+        "note": "Methyl acetate/n-hexane BIP absent. Corpus has methyl acetate/toluene and methyl acetate/water but not methyl acetate with alkanes."
+      }
+    ],
+    "source": "Methyl acetate solvent recovery from hexane extraction. Methyl acetate (bp=57.1°C) forms a minimum-boiling azeotrope with n-hexane (bp=68.7°C) at 54.8°C. The heater target must sit in the narrow 5 K window between the azeotrope bp (54.8°C) and methyl acetate bp (57.1°C).",
+    "notes": "Methyl acetate bp=57.1°C, n-hexane bp=68.7°C. Min-boiling azeotrope at 54.8°C (327.9K), ~60% methyl acetate. Heater must target [60°C, 65°C] — a 5 K window above the azeotrope. Corpus has methyl acetate/methanol ✓ and methanol/methyl acetate ✓ but the methyl acetate/n-hexane ester-alkane BIP is absent.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MB_10",
+    "name": "Acetic acid–n-hexane heat-flash — immiscible acid-alkane, missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Partially separate an acetic acid and n-hexane mixture (50 mol% each) at 25°C and 1 atm: heat to 80°C to vaporise n-hexane preferentially (n-hexane boiling point 68.7°C, acetic acid boiling point 118°C), then flash-separate in a vessel. Acetic acid and n-hexane are nearly immiscible in the liquid phase, and acetic acid dimerises in the vapour phase. NRTL binary interaction parameters for acetic acid and n-hexane are not in the BIP corpus — acetic acid BIPs with benzene, ethanol, water, and toluene are present but not with alkanes.",
+    "compounds": [
+      "Acetic acid",
+      "n-Hexane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Acetic acid",
+        "compound_b": "n-Hexane",
+        "model": "NRTL",
+        "note": "Acetic acid/n-hexane BIP absent. Corpus has acetic acid with benzene, ethanol, ethyl acetate, methanol, n-butyl acetate, toluene, and water — but not with linear alkanes."
+      }
+    ],
+    "source": "Acetic acid solvent extraction from hydrocarbon stream. Acetic acid and n-hexane represent the class of carboxylic acid + alkane systems with near-total immiscibility at ambient conditions. Acetic acid vapour-phase dimerisation adds complexity beyond standard NRTL treatment.",
+    "notes": "Acetic acid bp=118°C, n-hexane bp=68.7°C. Two liquid phases at room temperature — nearly immiscible. At 80°C n-hexane is above its bp and vaporises into the acetic acid-rich vapour space. PR fallback cannot model the acid/alkane immiscibility. Acetic acid dimerisation in vapour phase requires special corrections not handled by standard NRTL or PR.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MB_11",
+    "name": "Nitromethane–toluene heat-flash-cool — polar-aromatic, missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Partially separate a nitromethane and toluene mixture (45 mol% nitromethane) at 25°C and 1 atm using three units: heat to 95°C to operate in the two-phase region (nitromethane boiling point 101.2°C, toluene boiling point 110.6°C), flash-separate in a vessel, then cool the toluene-rich liquid bottoms to 40°C. No NRTL binary interaction parameters exist for nitromethane and toluene in the BIP corpus — the corpus covers benzene/nitromethane and nitromethane/water but not nitromethane with alkylated aromatics.",
+    "compounds": [
+      "Nitromethane",
+      "Toluene"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Nitromethane",
+        "compound_b": "Toluene",
+        "model": "NRTL",
+        "note": "Nitromethane/toluene BIP absent. Corpus has benzene/nitromethane and nitromethane/water but the toluene pair is missing despite being in the same chemical family as benzene."
+      }
+    ],
+    "source": "Nitromethane-toluene extraction process. Nitromethane (a polar aprotic nitro compound) and toluene are used together in various chemical synthesis and extraction processes. The pair likely forms a minimum-boiling heterogeneous azeotrope near 89°C. Benzene/nitromethane BIP is in the corpus but the toluene analogue is not.",
+    "notes": "Nitromethane bp=101.2°C, toluene bp=110.6°C. Similar boiling points (9.4 K difference) make accurate VLE critical. Literature suggests a heterogeneous azeotrope near 89°C. Corpus has benzene/nitromethane ✓ — a structurally similar pair — but the methyl-substituted toluene analogue is absent. PR fallback will miss any azeotrope and miscibility gap.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MB_12",
+    "name": "Triethylamine–benzene heat-flash — amine-aromatic, missing BIP",
+    "tier": "missing_bip",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Partially separate a triethylamine and benzene mixture (45 mol% triethylamine) at 25°C and 1 atm: heat to 85°C to operate above the benzene boiling point (80.1°C) and close to the triethylamine boiling point (89.5°C), then flash-separate in a vessel to recover benzene-enriched vapour. No NRTL binary interaction parameters exist for triethylamine and benzene in the BIP corpus — only triethylamine/water is covered.",
+    "compounds": [
+      "Triethylamine",
+      "Benzene"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.05
+        }
+      ]
+    },
+    "missing_bip_pairs": [
+      {
+        "compound_a": "Triethylamine",
+        "compound_b": "Benzene",
+        "model": "NRTL",
+        "note": "Triethylamine/benzene BIP absent. Corpus has triethylamine/water only. The amine/aromatic pair is thermodynamically significant due to π-electron donation from benzene to the amine nitrogen."
+      }
+    ],
+    "source": "Triethylamine catalyst recovery from benzene reaction medium. TEA (bp=89.5°C) and benzene (bp=80.1°C) have close boiling points (9.4 K spread), making flash separation sensitive to activity coefficients. The amine lone-pair to benzene π-system interaction produces non-ideal liquid-phase behaviour that PR cannot capture.",
+    "notes": "Triethylamine bp=89.5°C, benzene bp=80.1°C. Close bp pair — only 9.4 K difference. Heater at 85°C sits between both bps; partial flash produces benzene-enriched vapour. Non-ideality from amine/aromatic electron donation interaction requires NRTL. Corpus has triethylamine/water ✓ but the organic amine/benzene pair is absent.",
+    "expected_repair_iterations": 2
+  }
+]

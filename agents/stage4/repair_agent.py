@@ -418,6 +418,9 @@ class RepairAgent:
 
         feed_T, feed_P = _inlet_conditions(graph, node.tag)
         bp             = bubble_point_K(graph.compounds, feed_P or 101_325.0)
+        import sys as _sys
+        print(f"[REPAIR] single-error: {node.tag}.{param_name} bp={bp}",
+              flush=True, file=_sys.stderr)
         tried_vals     = memory.tried_values(error.target.tag, param_name)
         ref_val        = node.params.get(param_name)
         uncertainty    = memory.uncertainty_score(error.target.tag, param_name)
@@ -716,33 +719,56 @@ def _deterministic_candidates(
                         (bp + 80.0, "bp+80 [wide/uncertain]", "heuristic"),
                     ]
             raw_candidates += [
-                (ft + 25.0, "feed T+25 [low]",  "heuristic"),
-                (ft + 50.0, "feed T+50 [med]",  "heuristic"),
-                (ft + 80.0, "feed T+80 [high]", "heuristic"),
+                (ft +  25.0, "feed T+25 [low]",   "heuristic"),
+                (ft +  50.0, "feed T+50 [med]",   "heuristic"),
+                (ft +  75.0, "feed T+75 [high]",  "heuristic"),
+                (ft + 100.0, "feed T+100 [wide]", "heuristic"),
             ]
             if high_uncertainty:
                 raw_candidates.append((ft + 120.0, "feed T+120 [wide]", "heuristic"))
 
         elif isinstance(node, CoolerNode):
             raw_candidates += [
-                (max(ft - 20.0, 273.15), "feed T-20 [low]",  "heuristic"),
-                (max(ft - 50.0, 273.15), "feed T-50 [med]",  "heuristic"),
-                (max(ft - 80.0, 273.15), "feed T-80 [high]", "heuristic"),
+                (max(ft -  20.0, 233.15), "feed T-20 [low]",      "heuristic"),
+                (max(ft -  40.0, 233.15), "feed T-40 [med-lo]",   "heuristic"),
+                (max(ft -  60.0, 233.15), "feed T-60 [med-hi]",   "heuristic"),
+                (max(ft -  80.0, 233.15), "feed T-80 [high]",     "heuristic"),
+                (max(ft - 100.0, 233.15), "feed T-100 [cryo-lo]", "heuristic"),
+                (max(ft - 120.0, 233.15), "feed T-120 [cryo-mi]", "heuristic"),
+                (max(ft - 150.0, 233.15), "feed T-150 [cryo-hi]", "heuristic"),
+                # Absolute cryogenic anchors — effective when feed T is near-atmospheric
+                # and the relative tiers all collapse near the diversity threshold.
+                (273.15, "absolute 273 K (0°C)",   "heuristic"),
+                (253.15, "absolute 253 K (-20°C)", "heuristic"),
+                (233.15, "absolute 233 K (-40°C)", "heuristic"),
             ]
             if high_uncertainty:
-                raw_candidates.append((max(ft - 120.0, 273.15), "feed T-120 [wide]", "heuristic"))
+                raw_candidates.append(
+                    (max(ft - 180.0, 213.15), "feed T-180 [cryo-wide]", "heuristic"))
 
     elif param_name == "P_out":
         fp = feed_P or 101_325.0
 
         if node.unit_type in ("Pump", "Compressor"):
             raw_candidates += [
-                (fp * 3.0,  "feed P×3 [low]",   "deterministic"),
-                (fp * 5.0,  "feed P×5 [med]",   "deterministic"),
-                (fp * 10.0, "feed P×10 [high]",  "deterministic"),
+                (fp *  2.0, "feed P×2 [lo]",      "deterministic"),
+                (fp *  3.0, "feed P×3 [low]",     "deterministic"),
+                (fp *  5.0, "feed P×5 [med]",     "deterministic"),
+                (fp *  7.0, "feed P×7 [med-hi]",  "deterministic"),
+                (fp * 10.0, "feed P×10 [high]",   "deterministic"),
+                (fp * 15.0, "feed P×15 [v-high]", "heuristic"),
+                (fp * 20.0, "feed P×20 [wide]",   "heuristic"),
+                # Absolute pressure anchors — prevent pool exhaustion when fp ≈ 101325 Pa
+                # and relative multiples cluster below the diversity threshold, or when
+                # feed pressure is unknown and the description implies a target pressure.
+                (  500_000.0, "absolute 5 bar",    "heuristic"),
+                (1_000_000.0, "absolute 10 bar",   "heuristic"),
+                (2_000_000.0, "absolute 20 bar",   "heuristic"),
+                (5_000_000.0, "absolute 50 bar",   "heuristic"),
+               (10_000_000.0, "absolute 100 bar",  "heuristic"),
             ]
             if high_uncertainty:
-                raw_candidates.append((fp * 20.0, "feed P×20 [wide]", "heuristic"))
+                raw_candidates.append((fp * 30.0, "feed P×30 [ultra-wide]", "heuristic"))
         elif node.unit_type == "Expander":
             raw_candidates += [
                 (max(fp / 2.0, 101_325.0), "feed P/2 [low]",  "deterministic"),
@@ -753,6 +779,7 @@ def _deterministic_candidates(
     # ── Build candidates, enforce diversity ───────────────────────────────────
     candidates: list[RepairCandidate] = []
     accepted_vals: list[float] = []
+    _monotonic_dropped: list[float] = []
 
     for raw_val, rationale, source in raw_candidates:
         value = round(raw_val, 2) if param_name == "T_out" else round(raw_val, 0)
@@ -761,6 +788,19 @@ def _deterministic_candidates(
             continue
         if _validate_single(node.unit_type, param_name, value):
             continue
+
+        # Drop candidates that violate the monotonic constraint given the
+        # propagated feed_T — GlobalConsistencyPass would immediately override
+        # them (fighting), consuming beam diversity on non-viable values.
+        # This is distinct from _clamp_value (LLM path); here we drop outright
+        # so the diversity filter sees only physically-admissible candidates.
+        if param_name == "T_out" and feed_T is not None:
+            if isinstance(node, HeaterNode) and value <= feed_T:
+                _monotonic_dropped.append(value)
+                continue
+            if isinstance(node, CoolerNode) and value >= feed_T:
+                _monotonic_dropped.append(value)
+                continue
 
         if param_name == "T_out":
             if any(abs(value - v) < _MIN_T_SPACING for v in accepted_vals):
@@ -783,6 +823,15 @@ def _deterministic_candidates(
             ),
         ))
         accepted_vals.append(value)
+
+    if _monotonic_dropped:
+        import sys as _sys
+        print(
+            f"[PREFILTER] {node.tag}.{param_name}: "
+            f"dropped {len(_monotonic_dropped)} candidate(s) ≤ feed_T={feed_T} K "
+            f"({_monotonic_dropped}) — would have been overridden by consistency",
+            flush=True, file=_sys.stderr,
+        )
 
     return candidates
 
@@ -925,12 +974,49 @@ def _infer_param(error: SimError) -> Optional[str]:
 
 
 def _inlet_conditions(
-    graph: FlowsheetGraph,
+    graph:    FlowsheetGraph,
     unit_tag: str,
+    _visited: frozenset = frozenset(),
 ) -> tuple[Optional[float], Optional[float]]:
+    """
+    Return (feed_T, feed_P) for unit_tag, propagating backwards through
+    pass-through units (Separator, Splitter, Mixer) that carry no T_out/P_out
+    params of their own.
+
+    Without multi-hop propagation, units downstream of a flash vessel always
+    received feed_T=None because the one-hop lookup found the vessel (no
+    T_out param) and stopped — forcing _deterministic_candidates to fall back
+    to 298.15 K and generate candidates well below actual feed temperature.
+    """
+    if unit_tag in _visited:
+        return None, None
+
     for stream in graph.inlet_streams(unit_tag):
         if stream.T is not None:
             return stream.T, stream.P
+
+        # Intermediate stream — look up the immediate source.
+        src_tag = graph.stream_source(stream.tag)
+        if src_tag is None:
+            continue
+        src_node = graph.unit(src_tag)
+        if src_node is None:
+            continue
+
+        t_out = src_node.params.get("T_out")
+        p_out = src_node.params.get("P_out")
+        if t_out is not None or p_out is not None:
+            return (
+                float(t_out) if t_out is not None else None,
+                float(p_out) if p_out is not None else stream.P,
+            )
+
+        # Pass-through node (Separator, Splitter, Mixer has no T/P out param).
+        # Recurse to find the nearest upstream unit that does set T/P.
+        result = _inlet_conditions(graph, src_tag, _visited | {unit_tag})
+        if result != (None, None):
+            return result
+
     return None, None
 
 

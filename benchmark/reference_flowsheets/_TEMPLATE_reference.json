@@ -1,0 +1,94 @@
+{
+  "_instructions": [
+    "This file is the REFERENCE FLOWSHEET for one validation case.",
+    "It represents the ground-truth DWSIM simulation that was converted to",
+    "a natural language description and stored in benchmark/cases/validation.json.",
+    "",
+    "HOW TO FILL THIS IN:",
+    "  1. Open the original .dwxml file in DWSIM",
+    "  2. Run the simulation to convergence",
+    "  3. Fill in each section below from the DWSIM GUI output",
+    "  4. Save as {case_id}_reference.json in this folder",
+    "  5. Add the matching case to benchmark/cases/validation.json",
+    "",
+    "UNITS: all SI — temperatures in K, pressures in Pa, flow in mol/s",
+    "Delete this _instructions field before saving your real reference file."
+  ],
+
+  "case_id": "VAL_01",
+  "case_name": "Short descriptive name of the process",
+  "source_file": "name_of_original.dwxml",
+  "compounds": ["Compound1", "Compound2"],
+  "property_package": "NRTL",
+  "solved": true,
+
+  "stream_roles": {
+    "STREAM_TAG_1": "feed",
+    "STREAM_TAG_2": "vapor_product",
+    "STREAM_TAG_3": "liquid_product"
+  },
+
+  "units": [
+    {
+      "tag": "HT-01",
+      "type": "Heater",
+      "params": {
+        "T_out": 351.6,
+        "dP": 0.0
+      }
+    },
+    {
+      "tag": "VES-01",
+      "type": "Vessel",
+      "params": {
+        "dP": 0.0
+      }
+    }
+  ],
+
+  "connections": [
+    ["FEED", "HT-01"],
+    ["HT-01", "VES-01"],
+    ["VES-01", "VAP-OUT"],
+    ["VES-01", "LIQ-OUT"]
+  ],
+
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Compound1": 0.5,
+        "Compound2": 0.5
+      }
+    },
+    "VAP-OUT": {
+      "T_K": 351.6,
+      "T_C": 78.45,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.34,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Compound1": 0.72,
+        "Compound2": 0.28
+      }
+    },
+    "LIQ-OUT": {
+      "T_K": 351.6,
+      "T_C": 78.45,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.66,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Compound1": 0.35,
+        "Compound2": 0.65
+      }
+    }
+  }
+}

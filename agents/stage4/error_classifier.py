@@ -68,6 +68,15 @@ Routing reference (signal → strategy):
 {_TAXONOMY_COMPACT}"""
 
 # Deterministic signal → (ErrorType, RepairStrategy) mapping
+# Unit types with adjustable operating conditions → the parameter beam search repairs
+_CONDITION_FIX_PARAMS: dict[str, str] = {
+    "Heater":     "T_out",
+    "Cooler":     "T_out",
+    "Pump":       "P_out",
+    "Compressor": "P_out",
+    "Expander":   "P_out",
+}
+
 _SIGNAL_MAP: dict[str, tuple[ErrorType, RepairStrategy]] = {
     "SOLVER_FAIL":       (ErrorType.CONVERGENCE_FAILURE, RepairStrategy.TOPOLOGY_FIX),
     "NUMERIC_FAIL":      (ErrorType.CONVERGENCE_FAILURE, RepairStrategy.THERMO_SWITCH),
@@ -94,6 +103,27 @@ class ErrorClassifier:
             return []
         if any(e.is_terminal for e in errors):
             return errors
+
+        # When the only classification is a generic TOPOLOGY_FIX (solved=False with
+        # no specific signal), swap it for CONDITION_FIX errors targeting each unit
+        # that has adjustable operating conditions (T_out / P_out).
+        #
+        # TOPOLOGY_FIX → DeterministicRepair.fix_topology() → normalise(graph) is a
+        # no-op on already-validated IR.  The repair loop produces identical changes
+        # every iteration and DWSIM receives the same flowsheet each time.  Beam
+        # search only runs on CONDITION_FIX errors, so without this replacement it
+        # never executes at all.
+        if (not getattr(execution, "solved", True)
+                and all(e.repair_strategy == RepairStrategy.TOPOLOGY_FIX
+                        for e in errors)):
+            cond_errors = _condition_fix_from_graph(graph)
+            if cond_errors:
+                print(f"[CLASSIFIER] generic TOPOLOGY_FIX → "
+                      f"{len(cond_errors)} CONDITION_FIX errors "
+                      f"({[str(e.target) for e in cond_errors]})",
+                      flush=True, file=__import__('sys').stderr)
+                errors = cond_errors
+
         if _all_unambiguous(errors):
             final = errors
         else:
@@ -190,6 +220,32 @@ def _deterministic_classify(execution) -> list[SimError]:
                 repair_strategy = RepairStrategy.CONDITION_FIX,
             ))
 
+    return errors
+
+
+def _condition_fix_from_graph(graph) -> list[SimError]:
+    """
+    Generate CONDITION_FIX errors for every unit that has an adjustable
+    operating condition (T_out or P_out).
+
+    Called when DWSIM fails with a generic convergence error (no specific signal).
+    The target.field is set so _infer_param() in beam_search / repair_agent
+    resolves the parameter name without needing to parse the evidence string.
+    """
+    errors: list[SimError] = []
+    for node in graph.units():
+        param = _CONDITION_FIX_PARAMS.get(node.unit_type)
+        if param is None:
+            continue
+        current = node.params.get(param, "unset")
+        errors.append(SimError(
+            error_type      = ErrorType.INVALID_UNIT_CONFIG,
+            target          = ErrorTarget.unit(node.tag, param),
+            evidence        = (f"{node.tag} ({node.unit_type}) {param}={current} "
+                               f"— DWSIM convergence failure; {param} likely wrong"),
+            repair_strategy = RepairStrategy.CONDITION_FIX,
+            severity        = ErrorSeverity.CRITICAL,
+        ))
     return errors
 
 

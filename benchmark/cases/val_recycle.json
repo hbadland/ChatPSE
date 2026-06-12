@@ -1,0 +1,101 @@
+[
+  {
+    "id": "VAL_07",
+    "name": "Extractive Distillation CO2 Ethane EOR NGL Separation",
+    "tier": "validation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "A high-pressure gas feed containing carbon dioxide and ethane as the primary components, along with heavier hydrocarbons from propane to pentane, is separated using a two-column extractive distillation system with n-pentane as the entrainer. The first column removes the carbon dioxide-ethane azeotrope overhead while the heavier NGL components and entrainer leave as bottoms. The second column separates high-purity ethane as its overhead product while the entrainer-rich bottoms stream is recycled back to the first column.",
+    "compounds": [
+      "Ethane", "Propane", "Isobutane", "N-butane",
+      "Isopentane", "N-pentane", "Carbon Dioxide"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_07_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 8,
+      "n_units_max": 11,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Splitter"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT-"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CO-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.10, "domain": "hydrocarbon"}
+      ]
+    },
+    "prompt": "Separate ethane from carbon dioxide in a high-pressure enhanced oil recovery (EOR) gas that also contains propane, isobutane, n-butane, isopentane, and n-pentane, using extractive distillation with n-pentane as the solvent. Recover a high-purity ethane overhead product and an NGL-rich liquid product, with the n-pentane solvent recycled.",
+    "notes": "Ground-truth reference: VAL_07_reference.json. Source DWSIM file: Extractive_Distillation_CO2_Ethane_EOR.dwxmz. Property package: Peng-Robinson 78 mapped to Peng-Robinson. Recycle: entrainer-rich bottoms recycled back to first column."
+  },
+  {
+    "id": "VAL_08",
+    "name": "Extractive Distillation Acetonitrile Isopropanol Water Ethylene Glycol",
+    "tier": "validation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "A ternary feed of acetonitrile, isopropanol and water, which forms multiple binary and ternary azeotropes, is separated using a two-stage extractive distillation system with ethylene glycol as the entrainer. The first column recovers high-purity acetonitrile as distillate at sub-atmospheric pressure, while the second column recovers isopropanol-rich distillate at atmospheric pressure. The combined bottoms from both extractive columns are sent to an entrainer recovery column where water leaves overhead and high-purity ethylene glycol is recovered as bottoms and recycled.",
+    "compounds": ["Acetonitrile", "Isopropanol", "Water", "Ethylene glycol"],
+    "reference_file": "benchmark/reference_flowsheets/VAL_08_reference.json",
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 11,
+      "n_units_max": 13,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Splitter"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT-"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CO-"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.10, "domain": "azeotrope"}
+      ]
+    },
+    "prompt": "Separate a ternary feed of acetonitrile, isopropanol, and water — a system with multiple binary azeotropes — using a two-stage extractive distillation process with ethylene glycol as the solvent. Recover high-purity acetonitrile and high-purity isopropanol as separate overhead products, with water removed and the ethylene glycol solvent recovered and recycled.",
+    "notes": "Ground-truth reference: VAL_08_reference.json. Source DWSIM file: Extractive_Distillation_Acetonitrile_Water_Isopropanol_EG.dwxmz. NRTL stated explicitly. Recycle: ethylene glycol recovered and recycled."
+  },
+  {
+    "id": "VAL_09",
+    "name": "Extractive Distillation Benzene Ethanol P-Xylene Solvent",
+    "tier": "validation",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "A benzene-ethanol azeotropic feed is separated using a two-column extractive distillation system with p-xylene as the entrainer. In the first column the entrainer raises the relative volatility of benzene relative to ethanol, allowing high-purity ethanol to be recovered as distillate while benzene and p-xylene leave as bottoms. The bottoms are fed to a second column where nearly pure benzene is recovered as distillate and the p-xylene-rich bottoms are cooled and recycled back to the first column with a make-up stream to compensate for solvent losses.",
+    "compounds": ["Ethanol", "Benzene", "P-Xylene"],
+    "reference_file": "benchmark/reference_flowsheets/VAL_09_reference.json",
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 6,
+      "n_units_max": 10,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Splitter"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CO-"},
+        {"type": "bip_injected", "model": "UNIQUAC"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.10, "domain": "azeotrope"}
+      ]
+    },
+    "prompt": "Separate an equimolar benzene-ethanol azeotropic feed using extractive distillation with p-xylene as the solvent. Recover high-purity ethanol as the first column overhead and high-purity benzene as the second column overhead, with p-xylene recycled from the solvent recovery step and a make-up stream added to compensate for losses.",
+    "notes": "Ground-truth reference: VAL_09_reference.json. Source DWSIM file: Extractive_Distillation_Benzene_Ethanol_PXylene.dwxmz. UNIQUAC stated explicitly. Recycle: p-xylene-rich bottoms recycled back to first column."
+  }
+]

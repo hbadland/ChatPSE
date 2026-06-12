@@ -123,6 +123,13 @@ class BeamRepairSearch:
         if not cond_errors:
             return graph, []
 
+        import sys as _sys
+        _bp_probe = bubble_point_K(graph.compounds, 101_325.0)
+        print(f"[BEAM] search start: compounds={graph.compounds[:3]} "
+              f"bp_probe={_bp_probe} n_cond_errors={len(cond_errors)} "
+              f"beam_width={self.width}",
+              flush=True, file=_sys.stderr)
+
         memory    = memory or RepairMemory()
         cache     = StateCache()
         scheduler = ExploreExploitScheduler(
@@ -156,6 +163,11 @@ class BeamRepairSearch:
                         state.last_fixed_param,
                         unfixed_tags,
                     )
+                    if coupling_boosts:
+                        import sys as _sys
+                        print(f"[BEAM] coupling_boosts={coupling_boosts} "
+                              f"(from {state.last_fixed_tag}.{state.last_fixed_param})",
+                              flush=True, file=_sys.stderr)
 
                 target_error = _pick_target(
                     unfixed, memory, sim_hints, coupling_boosts)
@@ -199,6 +211,11 @@ class BeamRepairSearch:
                         candidates.append(llm_c)
 
                 if not candidates:
+                    import sys as _sys
+                    print(f"[BEAM] step={step} {node.tag}.{param_name}: "
+                          f"no candidates (tried={len(tried_vals)}) — "
+                          f"passing state through unchanged",
+                          flush=True, file=_sys.stderr)
                     next_states.append(state)
                     continue
 
@@ -221,8 +238,16 @@ class BeamRepairSearch:
                     report = cache.cached_validate(cand_g)
                     n_errs = len(report.errors())
                     n_warn = len(report.warnings())
+                    # Carry RepairCandidate physics score into BeamState.sim_penalty
+                    # so the beam can differentiate candidates even when all have
+                    # ir_errors=0 (IR validation passes for all parameter changes).
+                    # Without this, BeamState.score=0 for every candidate and
+                    # min() picks arbitrarily — discarding all the reasoning done
+                    # by _score_candidates (magnitude penalty, source credit, etc).
                     sp     = (sim_hints.convergence_penalty()
-                              + sim_hints.priority_boost(target_error.target.tag))
+                              + sim_hints.priority_boost(target_error.target.tag)
+                              + cand.magnitude * 0.5
+                              + cand.adaptive_penalty)
 
                     fix_msg = (
                         f"[beam/step{step}/{cand.action.source}] "
@@ -268,6 +293,21 @@ class BeamRepairSearch:
             init_errs = len(init_report.errors())
             memory.record_trajectory_outcome(
                 best.trajectory, best.ir_errors, init_errs)
+            # Record every proposed value from the winning trajectory so that
+            # tried_values() filters them on the next search() call.  Without
+            # this, beam search re-proposes the same candidates every iteration
+            # because RepairMemory only receives records from the single-error
+            # path (_search_condition_fix), never from multi-error beam search.
+            for _tag, _param, _val in best.trajectory:
+                memory.record(
+                    target_tag      = _tag,
+                    strategy        = "CONDITION_FIX",
+                    param           = _param,
+                    value           = _val,
+                    source          = "beam",
+                    n_errors_after  = best.ir_errors,
+                    n_errors_before = init_errs,
+                )
 
         # ── Local optimisation post-processing (Item 3) ───────────────────────
         after_beam_errs = best.ir_errors

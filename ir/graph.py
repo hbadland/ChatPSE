@@ -22,6 +22,12 @@ from typing import Optional, ClassVar
 import networkx as nx
 
 
+# ── Exceptions ────────────────────────────────────────────────────────────────
+
+class TopologyError(ValueError):
+    """Raised when the non-recycle subgraph contains a cycle."""
+
+
 # ── Port specification ─────────────────────────────────────────────────────────
 
 @dataclass(frozen=True)
@@ -211,15 +217,46 @@ class ExpanderNode(PressureChangerNode):
     ]
 
 
+class ConversionReactorNode(NodeIR):
+    """
+    Stoichiometric conversion reactor.  Converts a specified fraction of the
+    limiting reactant.  Requires: temperature_K, pressure_Pa, conversion (0–1),
+    reaction (stoichiometry string, e.g. "CH4 + H2O → CO + 3H2").
+    """
+    UNIT_TYPE = "ConversionReactor"
+    PORT_SPECS = [
+        PortSpec(0, "inlet",  "any", required=True),
+        PortSpec(0, "outlet", "any", required=True),
+    ]
+    REQUIRED_PARAMS = ["temperature_K", "pressure_Pa", "conversion", "reaction"]
+
+    def validate_construction(self) -> list[str]:
+        errors = []
+        t = self.params.get("temperature_K")
+        if t is not None and not (50 < float(t) < 3000):
+            errors.append(
+                f"ConversionReactorNode {self.tag}: temperature_K={t} out of range (50–3000 K)")
+        p = self.params.get("pressure_Pa")
+        if p is not None and not (100 < float(p) < 1e8):
+            errors.append(
+                f"ConversionReactorNode {self.tag}: pressure_Pa={p} out of range")
+        conv = self.params.get("conversion")
+        if conv is not None and not (0.0 <= float(conv) <= 1.0):
+            errors.append(
+                f"ConversionReactorNode {self.tag}: conversion={conv} out of range (0–1)")
+        return errors
+
+
 # ── Registry: unit_type string → class ────────────────────────────────────────
 
 NODE_REGISTRY: dict[str, type[NodeIR]] = {
-    "Heater":     HeaterNode,
-    "Cooler":     CoolerNode,
-    "Vessel":     SeparatorNode,
-    "Mixer":      MixerNode,
-    "Splitter":   SplitterNode,
-    "Pump":       PumpNode,
+    "Heater":             HeaterNode,
+    "Cooler":             CoolerNode,
+    "Vessel":             SeparatorNode,
+    "Mixer":              MixerNode,
+    "Splitter":           SplitterNode,
+    "Pump":               PumpNode,
+    "ConversionReactor":  ConversionReactorNode,
     "Compressor": CompressorNode,
     "Expander":   ExpanderNode,
 }
@@ -249,15 +286,17 @@ def make_node(unit_type: str, tag: str, params: Optional[dict] = None,
 
 @dataclass
 class EdgeIR:
-    tag:         str
-    T:           Optional[float] = None   # K
-    P:           Optional[float] = None   # Pa
-    flow:        Optional[float] = None   # mol/s
-    composition: dict            = field(default_factory=dict)
-    src_port:    int             = 0
-    dst_port:    int             = 0
-    phase:       str             = "mixed"
-    metadata:    dict            = field(default_factory=dict)
+    tag:            str
+    T:              Optional[float] = None   # K
+    P:              Optional[float] = None   # Pa
+    flow:           Optional[float] = None   # mol/s
+    composition:    dict            = field(default_factory=dict)
+    src_port:       int             = 0
+    dst_port:       int             = 0
+    phase:          str             = "mixed"
+    metadata:       dict            = field(default_factory=dict)
+    is_recycle:     bool            = False
+    recycle_target: Optional[str]   = None   # unit tag this stream recycles to
 
     def copy(self) -> "EdgeIR":
         return copy.deepcopy(self)
@@ -386,6 +425,84 @@ class FlowsheetGraph:
 
     def is_acyclic(self) -> bool:
         return nx.is_directed_acyclic_graph(self._g)
+
+    def validate_dag(self) -> bool:
+        """
+        True if the graph is acyclic after removing recycle streams.
+
+        Raises TopologyError if a cycle exists in the non-recycle subgraph —
+        this indicates a real cycle that was not tagged is_recycle=True.
+        """
+        import sys as _sys
+
+        # Diagnostic: dump every stream with its is_recycle flag so failures
+        # are unambiguous — either the flag wasn't propagated or a guard cleared it.
+        _all_streams = self.streams()
+        print(
+            f"[DAG] validate_dag called — {len(_all_streams)} stream(s): "
+            + ", ".join(
+                f"'{s.tag}'(recycle={s.is_recycle})" for s in _all_streams
+            ),
+            flush=True, file=_sys.stderr,
+        )
+
+        recycle_tags = {e.tag for e in self.recycle_edges()}
+        print(
+            f"[DAG] recycle stream(s) excluded from DAG check: "
+            f"{sorted(recycle_tags) or '(none)'}",
+            flush=True, file=_sys.stderr,
+        )
+
+        def _report_cycle(g: "nx.DiGraph", label: str) -> None:
+            try:
+                cycle_edges = nx.find_cycle(g)
+                nodes_in_cycle = [u for u, _ in cycle_edges]
+                print(
+                    f"[DAG] cycle in {label}: "
+                    + " → ".join(nodes_in_cycle)
+                    + f" → {nodes_in_cycle[0]}",
+                    flush=True, file=_sys.stderr,
+                )
+                for n in nodes_in_cycle:
+                    ir = self._g.nodes.get(n, {}).get("ir")
+                    if ir:
+                        flag = getattr(ir, "is_recycle", "N/A")
+                        print(
+                            f"[DAG]   node '{n}': is_recycle={flag}",
+                            flush=True, file=_sys.stderr,
+                        )
+            except nx.NetworkXNoCycle:
+                pass
+
+        if not recycle_tags:
+            if not nx.is_directed_acyclic_graph(self._g):
+                _report_cycle(self._g, "full graph (no recycle tags found)")
+                raise TopologyError(
+                    "Cycle detected in non-recycle streams — "
+                    "possible missing is_recycle tag"
+                )
+            return True
+
+        sub = self._g.subgraph([n for n in self._g.nodes if n not in recycle_tags])
+        print(
+            f"[DAG] non-recycle subgraph nodes ({len(sub.nodes)}): "
+            + ", ".join(sorted(sub.nodes)),
+            flush=True, file=_sys.stderr,
+        )
+        if not nx.is_directed_acyclic_graph(sub):
+            _report_cycle(sub, "non-recycle subgraph")
+            raise TopologyError(
+                "Cycle detected in non-recycle streams — "
+                "possible missing is_recycle tag"
+            )
+        return True
+
+    def recycle_edges(self) -> list[EdgeIR]:
+        return [s for s in self.streams() if s.is_recycle]
+
+    @property
+    def has_recycles(self) -> bool:
+        return any(s.is_recycle for s in self.streams())
 
     def unit_graph(self) -> nx.DiGraph:
         ug = nx.DiGraph()

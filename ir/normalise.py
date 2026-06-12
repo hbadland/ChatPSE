@@ -91,6 +91,11 @@ def _insert_splitters(graph: FlowsheetGraph) -> FlowsheetGraph:
     Vessel has 2 outlet port specs (vapour + liquid) so 2 outlets is correct
     and must NOT trigger insertion.  Only a Heater/Cooler/etc. with >1 outlet
     needs a Splitter.
+
+    Recycle streams are excluded from both the outlet count and the Splitter
+    rerouting: they are not product splits and must remain connected directly
+    to their source unit so that validate_dag() and to_dwsim() can identify
+    them correctly.
     """
     g = graph.copy()
     changed = True
@@ -102,7 +107,11 @@ def _insert_splitters(graph: FlowsheetGraph) -> FlowsheetGraph:
             specs = PORT_SPECS.get(node.unit_type, [])
             max_outlets = len([s for s in specs if s.direction == "outlet"])
             outlets = g.outlet_streams(node.tag)
-            if len(outlets) <= max_outlets:
+            # Recycle streams are not physical product splits — exclude from count
+            # so a unit with one product outlet and one recycle outlet does not
+            # incorrectly get a Splitter inserted.
+            non_recycle_outlets = [s for s in outlets if not s.is_recycle]
+            if len(non_recycle_outlets) <= max_outlets:
                 continue
 
             splitter_tag = f"SPL-{node.tag}"
@@ -111,9 +120,9 @@ def _insert_splitters(graph: FlowsheetGraph) -> FlowsheetGraph:
             if g.unit(splitter_tag):
                 continue
 
-            n = len(outlets)
+            n = len(non_recycle_outlets)
             equal_frac = round(1.0 / n, 6)
-            split_fracs = {s.tag: equal_frac for s in outlets}
+            split_fracs = {s.tag: equal_frac for s in non_recycle_outlets}
 
             splitter = make_node(
                 "Splitter", splitter_tag,
@@ -122,11 +131,11 @@ def _insert_splitters(graph: FlowsheetGraph) -> FlowsheetGraph:
             )
             g.add_unit(splitter)
 
-            # Detach each outlet from node, attach to splitter.
+            # Detach only non-recycle outlets from node, attach to splitter.
             # Assign incremental src_ports so they are distinct on the Splitter
             # (all streams had src_port=0 from the original single-outlet unit).
-            for port_idx, stream in enumerate(outlets):
-                dst = g.stream_dest(stream.tag)
+            # Recycle outlets stay connected to node unchanged.
+            for port_idx, stream in enumerate(non_recycle_outlets):
                 g._g.remove_edge(node.tag, stream.tag)
                 g._g.add_edge(splitter_tag, stream.tag)
                 stream.src_port = port_idx

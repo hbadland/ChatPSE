@@ -1,0 +1,1098 @@
+[
+  {
+    "id": "HB_ADV_01",
+    "name": "Near-azeotrope ethanol-water — T_out overshoot inverts VLE split",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "adv_subtype": "near_azeotrope",
+    "description": "Flash an ethanol-water feed at 88 mol% ethanol (25°C, 1 atm) through a heater and flash vessel. The feed sits 1.4 mol% below the 89.4 mol% atmospheric azeotrope. The LLM will extract T_out near 90°C (ethanol bp plus a safety margin), overshooting the 78.1°C azeotrope boiling point; with the feed above the azeotrope composition this inverts the vapour-liquid split direction, producing a water-enriched vapour instead of an ethanol-enriched one.",
+    "compounds": [
+      "Ethanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 348,
+          "T_max_K": 358
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.03,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "repair_stress": "Feed at 88 mol% EtOH is within 1.4 mol% of azeotrope (89.4%); LLM heuristic T_out (~363K, 90°C) overshoots the 78.1°C azeotrope bp, inverting the VLE composition curve — CONDITION_FIX beam search must converge to [348K, 358K]",
+    "notes": "EtOH/water azeotrope at 78.1°C (351.3K), 89.4 mol% EtOH. Near-flat VLE at 88 mol%: ±1 mol% error flips which phase is EtOH-enriched. NRTL BIPs critical. Initial DWSIM call delivers a converged but physically wrong split — Critic must detect the composition inversion via NO_SEPARATION check.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_02",
+    "name": "Near-azeotrope IPA-water — LLM targets IPA bp, crosses azeotrope boundary",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "adv_subtype": "near_azeotrope",
+    "description": "Flash an IPA-water feed at 85 mol% IPA (25°C, 1 atm) through a heater and flash vessel. The feed is 2.7 mol% below the 87.7 mol% minimum-boiling azeotrope. The LLM targets IPA's boiling point (82.6°C), but this exceeds the azeotrope boiling point (80.4°C) with the feed approaching the azeotropic composition, pushing the flash into a near-zero liquid fraction regime.",
+    "compounds": [
+      "Isopropanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 354,
+          "T_max_K": 360
+        }
+      ]
+    },
+    "repair_stress": "Feed at 85 mol% IPA is 2.7 mol% below azeotrope (87.7% at 80.4°C); LLM default T_out=355.8K (IPA bp, 82.6°C) is 2.2K above azeotrope bp, producing near-zero liquid fraction — beam search must land in [354K, 360K]",
+    "notes": "IPA bp=82.6°C (355.8K), azeotrope at 80.4°C (353.6K), 87.7 mol% IPA. At 85 mol% IPA relative volatility ≈1.05; even a 2K T_out error produces wrong phase split. First DWSIM call likely converges with VF≈0.98 (near-single-phase vapour) — Critic routes to REFINER for T_out correction.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_03",
+    "name": "Near-azeotrope acetone-methanol — feasible window above 55.7°C azeotrope",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "adv_subtype": "near_azeotrope",
+    "description": "Flash an acetone-methanol feed at 85 mol% acetone (25°C, 1 atm) through a heater and flash vessel. The feed is 3.5 mol% below the 88.5 mol% minimum-boiling azeotrope at 55.7°C. The LLM will target ~65°C (above methanol's boiling point), overshooting into the single-phase vapour region; the feasible two-phase T_out window above the azeotrope boiling point is bounded above by methanol's bp at 64.7°C, requiring a downward beam search.",
+    "compounds": [
+      "Acetone",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 330,
+          "T_max_K": 337
+        }
+      ]
+    },
+    "repair_stress": "Feed at 85 mol% acetone approaches azeotrope (88.5% at 55.7°C); LLM sets T_out=338K (65°C, above methanol bp 64.7°C) causing all-vapour single-phase result; correct T_out in [329.3K, 337.9K] lies below methanol bp — beam search must move downward",
+    "notes": "Acetone bp=56.1°C (329.3K), methanol bp=64.7°C (337.9K), azeotrope at 55.7°C (328.9K) 88.5 mol% acetone. Feasible flash window [329.3K, 337.9K] — 8.6K wide but LLM consistently overshoots. Initial all-vapour result triggers NO_SEPARATION; REFINER corrects T_out downward.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_04",
+    "name": "Near-azeotrope MEK-water — T_out above azeotrope bp shifts VLE curve",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "adv_subtype": "near_azeotrope",
+    "description": "Flash a MEK-water feed at 65 mol% MEK (25°C, 1 atm) through a heater and flash vessel. The feed is 3.8 mol% below the ~68.8 mol% minimum-boiling azeotrope at 73.4°C. The LLM targets MEK's boiling point (79.6°C), which is 6.2K above the azeotrope; at this feed composition the flash operates in a near-flat VLE region and the 6K overshoot inverts the predicted vapour-phase MEK enrichment.",
+    "compounds": [
+      "Methyl ethyl ketone",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 344,
+          "T_max_K": 353
+        }
+      ]
+    },
+    "repair_stress": "Feed at 65 mol% MEK is 3.8 mol% below azeotrope (68.8 mol% at 73.4°C); LLM heuristic T_out=352.8K (MEK bp) is 6.2K above azeotrope bp, pushing the flash into the near-flat VLE region and inverting MEK enrichment — beam search must target [344K, 353K]",
+    "notes": "MEK bp=79.6°C (352.8K), water bp=100°C. Azeotrope at 73.4°C (346.6K), ~68.8 mol% MEK (89.8 wt%). At 65 mol% MEK the VLE curve slope reverses just beyond the azeotrope — correct T_out must stay within 10K below the azeotrope bp. NRTL BIP: methyl ethyl ketone/water ✓.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_05",
+    "name": "Ethanol-water at 3 atm — 1 atm bubble-point heuristic produces all-liquid flash",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "polar",
+    "adv_subtype": "pressure_sensitive",
+    "description": "Heat a 40 mol% ethanol-water feed at 3 atm (304 kPa, 25°C inlet) and flash-separate in a vessel. The bubble point at 3 atm is approximately 100°C — 22K above the 1 atm value. The LLM extracts T_out = 351K (78°C, the standard 1 atm bubble-point heuristic for this composition), leaving the stream fully liquid at 3 atm and producing no vapour phase.",
+    "compounds": [
+      "Ethanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 373,
+          "T_max_K": 398
+        }
+      ]
+    },
+    "repair_stress": "bubble point of 40 mol% EtOH/water at 3 atm is ~100°C (373K); 1 atm heuristic T_out (351K, 78°C) gives all-liquid single-phase result triggering ZERO_OUTLET; CONDITION_FIX must raise T_out to [373K, 398K] using pressure-aware bubble-point calculation",
+    "notes": "EtOH bp=78.4°C at 1 atm; at 3 atm the ethanol-water bubble point at 40 mol% EtOH shifts to approximately 100°C. The 22K gap causes ZERO_OUTLET on the first call. RefinerAgent must apply pressure correction to T_out; NRTL with BIPs required throughout.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_06",
+    "name": "Propane/n-butane at 6 bar — 1 atm cooler heuristic gives all-liquid separator",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "adv_subtype": "pressure_sensitive",
+    "description": "Compress a 50/50 mol% propane/n-butane feed from 1 bar to 6 bar, cool to a target temperature, then flash-separate in a vessel. The cooler T_out is unspecified. The LLM will anchor on the 1 atm bubble-point data (approximately -32°C for this mixture) and set T_out near 248K. At 6 bar the bubble point is approximately 5°C — 37K higher — so 248K fully condenses both components, yielding all-liquid with no vapour separation.",
+    "compounds": [
+      "Propane",
+      "n-Butane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 280,
+          "T_max_K": 315
+        }
+      ]
+    },
+    "repair_stress": "50/50 propane/n-butane bubble point at 6 bar is ~5°C (278K); 1 atm heuristic cooler T_out (~248K, -25°C) fully condenses both components yielding all-liquid; pressure-aware correction must raise T_out to [280K, 315K] for two-phase separation",
+    "notes": "Propane bp=-42.1°C (231K) at 1 atm, saturation at 6 bar ≈11°C (284K). n-Butane bp=-0.5°C (272.7K) at 1 atm, saturation at 6 bar ≈56°C (329K). Mixture bubble point at 6 bar ≈5°C (278K). PR EOS required. ZERO_OUTLET on first call; RefinerAgent must apply pressure-aware T_out correction.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_07",
+    "name": "DME/methanol at 5 bar — pressure-elevated bubble point defeats 1 atm anchor",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "mixed",
+    "adv_subtype": "pressure_sensitive",
+    "description": "Compress a 50/50 mol% DME-methanol feed from 1.5 bar to 5 bar, intercool in a cooler, then flash in a separator. The cooler T_out is unspecified. The LLM anchors on DME's 1 atm boiling point (-24.8°C) and sets T_out near 248K. At 5 bar DME's saturation temperature rises to approximately 15°C — the 1 atm heuristic undershoots by 37K, fully condensing the DME fraction and producing an all-liquid cooler outlet.",
+    "compounds": [
+      "Dimethyl ether",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 288,
+          "T_max_K": 328
+        }
+      ]
+    },
+    "repair_stress": "DME bp rises from -24.8°C at 1 atm to ~15°C at 5 bar; LLM heuristic T_out (~248K) fully condenses both components at 5 bar; pressure-aware correction must raise cooler T_out to [288K, 328K] for meaningful DME-methanol phase split",
+    "notes": "DME bp=-24.8°C (248.4K) at 1 atm, saturation at 5 bar ≈15°C (288K). Methanol bp=64.7°C (337.9K) at 1 atm, saturation at 5 bar ≈105°C (378K). 50/50 mixture bubble point at 5 bar ≈30°C (303K). PR EOS adequate for low-polarity ether + alcohol at elevated pressure. ZERO_OUTLET on first call.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_ADV_08",
+    "name": "BTX quaternary flash — compound detection and flash-T stress",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "adv_subtype": "multi_component",
+    "description": "Heat a quaternary equimolar mixture of benzene, toluene, o-xylene, and ethylbenzene (25 mol% each, 25°C, 1 atm) and flash-separate in a vessel. The LLM may identify only three of the four aromatic components from the description, causing a compound-not-found Executor failure. Even when all four are correctly identified, the flash T_out must account for the 56°C boiling-point spread across the quaternary system (benzene 80°C to o-xylene 144°C).",
+    "compounds": [
+      "Benzene",
+      "Toluene",
+      "o-Xylene",
+      "Ethylbenzene"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 358,
+          "T_max_K": 388
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "repair_stress": "Four-component aromatic mixture; BasisAgent may omit Ethylbenzene from compound list, causing BASIS re-route; correct EOS must be confirmed (not NRTL) for near-ideal aromatic quaternary; flash T_out must span benzene-to-o-xylene bp range [353K, 417K] for meaningful split",
+    "notes": "Benzene bp=80.1°C (353K), toluene bp=110.6°C (383.8K), ethylbenzene bp=136.2°C (409.4K), o-xylene bp=144.4°C (417.6K). At 100°C benzene and part of toluene vaporise; o-xylene and ethylbenzene stay liquid. PR or SRK correct. Compound-count stress: description may list 'BTX aromatic blend' omitting ethylbenzene.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_ADV_09",
+    "name": "NGL four-component cryogenic flash — wrong thermo package and pressure stress",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "adv_subtype": "multi_component",
+    "description": "Compress a four-component NGL feed (70 mol% methane, 15% ethane, 10% propane, 5% n-butane) from 2 bar to 20 bar, cool cryogenically, then flash-separate in a vessel. The LLM may select NRTL for this light-gas system (incorrect) triggering a NUMERIC_FAIL, or it may set the cryogenic cooler T_out using 1 atm bubble-point data for the C2-C4 fraction, producing insufficient condensation at 20 bar.",
+    "compounds": [
+      "Methane",
+      "Ethane",
+      "Propane",
+      "n-Butane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "GAS-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 193,
+          "T_max_K": 233
+        }
+      ]
+    },
+    "repair_stress": "Four-component NGL at 20 bar; ThermoAgent may initially select NRTL (wrong for cryogenic light gases) → NUMERIC_FAIL → THERMO switch to PR/LKP; 1 atm heuristic cooler T_out (∼230K) is 30K too warm to condense C3/C4 at 20 bar; two independent repair paths required",
+    "notes": "At 20 bar: methane bp≈-100°C (173K), ethane bp≈-32°C (241K), propane bp≈20°C (293K), n-butane bp≈65°C (338K). Cryogenic cooler must target [-80°C to -40°C] = [193K, 233K] to condense C3/C4 selectively. PR or LKP required. NRTL initial selection likely causes NUMERIC_FAIL on first call.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_ADV_10",
+    "name": "LPG light ends at 8 bar — isobutane/n-butane conflation and pressure offset",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "mixed",
+    "adv_subtype": "multi_component",
+    "description": "Compress a refinery light-ends feed (35 mol% propane, 30 mol% n-butane, 20 mol% isobutane, 15 mol% n-pentane) from 1 bar to 8 bar, intercool, then flash-separate in a vessel. The LLM may conflate isobutane with n-butane (boiling points -11.7°C vs -0.5°C are only 11K apart) producing a three-component flowsheet that fails on mass balance. Additionally, the 1 atm bubble-point heuristic undershoots the 8 bar bubble point by approximately 35K.",
+    "compounds": [
+      "Propane",
+      "n-Butane",
+      "Isobutane",
+      "n-Pentane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 290,
+          "T_max_K": 325
+        }
+      ]
+    },
+    "repair_stress": "Isobutane (bp=-11.7°C) and n-butane (bp=-0.5°C) may be merged by BasisAgent → MASS_BALANCE failure; at 8 bar mixture bubble point ≈20°C (293K), 35K above 1 atm heuristic; two independent failures (compound detection + pressure-T) both require repair",
+    "notes": "Propane bp=-42.1°C, isobutane bp=-11.7°C, n-butane bp=-0.5°C, n-pentane bp=36.1°C at 1 atm. At 8 bar all bp values shift upward by 30-40K. PR EOS required. Compound-conflation failure routes to BASIS; pressure error routes to REFINER — both corrections required before convergence.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_ADV_11",
+    "name": "Acetone/ethanol/ethyl acetate/water — six BIP pairs and triple-azeotrope stress",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "adv_subtype": "multi_component",
+    "description": "Heat a four-component solvent feed (35 mol% acetone, 25 mol% ethanol, 25 mol% ethyl acetate, 15 mol% water) from 25°C to 78°C at 1 atm, flash-separate in a vessel, then cool the liquid bottoms to 30°C. The system contains three binary azeotropes (EtOAc/EtOH at 71.8°C, EtOAc/water at 70.4°C heterogeneous, EtOH/water at 78.1°C). CalibrationAgent must inject all six NRTL BIP pairs; failing any single pair triggers PARAM_MISSING, and the EtOAc/water heterogeneous behaviour may destabilise convergence near the cooler outlet.",
+    "compounds": [
+      "Acetone",
+      "Ethanol",
+      "Ethyl acetate",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 343,
+          "T_max_K": 360
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "repair_stress": "Six BIP pairs required for four-compound mixture; PARAM_MISSING if any pair absent; flash T_out at 78°C sits at EtOH/water azeotrope bp (78.1°C) — near-flat VLE for the ethanol/water subsystem; EtOAc/water heterogeneous azeotrope (70.4°C) may cause LLE issues at cooler outlet",
+    "notes": "EtOAc/EtOH azeotrope at 71.8°C (54 mol% EtOAc); EtOAc/water heterogeneous azeotrope at 70.4°C; EtOH/water azeotrope at 78.1°C (89.4 mol% EtOH). All 6 BIP pairs are in the corpus. CalibrationAgent must inject: acetone/EtOH, acetone/EtOAc, acetone/water, EtOH/EtOAc, EtOH/water, EtOAc/water.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_ADV_12",
+    "name": "Diethyl ether/methanol — 2.2K feasible window defeats generic T_out heuristic",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "polar",
+    "adv_subtype": "tight_window",
+    "description": "Heat a 50/50 mol% diethyl ether/methanol feed (20°C, 1 atm) in a heater and flash in a vessel. The DEE-methanol minimum-boiling azeotrope sits at 32.4°C (305.6K) with DEE's pure boiling point at 34.6°C (307.8K), creating a feasible T_out window of only 2.2K. The LLM will either use an ambient default (298K, 7.6K below the window) producing all-liquid, or overshoot above 308K producing single-phase DEE vapour.",
+    "compounds": [
+      "Diethyl ether",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 306,
+          "T_max_K": 308
+        }
+      ]
+    },
+    "repair_stress": "Feasible T_out window [305.6K, 307.8K] is only 2.2K wide — azeotrope bp (32.4°C) to DEE bp (34.6°C); ambient default (298K) falls 7.6K below window; above-DEE-bp T (308K) gives single-phase; beam search must converge on this 2.2K target requiring sub-Kelvin precision",
+    "notes": "DEE bp=34.6°C (307.8K), methanol bp=64.7°C (337.9K). Min-boiling azeotrope at 32.4°C (305.6K), 90 mol% DEE. Feed at 50 mol% DEE is far below azeotropic composition — vapour is strongly DEE-enriched. This is the narrowest feasible window in the benchmark: CONDITION_FIX beam search must land within ±1K of 306.7K.",
+    "expected_repair_iterations": 4
+  },
+  {
+    "id": "HB_ADV_13",
+    "name": "Chloroform/methanol — 7.8K window, LLM overshoots into single-phase region",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "polar",
+    "adv_subtype": "tight_window",
+    "description": "Heat a 50/50 mol% chloroform-methanol feed (25°C, 1 atm) in a heater and flash in a vessel. The feasible T_out window is [326.6K, 334.4K] (7.8K wide), bounded below by the 53.4°C minimum-boiling azeotrope and above by the chloroform boiling point (61.2°C). The LLM will target ~65°C (above both CHCl3 bp and methanol bp), producing a single-phase all-vapour result and a NO_SEPARATION failure; the beam search must move counterintuitively downward.",
+    "compounds": [
+      "Chloroform",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 327,
+          "T_max_K": 334
+        }
+      ]
+    },
+    "repair_stress": "Feasible T_out window [326.6K, 334.4K] is 7.8K wide; LLM default T_out=338K (65°C, above CHCl3 bp 61.2°C) produces all-vapour single-phase triggering NO_SEPARATION; beam search must move downward from initial overshoot — counterintuitive correction direction",
+    "notes": "CHCl3 bp=61.2°C (334.4K), MeOH bp=64.7°C (337.9K). Min-boiling azeotrope at 53.4°C (326.6K), 87 mol% CHCl3. T_out must remain below CHCl3 bp — counterintuitive since CHCl3 is more volatile. Negative deviations from Raoult's Law (CHCl3-MeOH H-bonding) produce the below-pure-bp azeotrope; NRTL BIP essential.",
+    "expected_repair_iterations": 4
+  },
+  {
+    "id": "HB_ADV_14",
+    "name": "Acetone/methanol — 0.4K azeotrope-to-acetone-bp gap demands sub-Kelvin precision",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "polar",
+    "adv_subtype": "tight_window",
+    "description": "Heat a 55 mol% acetone / 45 mol% methanol feed (25°C, 1 atm) in a heater and flash in a vessel. The minimum-boiling azeotrope sits at 55.7°C (328.9K) and the acetone boiling point is only 0.4K higher at 56.1°C (329.3K). T_out must clear the azeotrope temperature but the LLM often sets T_out = 329K (rounding acetone bp to 56°C), landing at or below the azeotrope boundary and producing a near-zero or inverted vapour fraction.",
+    "compounds": [
+      "Acetone",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 330,
+          "T_max_K": 336
+        }
+      ]
+    },
+    "repair_stress": "Azeotrope bp=55.7°C (328.9K) and acetone bp=56.1°C (329.3K) are only 0.4K apart; LLM rounds to 329K (56°C) which falls below the azeotrope threshold; sub-Kelvin T_out precision required at the lower feasible bound [329.3K, 337.9K]",
+    "notes": "Acetone bp=56.1°C (329.3K), methanol bp=64.7°C (337.9K). Min-boiling azeotrope at 55.7°C (328.9K), 88.5 mol% acetone. Feasible flash window [329.3K, 337.9K] — 8.6K wide but the lower bound requires 0.4K precision. Feed at 55 mol% acetone is well below azeotropic composition; vapour enriches toward acetone only for T > 328.9K. This is the sub-Kelvin precision stress case.",
+    "expected_repair_iterations": 4
+  },
+  {
+    "id": "HB_ADV_15",
+    "name": "THF/water at azeotrope composition — 2.5K window and near-zero separation",
+    "tier": "adversarial",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "adv_subtype": "tight_window",
+    "description": "Heat a 94 mol% THF / 6 mol% water feed (25°C, 1 atm) — at the THF-water azeotrope composition — in a heater and flash in a vessel. The feasible T_out window is [336.7K, 339.2K] (2.5K wide), bounded below by the azeotrope boiling point (63.5°C) and above by THF's boiling point (66°C). The LLM targets THF's bp (66°C, 339.2K), overshooting into single-phase vapour; the converged result near the lower bound yields near-zero separation because the feed composition matches the azeotrope.",
+    "compounds": [
+      "Tetrahydrofuran",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 337,
+          "T_max_K": 339
+        }
+      ]
+    },
+    "repair_stress": "Feed at 94 mol% THF sits at azeotrope composition (63.5°C bp); feasible T_out window [336.7K, 339.2K] is only 2.5K wide; LLM targets THF bp (66°C, 339.2K) at upper edge giving single-phase vapour; converged result has near-zero separation — Critic must distinguish this from a ZERO_OUTLET failure",
+    "notes": "THF bp=66°C (339.2K), water bp=100°C. THF-water min-boiling azeotrope at 63.5°C (336.7K), 94.6 mol% THF. At 94 mol% THF the feed matches the azeotrope composition — vapour and liquid compositions are identical by definition. The adversarial challenge is two-fold: (1) find the 2.5K T_out window, (2) accept near-zero separation as physically correct.",
+    "expected_repair_iterations": 4
+  }
+]

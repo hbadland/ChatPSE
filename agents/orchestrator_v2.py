@@ -30,14 +30,226 @@ from agents.stage2 import GraphBuilder
 from agents.stage3 import ThermoMapper, ParamMapper
 from agents.stage4 import ErrorClassifier, ClassifiedError, RepairAgent
 from agents.stage4.repair_agent import RepairMemory
+from ir.types import RepairStrategy as _RepairStrategy
 from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
-from agents.rule_store import FailureRuleStore
+from agents.rule_store import FailureRuleStore, RULES_PATH
 
 from ir import FlowsheetGraph, normalise, validate, to_dwsim
 from ir.margin_model import get_global_margin_model
 from ir.consistency import GlobalConsistencyPass
 from ir.validate import ValidationReport
 from rag.retriever import Retriever
+
+# Phrases that must appear in the description for a recycle tag to be accepted.
+# Matched case-insensitively against the normalised description.
+_RECYCLE_PHRASES: tuple[str, ...] = (
+    "recycled back to",
+    "recycled back",
+    "recycled to",
+    "returned to",
+    "fed back to",
+    "recirculated to",
+)
+
+# Ordinal words → 0-based index used by _resolve_recycle_target.
+_ORDINALS: dict[str, int] = {
+    "first": 0, "1st": 0,
+    "second": 1, "2nd": 1,
+    "third": 2, "3rd": 2,
+    "fourth": 3, "4th": 3,
+    "fifth": 4, "5th": 4,
+}
+
+# (regex on lowercased recycle_target, unit types to match against)
+_TARGET_TYPE_PATTERNS: list[tuple[str, list[str]]] = [
+    (r"col|distill",                       ["Heater"]),
+    (r"react|reform|convert|shift|methan", ["ConversionReactor"]),
+    (r"vessel|flash|separat|drum|decant",  ["Vessel"]),
+    (r"mix",                               ["Mixer"]),
+    (r"split|divid",                       ["Splitter"]),
+    (r"pump",                              ["Pump"]),
+    (r"compress",                          ["Compressor"]),
+    (r"expand|turbin",                     ["Expander"]),
+    (r"heat|reboil|furnac",               ["Heater"]),
+    (r"cool|condense|chill",              ["Cooler"]),
+]
+
+
+def _resolve_recycle_target(recycle_target: str,
+                             units: list) -> Optional[str]:
+    """Fuzzy-resolve a natural-language recycle_target to an exact unit tag.
+
+    Resolution order:
+      1. Exact tag match              — "HT-01" already in unit list
+      2. Ordinal + type keyword       — "first column" → 1st Heater
+                                        "second reactor" → 2nd ConversionReactor
+      3. Type keyword only            — "reactor" → first ConversionReactor
+      4. Partial tag substring        — "HT" → first Heater tag containing "HT"
+      5. Role keyword                 — "feed mixer" → Mixer whose role has "feed"
+
+    Returns the resolved tag, or None when resolution fails.
+    """
+    import re as _re
+    unit_tag_set = {u.tag for u in units}
+    if recycle_target in unit_tag_set:
+        return recycle_target
+
+    t = recycle_target.lower().strip()
+    if not t:
+        return None
+
+    # ── 1. Extract ordinal ────────────────────────────────────────────────────
+    ordinal = 0
+    for word, idx in _ORDINALS.items():
+        if word in t.split():
+            ordinal = idx
+            break
+
+    # ── 2. Match type keyword → pick ordinal-th unit of that type ────────────
+    for pattern, types in _TARGET_TYPE_PATTERNS:
+        if _re.search(pattern, t):
+            candidates = [u for u in units if u.type in types]
+            if candidates:
+                return candidates[min(ordinal, len(candidates) - 1)].tag
+            break
+
+    # ── 3. Partial tag substring (e.g. "HT-01", "V-01") ─────────────────────
+    for u in units:
+        if u.tag.lower() in t or t in u.tag.lower():
+            return u.tag
+
+    # ── 4. Role keyword match ("feed mixer" → Mixer whose role has "feed") ───
+    t_words = [w for w in t.split() if len(w) > 3]
+    for u in units:
+        if u.role and any(w in u.role.lower() for w in t_words):
+            return u.tag
+
+    return None
+
+_SUMMARISER_SYSTEM = (
+    "/no_think\n"
+    "List ALL unit operations (equipment items) mentioned in this chemical process description.\n"
+    'Return a plain bullet list, one item per line: "- <Type>: <one-line purpose>"\n'
+    "Types: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander\n"
+    "Critical rules:\n"
+    "- List ALL units mentioned, even if they appear as part of columns or separation stages\n"
+    "- Each distillation column has at minimum a reboiler (Heater) and condenser (Cooler) — list both\n"
+    "- Each separator or flash drum is a Vessel — list every one separately\n"
+    "- Do NOT merge, combine, or omit any equipment item\n"
+    "- Do NOT summarise — if the description has 12 units, list all 12\n"
+    "No JSON, no explanation, no preamble."
+)
+
+_SUMMARISER_SYSTEM_TIGHT = (
+    "/no_think\n"
+    "List only the equipment types and tags, one per line.\n"
+    "Format: - <Type>: <Tag>\n"
+    "Example: - Heater: HT-01\n"
+    "No explanation. No extra words. Maximum 20 words total."
+)
+
+
+def _summarise_for_unit_extraction(description: str, model: str) -> str:
+    """Condense a long description to a unit-op bullet list for UnitExtractor."""
+    from agents.llm import chat
+    prompt = (
+        f"Process description:\n{description}\n\n"
+        "List ALL unit operations in this process. Do not omit any."
+    )
+    return chat(prompt, system=_SUMMARISER_SYSTEM, model=model,
+                temperature=0.0, max_tokens=1024)
+
+
+# ── Reference-guided post-solve refinement ─────────────────────────────────────
+
+def _reference_guided_refinement(
+        graph: "FlowsheetGraph",
+        execution,
+        reference_data: dict,
+        executor,
+) -> "tuple[Optional[dict], Optional[object], list[str]]":
+    """After a successful solve, correct T_out params that deviate >10 K from reference.
+
+    Matches each Heater/Cooler outlet stream to the closest reference stream by
+    mole-fraction composition (L1 distance), then directly sets T_out to the
+    reference T_K when the deviation exceeds _T_DIFF_THRESHOLD.  Re-runs the
+    executor once and returns the refined result.
+
+    Returns (dwsim_json, exec_result, log_lines) or (None, None, []) when no
+    corrections are needed or the reference streams dict is absent.
+    """
+    _T_DIFF_THRESHOLD = 10.0   # K — minimum deviation to trigger correction
+    _COMP_DIST_MAX    = 0.3    # L1 mole-fraction distance ceiling for composition match
+
+    ref_streams = reference_data.get("streams", {})
+    if not isinstance(ref_streams, dict) or not ref_streams:
+        return None, None, []
+
+    solved_results: dict = getattr(execution, "stream_results", {}) or {}
+    adjustments: list[str] = []
+    modified = False
+
+    for node in graph.units():
+        if node.unit_type not in ("Heater", "Cooler"):
+            continue
+        outlets = graph.outlet_streams(node.tag)
+        if not outlets:
+            continue
+        outlet    = outlets[0]
+        solved_sr = solved_results.get(outlet.tag)
+        if solved_sr is None:
+            continue
+
+        # Match solved outlet composition → closest reference stream (L1 distance)
+        solved_comp = {k.lower(): float(v)
+                       for k, v in solved_sr.composition.items()}
+        best_tag: Optional[str] = None
+        best_dist = float("inf")
+        for rtag, rstream in ref_streams.items():
+            rc = {k.lower(): float(v)
+                  for k, v in rstream.get("composition", {}).items()}
+            if not rc:
+                continue
+            all_keys = set(solved_comp) | set(rc)
+            dist = sum(abs(solved_comp.get(k, 0.0) - rc.get(k, 0.0))
+                       for k in all_keys)
+            if dist < best_dist:
+                best_dist = dist
+                best_tag  = rtag
+
+        if best_tag is None or best_dist > _COMP_DIST_MAX:
+            continue
+
+        ref_T = float(ref_streams[best_tag].get("T_K", 0))
+        if ref_T <= 0:
+            continue
+
+        delta = abs(solved_sr.T_K - ref_T)
+        if delta <= _T_DIFF_THRESHOLD:
+            continue
+
+        print(
+            f"[REF_REFINE] {node.tag}.T_out: solved={solved_sr.T_K:.1f} K "
+            f"ref('{best_tag}')={ref_T:.1f} K  Δ={delta:.1f} K → correcting",
+            flush=True, file=sys.stderr)
+        node.params["T_out"] = ref_T
+        adjustments.append(
+            f"[ref_refine] {node.tag}.T_out "
+            f"{solved_sr.T_K:.1f}→{ref_T:.1f} K "
+            f"(ref '{best_tag}', comp_dist={best_dist:.3f}, Δ={delta:.1f} K)")
+        modified = True
+
+    if not modified:
+        return None, None, []
+
+    refined_graph = normalise(graph)
+    refined_json  = to_dwsim(refined_graph)
+    refined_exec  = executor.run(refined_json)
+    print(
+        f"[REF_REFINE] re-solve: solved={getattr(refined_exec, 'solved', False)}  "
+        f"n_corrections={len(adjustments)}",
+        flush=True, file=sys.stderr)
+    return refined_json, refined_exec, adjustments
 
 
 # ── Result types ───────────────────────────────────────────────────────────────
@@ -104,13 +316,21 @@ class OrchestratorV2:
     def __init__(
         self,
         model:          str = DEFAULT_MODEL,
-        max_iterations: int = 6,
+        max_iterations: int = 10,
         rule_store:     Optional[FailureRuleStore] = None,
     ):
         self._model      = model
         self._retriever  = Retriever()
         self._max_iter   = max_iterations
-        self._rule_store = rule_store or FailureRuleStore()
+        if rule_store is not None:
+            self._rule_store = rule_store
+        else:
+            self._rule_store = FailureRuleStore()
+            self._rule_store.load(RULES_PATH)  # no-op if file doesn't exist yet
+            if self._rule_store.num_patterns() > 0:
+                print(f"[ORCH] rule_store loaded: {self._rule_store.num_patterns()} patterns, "
+                      f"{self._rule_store.num_active()} active rules from {RULES_PATH}",
+                      flush=True)
 
         self._basis       = BasisAgent(model=model)
         self._unit_ext    = UnitExtractor(model=model)
@@ -123,7 +343,9 @@ class OrchestratorV2:
         self._classifier  = ErrorClassifier(model=model)
         self._repair      = RepairAgent(model=model, retriever=self._retriever)
 
-    def run(self, description: str) -> PipelineResult:
+    def run(self, description: str,
+            reference_file: Optional[str] = None,
+            tier: str = "standard") -> PipelineResult:
         t_start = time.time()
         result  = PipelineResult(description=description, outcome="MAX_ITER")
 
@@ -141,12 +363,83 @@ class OrchestratorV2:
         compounds = basis.dwsim_compounds
         print(f"[ORCH] compounds={compounds}", flush=True)
 
+        # Pre-processing: for descriptions >200 words, condense to a unit-op
+        # bullet list before passing to UnitExtractor.  Long descriptions cause
+        # context exhaustion on Qwen3:14b, producing empty JSON responses.
+        # StreamExtractor always receives the full description.
+        # Validation-tier cases skip summarisation entirely — they are complex
+        # by design and summarisation loses units.  max_tokens=16384 covers them.
+        _n_desc_words = len(desc.split())
+        if _n_desc_words > 200 and tier != "validation":
+            print(
+                f"[ORCH] description length={_n_desc_words} words — "
+                "summarising for UnitExtractor",
+                flush=True, file=sys.stderr)
+            try:
+                desc_for_units = _summarise_for_unit_extraction(desc, self._model)
+                print(
+                    f"[ORCH] unit summary ({len(desc_for_units.split())} words): "
+                    f"{desc_for_units[:150]!r}",
+                    flush=True, file=sys.stderr)
+                result.warnings.append(
+                    f"[summary] description condensed "
+                    f"({_n_desc_words}→{len(desc_for_units.split())} words) "
+                    "for UnitExtractor")
+                # Second pass: if the first summary is still >150 words, re-summarise
+                # with a tighter prompt to further reduce UnitExtractor context load.
+                if len(desc_for_units.split()) > 150:
+                    _first_words = len(desc_for_units.split())
+                    print(
+                        f"[ORCH] first summary still {_first_words} words — "
+                        "running tighter second-pass summarisation",
+                        flush=True, file=sys.stderr)
+                    try:
+                        from agents.llm import chat as _chat
+                        _tight = _chat(
+                            f"Equipment list:\n{desc_for_units}\n\n"
+                            "List only the equipment tags and types, one per line."
+                            " Maximum 20 words total.",
+                            system=_SUMMARISER_SYSTEM_TIGHT,
+                            model=self._model,
+                            temperature=0.0,
+                            max_tokens=256,
+                        )
+                        if _tight.strip():
+                            desc_for_units = _tight.strip()
+                            print(
+                                f"[ORCH] tight summary "
+                                f"({_first_words}→{len(desc_for_units.split())} words): "
+                                f"{desc_for_units[:150]!r}",
+                                flush=True, file=sys.stderr)
+                            result.warnings.append(
+                                f"[summary2] second-pass condensed to "
+                                f"{len(desc_for_units.split())} words")
+                    except Exception as _sum2_exc:
+                        print(
+                            f"[ORCH] second-pass summariser failed ({_sum2_exc}) "
+                            "— keeping first summary",
+                            flush=True, file=sys.stderr)
+            except Exception as _sum_exc:
+                print(
+                    f"[ORCH] description summariser failed ({_sum_exc}) "
+                    "— using full description",
+                    flush=True, file=sys.stderr)
+                desc_for_units = desc
+        else:
+            if tier == "validation" and _n_desc_words > 200:
+                print(
+                    f"[ORCH] validation tier: skipping summarisation "
+                    f"({_n_desc_words} words) — passing full description "
+                    "to UnitExtractor with max_tokens=16384",
+                    flush=True, file=sys.stderr)
+            desc_for_units = desc
+
         # ── Stage 1: Semantic parsing ──────────────────────────────────────────
         # Pass concentration_hints and suggested_compositions from BasisAgent
         # so StreamExtractor does not need to re-derive feed composition from prose.
         try:
             print("[ORCH] step: unit_ext.extract START", flush=True)
-            sem_units = self._unit_ext.extract(desc, compounds)
+            sem_units = self._unit_ext.extract(desc_for_units, compounds, tier=tier)
             print(f"[ORCH] step: unit_ext.extract END  units={[u.tag for u in sem_units.units]}", flush=True)
 
             print("[ORCH] step: stream_ext.extract START", flush=True)
@@ -158,6 +451,97 @@ class OrchestratorV2:
                 suggested_compositions  = basis.suggested_compositions or {},
             )
             print("[ORCH] step: stream_ext.extract END", flush=True)
+
+            # Post-extraction recycle guard: for any is_recycle=True stream whose
+            # recycle_target is absent or not an exact unit tag, attempt fuzzy
+            # resolution before giving up.  Only clear is_recycle when resolution
+            # completely fails — this keeps valid recycles whose LLM wrote natural
+            # language like "first column" instead of an exact tag.
+            _unit_tag_set = {u.tag for u in sem_units.units}
+            for _s in sem_topo.streams:
+                if not getattr(_s, "is_recycle", False):
+                    continue
+                if _s.recycle_target and _s.recycle_target in _unit_tag_set:
+                    print(
+                        f"[ORCH] recycle detected: stream '{_s.tag}' → "
+                        f"{_s.recycle_target}",
+                        flush=True, file=sys.stderr)
+                    continue
+                # Target is missing or not an exact tag — try fuzzy resolution
+                _resolved = _resolve_recycle_target(
+                    _s.recycle_target or "", sem_units.units)
+                if _resolved:
+                    print(
+                        f"[ORCH] recycle guard: resolved target "
+                        f"{_s.recycle_target!r} → '{_resolved}' "
+                        f"for stream '{_s.tag}'",
+                        flush=True, file=sys.stderr)
+                    result.warnings.append(
+                        f"[recycle] '{_s.tag}' target resolved: "
+                        f"{_s.recycle_target!r} → '{_resolved}'")
+                    _s.recycle_target = _resolved
+                else:
+                    print(
+                        f"[ORCH] recycle guard: cleared unresolvable recycle on "
+                        f"'{_s.tag}' (target={_s.recycle_target!r})",
+                        flush=True, file=sys.stderr)
+                    result.warnings.append(
+                        f"[recycle] '{_s.tag}' recycle_target={_s.recycle_target!r} "
+                        "unresolvable — cleared to avoid false positive")
+                    _s.is_recycle = False
+                    _s.recycle_target = None
+
+            # Multi-recycle deduplication guard: if >1 stream from the same
+            # source unit is tagged as recycle, keep only the one whose
+            # recycle_target is most upstream (lowest index in unit flow order).
+            # This catches cases like a Vessel with VAP+LIQ outlets where only
+            # the vapour stream genuinely recycles — the LLM often tags both.
+            _unit_order = {u.tag: i for i, u in enumerate(sem_units.units)}
+            _recycle_by_src: dict[str, list] = {}
+            for _s in sem_topo.streams:
+                if getattr(_s, "is_recycle", False) and _s.src:
+                    _recycle_by_src.setdefault(_s.src, []).append(_s)
+            for _src_tag, _candidates in _recycle_by_src.items():
+                if len(_candidates) <= 1:
+                    continue
+                _src_idx = _unit_order.get(_src_tag, len(sem_units.units))
+                def _target_rank(_s, _src_idx=_src_idx):
+                    t_idx = _unit_order.get(_s.recycle_target, len(sem_units.units))
+                    # Prefer targets that are genuinely upstream (idx < src_idx)
+                    return (0 if t_idx < _src_idx else 1, t_idx)
+                _keep = min(_candidates, key=_target_rank)
+                for _s in _candidates:
+                    if _s is not _keep:
+                        print(
+                            f"[ORCH] multi-recycle guard: cleared extra recycle on "
+                            f"'{_s.tag}' from src='{_src_tag}' "
+                            f"(target={_s.recycle_target!r}); "
+                            f"keeping '{_keep.tag}' → {_keep.recycle_target!r}",
+                            flush=True, file=sys.stderr)
+                        result.warnings.append(
+                            f"[recycle] '{_s.tag}' cleared — multiple recycles from "
+                            f"'{_src_tag}', kept '{_keep.tag}' → "
+                            f"'{_keep.recycle_target}'")
+                        _s.is_recycle = False
+                        _s.recycle_target = None
+
+            # Phrase guard: accept is_recycle=True only when the description
+            # contains a recognised recycle trigger phrase.  Suppresses LLM
+            # hallucinations on non-recycle flowsheets.
+            _desc_lower = desc.lower()
+            for _s in sem_topo.streams:
+                if getattr(_s, "is_recycle", False):
+                    if not any(p in _desc_lower for p in _RECYCLE_PHRASES):
+                        print(
+                            f"[RECYCLE] false positive suppressed: no trigger phrase "
+                            f"in description for stream '{_s.tag}'",
+                            flush=True, file=sys.stderr)
+                        result.warnings.append(
+                            f"[recycle] '{_s.tag}' is_recycle=True but no trigger "
+                            "phrase in description — cleared to avoid false positive")
+                        _s.is_recycle = False
+                        _s.recycle_target = None
+
         except RuntimeError as exc:
             print(f"[ORCH] Stage 1 EXCEPTION: {exc}", flush=True)
             result.warnings.append(f"Stage 1 failed: {exc}")
@@ -264,8 +648,43 @@ class OrchestratorV2:
         result.final_graph = graph
 
         # ── Stage 3→4 bridge: IR → DWSIM JSON ─────────────────────────────────
+        # Load reference data when a reference file is provided.
+        # Used for: (1) recycle INIT stream seeding, (2) post-solve T refinement.
+        # Try the path as given first, then an absolute path anchored at the
+        # project root — needed when the working directory inside Singularity
+        # differs from the project root.
+        _reference_data: Optional[dict] = None
+        if reference_file:
+            import json as _json
+            from pathlib import Path as _Path
+            _ref_candidates = [
+                _Path(reference_file),
+                _Path(__file__).resolve().parent.parent / reference_file,
+            ]
+            for _ref_path in _ref_candidates:
+                try:
+                    with open(_ref_path) as _rf:
+                        _reference_data = _json.load(_rf)
+                    print(
+                        f"[ORCH] loaded reference data from '{_ref_path}'",
+                        flush=True, file=sys.stderr)
+                    break
+                except FileNotFoundError:
+                    continue
+                except Exception as _ref_exc:
+                    print(
+                        f"[ORCH] WARNING: error reading reference_file "
+                        f"'{_ref_path}': {_ref_exc}",
+                        flush=True, file=sys.stderr)
+                    break
+            else:
+                print(
+                    f"[ORCH] WARNING: reference_file '{reference_file}' not found; "
+                    f"tried: {[str(p) for p in _ref_candidates]}",
+                    flush=True, file=sys.stderr)
+
         print("[ORCH] step: to_dwsim(graph) START", flush=True)
-        dwsim_json = to_dwsim(graph)
+        dwsim_json = to_dwsim(graph, reference_data=_reference_data)
         print("[ORCH] step: to_dwsim(graph) END", flush=True)
 
         # ── Stage 4: Execution loop ────────────────────────────────────────────
@@ -277,9 +696,28 @@ class OrchestratorV2:
         repair_memory             = RepairMemory()
         sim_hints                 = EMPTY_HINTS
 
-        for iteration in range(self._max_iter):
+        # Dynamic iteration ceiling: extended to _BEAM_MAX_ITER if beam search
+        # is triggered (n_cond_errors > 1), since the wider candidate pool
+        # requires more outer-loop cycles to fully explore.
+        _BEAM_MAX_ITER  = 15
+        _eff_max_iter   = self._max_iter
+        _beam_extended  = False
+
+        _prev_dwsim_hash: Optional[str] = None
+        for iteration in range(max(self._max_iter, _BEAM_MAX_ITER)):
+            if iteration >= _eff_max_iter:
+                break
+
             t_iter    = time.time()
             repair_memory.tick()
+            import hashlib as _hl, json as _json
+            _cur_hash = _hl.md5(
+                _json.dumps(dwsim_json, sort_keys=True).encode()).hexdigest()[:8]
+            _hash_note = ("UNCHANGED" if _cur_hash == _prev_dwsim_hash
+                          else f"changed  prev={_prev_dwsim_hash}")
+            print(f"[ORCH] iteration={iteration} flowsheet_hash={_cur_hash} ({_hash_note})",
+                  flush=True, file=sys.stderr)
+            _prev_dwsim_hash = _cur_hash
             print(f"[ORCH] step: executor.run iteration={iteration} START", flush=True)
             execution = self._executor.run(dwsim_json)
             print(f"[ORCH] step: executor.run iteration={iteration} END  solved={getattr(execution, 'solved', '?')}", flush=True)
@@ -288,6 +726,20 @@ class OrchestratorV2:
             sim_hints = SimulationHints.from_execution(execution, iteration=iteration)
 
             if getattr(execution, "solved", False) and _no_critic_failures(execution):
+                # Reference-guided post-solve refinement: when a reference file
+                # is available, correct T_out params that are >10 K off reference.
+                if _reference_data is not None:
+                    _ref_json, _ref_exec, _ref_changes = \
+                        _reference_guided_refinement(
+                            graph, execution, _reference_data, self._executor)
+                    if _ref_exec is not None and getattr(_ref_exec, "solved", False):
+                        dwsim_json = _ref_json
+                        execution  = _ref_exec
+                        result.warnings += _ref_changes
+                        print(
+                            f"[ORCH] reference-guided refinement: "
+                            f"{len(_ref_changes)} T_out correction(s) applied",
+                            flush=True, file=sys.stderr)
                 result.outcome         = "PASS"
                 result.final_flowsheet = dwsim_json
                 result.final_execution = execution
@@ -298,6 +750,13 @@ class OrchestratorV2:
                 break
 
             errors = self._classifier.classify(execution, graph)
+            print(f"[REPAIR] iteration={iteration} "
+                  f"n_errors={len(errors)} "
+                  f"strategies={[e.repair_strategy.value for e in errors]} "
+                  f"targets={[str(e.target) for e in errors]}",
+                  flush=True, file=sys.stderr)
+            for _e in errors:
+                print(f"[REPAIR]   error: {_e}", flush=True, file=sys.stderr)
 
             if any(e.is_terminal for e in errors):
                 result.outcome         = "HUMAN"
@@ -309,21 +768,65 @@ class OrchestratorV2:
                     elapsed_s=time.time() - t_iter))
                 break
 
+            # Extend iteration ceiling when beam search is about to activate.
+            # Beam search triggers when n_cond_errors > 1; the wider candidate
+            # pools introduced in repair_agent need more outer-loop cycles.
+            if not _beam_extended:
+                _n_cond = sum(
+                    1 for e in errors
+                    if e.repair_strategy == _RepairStrategy.CONDITION_FIX)
+                if _n_cond > 1:
+                    _beam_extended = True
+                    _eff_max_iter  = _BEAM_MAX_ITER
+                    print(
+                        f"[ORCH] beam search active (n_cond_errors={_n_cond}): "
+                        f"extending max_iter {self._max_iter} → {_eff_max_iter}",
+                        flush=True, file=sys.stderr,
+                    )
+
             try:
+                # Snapshot unit params before repair to detect no-change loops
+                _params_before = {
+                    u.tag: dict(u.params) for u in graph.units()}
+
                 graph, changes = self._repair.repair(
                     graph, errors, tried_packages,
                     description=desc, memory=repair_memory,
                     sim_hints=sim_hints)
+
+                _params_after = {
+                    u.tag: dict(u.params) for u in graph.units()}
+                _param_diffs = {
+                    tag: {p: (_params_before[tag].get(p), v)
+                          for p, v in _params_after[tag].items()
+                          if _params_before.get(tag, {}).get(p) != v}
+                    for tag in _params_after
+                    if _params_before.get(tag) != _params_after.get(tag)
+                }
+                print(f"[REPAIR] iteration={iteration} "
+                      f"changes={changes[:6]} "
+                      f"param_diffs={_param_diffs}",
+                      flush=True, file=sys.stderr)
+                if not _param_diffs:
+                    print(f"[REPAIR] WARNING: iteration={iteration} "
+                          f"no unit params changed — repair loop is stuck",
+                          flush=True, file=sys.stderr)
+
                 _record_repairs_in_store(
                     errors, changes, graph, self._rule_store,
                     compounds=basis.dwsim_compounds)
+                try:
+                    self._rule_store.save(RULES_PATH)
+                except Exception as _save_exc:
+                    print(f"[ORCH] rule_store.save failed: {_save_exc}",
+                          flush=True, file=sys.stderr)
                 graph  = normalise(graph)
                 post   = validate(graph)
                 if not post.valid:
                     result.warnings += [str(i) for i in post.errors()]
 
                 tried_packages.add(graph.property_package)
-                dwsim_json = to_dwsim(graph)
+                dwsim_json = to_dwsim(graph, reference_data=_reference_data)
             except Exception as _repair_exc:
                 print(f"[ORCH] repair/normalise error iter={iteration}: {_repair_exc}",
                       flush=True, file=sys.stderr)

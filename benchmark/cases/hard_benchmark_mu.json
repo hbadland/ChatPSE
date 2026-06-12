@@ -1,0 +1,1536 @@
+[
+  {
+    "id": "HB_MU_01",
+    "name": "Ethanol-water heat-flash-cool-pump train",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Process an ethanol-water feed (40 mol% ethanol) at 25°C and 1 atm through a four-unit sequence: heat to 80°C to partially vaporise ethanol, flash-separate in a vessel at atmospheric pressure, cool the water-rich liquid bottoms to 35°C, then pump to 3 bar for downstream use. NRTL with binary interaction parameters is required for accurate VLE.",
+    "compounds": [
+      "Ethanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 348,
+          "T_max_K": 362
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1
+        }
+      ]
+    },
+    "source": "Bioethanol dehydration pre-concentration step. Four-unit chain exercises Cooler→Pump coupling: Cooler T_out must remain below Pump cavitation limit.",
+    "notes": "Ethanol bp=78.4°C, water bp=100°C. At 80°C the feed is in the two-phase region — NRTL BIPs required for accurate y/x split. Cooler-to-Pump coupling means GlobalConsistencyPass must enforce T_out_cooler well below bubble point before pump inlet.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MU_02",
+    "name": "1-Propanol-water heat-flash-cool-pump train",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Separate a 1-propanol and water feed (35 mol% 1-propanol) at 25°C and 1 atm: heat to 100°C where both components are near their boiling points, flash-separate in a vessel, cool the water-rich liquid bottoms to 40°C, then pump the cooled stream to 5 bar for downstream processing.",
+    "compounds": [
+      "1-Propanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 365,
+          "T_max_K": 382
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1
+        }
+      ]
+    },
+    "source": "Propanol recovery from fermentation broth. Operating near both component boiling points creates strong VLE sensitivity: a 5 K error in heater target flips from two-phase to single-phase regime.",
+    "notes": "1-Propanol bp=97.2°C, water bp=100°C. At 35 mol% 1-propanol, flash at ~100°C gives substantial separation. Strong coupling: heater T_out is within 3 K of water bubble point, so GlobalConsistencyPass margin enforcement is critical.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MU_03",
+    "name": "DMSO-water heat-flash-cool concentration",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Concentrate a dimethyl sulfoxide and water feed (50 mol% DMSO) at 25°C and 1 atm: heat to 110°C to vaporise water selectively (DMSO boiling point is 189°C), flash-separate the two-phase mixture in a vessel, then cool the DMSO-rich liquid bottoms to 40°C for product recovery.",
+    "compounds": [
+      "Dimethyl sulfoxide",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 375,
+          "T_max_K": 395
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.2
+        }
+      ]
+    },
+    "source": "DMSO solvent recovery and concentration. Large boiling point spread (89 K) means water is selectively evaporated. Tests whether ParamMapper correctly targets a temperature far above water bp but well below DMSO bp.",
+    "notes": "DMSO bp=189°C, water bp=100°C. At 110°C (10 K above water bp, 79 K below DMSO bp) water evaporates preferentially. Large composition difference between vapour (water-rich) and liquid (DMSO-rich) makes this a strong separation check.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MU_04",
+    "name": "Ethylene glycol-water heat-flash-cool-pump train",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "polar",
+    "description": "Process an ethylene glycol and water feed (30 mol% EG) at 25°C and 1 atm: heat to 108°C to vaporise water selectively (EG bp=197.5°C), flash-separate in a vessel, cool the EG-rich liquid bottoms to 50°C, then pump the cooled product to 8 bar for downstream glycol recovery.",
+    "compounds": [
+      "Ethylene glycol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 373,
+          "T_max_K": 393
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.25
+        }
+      ]
+    },
+    "source": "Glycol dehydration unit in natural gas processing. Very high BP spread (97.5 K) creates near-complete water/EG separation in a single flash. Tests Pump after Cooler coupling with high-viscosity liquid.",
+    "notes": "EG bp=197.5°C, water bp=100°C. At 108°C essentially all EG stays liquid. Vapour is nearly pure water, liquid is EG-rich — tests whether separation_achieved check correctly flags near-complete separation (expected rel_diff >> 10%).",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MU_05",
+    "name": "Methane-ethane-propane compress-cool-flash-pump LNG pre-train",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Pre-process a light natural gas feed (70 mol% methane, 20% ethane, 10% propane) at 25°C and 1 bar through a four-unit LNG preparation sequence: compress to 30 bar (temperature rises to ~175°C due to adiabatic compression), intercool to -30°C to partially liquefy ethane and propane, flash-separate the two-phase stream in a vessel, then pump the C2/C3-rich liquid to 50 bar for liquefaction.",
+    "compounds": [
+      "Methane",
+      "Ethane",
+      "Propane"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "GAS-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 4,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 233,
+          "T_max_K": 258
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "source": "Natural gas liquids (NGL) extraction. Compress-intercool-flash is the first stage of LNG production. Tests cryogenic Cooler→Vessel coupling: Cooler T_out must be between methane dew point and propane bubble point at 30 bar.",
+    "notes": "At 30 bar: methane bp≈-100°C (173K), ethane bp≈-15°C (258K), propane bp≈48°C (321K). Cooling to -30°C (243K) liquefies most propane and some ethane. PR or LKP required for cryogenic accuracy. Strong Comp→Cool coupling: adiabatic compression T rise must be fully removed by cooler.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MU_06",
+    "name": "Propane-butane LPG compress-cool-flash splitter",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Separate a propane and n-butane mixture (60 mol% propane, 40 mol% n-butane) at 25°C and 1 bar using a three-unit LPG fractionation sequence: compress from 1 bar to 8 bar, cool the compressed gas to 20°C to partially condense butane, then flash-separate in a vessel to recover propane-rich vapour from butane-rich liquid.",
+    "compounds": [
+      "Propane",
+      "n-Butane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 285,
+          "T_max_K": 305
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "source": "LPG fractionation — propane-butane splitter first stage. At 8 bar propane bubble point ≈19°C (292K), butane bubble point ≈71°C (344K). Cooler target (20°C) sits between the two bubble points, producing selective butane condensation.",
+    "notes": "PR EOS required. At 8 bar and 20°C, the 60/40 propane/butane mixture is in the two-phase region. System must correctly infer Compressor+Cooler coupling: Compressor P_out determines the bubble-point window that Cooler T_out must hit.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MU_07",
+    "name": "BTX two-stage sequential flash — benzene, toluene, o-xylene",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Partially separate a ternary benzene-toluene-o-xylene mixture (33/33/33 mol%) at 25°C and 1 atm using two sequential heat-and-flash stages. First stage: heat to 95°C and flash to recover benzene-rich vapour. Second stage: heat the liquid bottoms to 125°C and flash again to separate toluene from xylene.",
+    "compounds": [
+      "Benzene",
+      "Toluene",
+      "o-Xylene"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-1"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "HT-02"
+        ],
+        [
+          "HT-02",
+          "VES-02"
+        ],
+        [
+          "VES-02",
+          "VAP-2"
+        ],
+        [
+          "VES-02",
+          "LIQ-2"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 4,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "n_units_of_type",
+          "unit_type": "Heater",
+          "count_min": 2
+        },
+        {
+          "type": "n_units_of_type",
+          "unit_type": "Vessel",
+          "count_min": 2
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT-01",
+          "T_min_K": 358,
+          "T_max_K": 380
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT-02",
+          "T_min_K": 388,
+          "T_max_K": 412
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "source": "Crude BTX fractionation first two stages. Tests whether second-stage heater temperature is correctly set above toluene bp (110.6°C) but below xylene bp (144.4°C) — and whether this constraint is derived from the first-stage split, not the raw feed.",
+    "notes": "Benzene bp=80.1°C, toluene bp=110.6°C, o-xylene bp=144.4°C. HT-01 targets above benzene bp; HT-02 must target above toluene bp independently. PR or SRK required. Two-stage coupling: HT-02 input composition depends entirely on VES-01 split.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MU_08",
+    "name": "n-Hexane–n-heptane–n-octane ternary heat-flash-cool",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Partially separate an equimolar n-hexane, n-heptane, and n-octane mixture at 25°C and 1 atm using three units: heat to 85°C to vaporise hexane preferentially (hexane bp=69°C, heptane bp=98°C, octane bp=126°C), flash-separate in a vessel, then cool the heptane-octane-rich liquid bottoms to 30°C for product collection.",
+    "compounds": [
+      "n-Hexane",
+      "n-Heptane",
+      "n-Octane"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 348,
+          "T_max_K": 368
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "source": "Naphtha pre-flash separation. Three consecutive n-alkanes with 30 K boiling-point spacing — moderate relative volatility. Tests whether PR EOS correctly handles a ternary near-ideal mixture and whether the flash temperature targets the hexane-dominant vapour fraction.",
+    "notes": "n-Hexane bp=68.7°C, n-heptane bp=98.4°C, n-octane bp=125.7°C. At 85°C the feed is above hexane bp and below heptane bp — predominantly hexane vaporises. Near-ideal system: PR or SRK required, no BIPs needed.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_MU_09",
+    "name": "Acetone-methanol heat-flash-cool-pump with azeotrope",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Separate an acetone-methanol feed (60 mol% acetone) at 25°C and 1 atm through four units: heat to 60°C to enter the two-phase region above the 55.7°C minimum-boiling azeotrope, flash-separate in a vessel to recover acetone-enriched vapour, cool the methanol-rich liquid bottoms to 25°C, then pump to 3 bar.",
+    "compounds": [
+      "Acetone",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 326,
+          "T_max_K": 342
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "source": "Acetone recovery from methanol solvent mixture. Azeotrope at 55.7°C (88.5 mol% acetone) means feed at 60 mol% acetone is below the azeotropic composition — vapour is enriched toward the azeotrope from the acetone-lean side.",
+    "notes": "Acetone bp=56.1°C, methanol bp=64.7°C. Min-boiling azeotrope at 55.7°C, 88.5 mol% acetone. Heater target must be above azeotrope bp (55.7°C) and below methanol bp (64.7°C) — a 9 K window. NRTL BIPs critical; Raoult's Law predicts no azeotrope.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MU_10",
+    "name": "Chloroform-methanol heat-flash-cool with minimum-boiling azeotrope",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Partially separate a chloroform and methanol mixture (50 mol% chloroform) at 25°C and 1 atm using three units: heat to 57°C to enter the two-phase region above the 53.4°C minimum-boiling azeotrope (87 mol% chloroform), flash-separate to recover chloroform-enriched vapour, then cool the methanol-rich liquid bottoms to 25°C.",
+    "compounds": [
+      "Chloroform",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 323,
+          "T_max_K": 338
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "source": "Chloroform-methanol azeotropic mixture arising from pharmaceutical solvent recovery. Negative deviations from Raoult's Law (strong CHCl3–MeOH H-bonding) produce a minimum-boiling azeotrope at a temperature BELOW both pure component boiling points.",
+    "notes": "CHCl3 bp=61.2°C, MeOH bp=64.7°C, azeotrope at 53.4°C (87 mol% CHCl3). Heater target must exceed azeotrope bp (53.4°C) but stay below CHCl3 bp (61.2°C) — a 7.8 K window. Negative deviations make this a thermodynamic stress test for NRTL BIP accuracy.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MU_11",
+    "name": "Acetonitrile-water two-stage heat-flash enrichment",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Enrich an acetonitrile-water feed (40 mol% acetonitrile) at 25°C and 1 atm using a two-stage sequential heat-and-flash process. First stage: heat to 82°C and flash in the first vessel. Second stage: heat the acetonitrile-depleted liquid bottoms to 95°C and flash in a second vessel to recover residual acetonitrile. The acetonitrile-water azeotrope (76.5°C, 83 mol% MeCN) limits maximum single-stage enrichment.",
+    "compounds": [
+      "Acetonitrile",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-1"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "HT-02"
+        ],
+        [
+          "HT-02",
+          "VES-02"
+        ],
+        [
+          "VES-02",
+          "VAP-2"
+        ],
+        [
+          "VES-02",
+          "LIQ-2"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 4,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "n_units_of_type",
+          "unit_type": "Heater",
+          "count_min": 2
+        },
+        {
+          "type": "n_units_of_type",
+          "unit_type": "Vessel",
+          "count_min": 2
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT-01",
+          "T_min_K": 348,
+          "T_max_K": 363
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT-02",
+          "T_min_K": 360,
+          "T_max_K": 375
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "expected_repair_iterations": 3,
+    "source": "Acetonitrile recovery from aqueous pharmaceutical waste. Two-stage flash exploits the fact that below the azeotrope composition (83% MeCN) each flash step enriches the vapour in MeCN. Second-stage heater target depends on the composition leaving VES-01, creating strong inter-stage coupling.",
+    "notes": "MeCN bp=82°C, water bp=100°C, azeotrope at 76.5°C (83 mol% MeCN). At 40 mol% MeCN feed, both flash stages operate below the azeotrope composition so vapour is always MeCN-enriched. HT-02 temperature is fully determined by the VES-01 split — repair loop must resolve this dependency."
+  },
+  {
+    "id": "HB_MU_12",
+    "name": "Diethyl ether-methanol heat-flash-cool with azeotrope",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "Separate a diethyl ether and methanol mixture (50 mol% ether) at 20°C and 1 atm: heat to 40°C to operate above the 32.4°C minimum-boiling azeotrope (90 mol% ether) and vaporise the ether-rich phase, flash-separate in a vessel, then cool the methanol-rich liquid bottoms to 15°C for collection.",
+    "compounds": [
+      "Diethyl ether",
+      "Methanol"
+    ],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 305,
+          "T_max_K": 320
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "source": "Ether-methanol solvent separation in pharmaceutical manufacturing. Near-ambient azeotrope (32.4°C) in a highly flammable system — tests whether ParamMapper targets the narrow T window (32.4–34.6°C) rather than a generic ambient-temperature default.",
+    "notes": "DEE bp=34.6°C, MeOH bp=64.7°C, azeotrope at 32.4°C (90 mol% DEE). Feed at 50 mol% DEE is far below the azeotropic composition — vapour is strongly enriched in DEE. Heater target must exceed azeotrope bp by at least 7 K but the range is very narrow (32.4 to 34.6°C for DEE bp).",
+    "expected_repair_iterations": 4
+  },
+  {
+    "id": "HB_MU_13",
+    "name": "Ethyl acetate–ethanol–water five-unit ternary separation",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Process a ternary feed of ethyl acetate (50 mol%), ethanol (30 mol%), and water (20 mol%) at 25°C and 1 atm through five units. Heat to 80°C, flash in the first vessel to recover ethyl-acetate-rich vapour. Cool the vapour to 50°C to partially recondense it, flash in the second vessel for further enrichment. Pump the water-rich liquid from the first vessel to 5 bar for downstream aqueous treatment.",
+    "compounds": [
+      "Ethyl acetate",
+      "Ethanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 5,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Vessel",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-1"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "VAP-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-02"
+        ],
+        [
+          "VES-02",
+          "VAP-OUT"
+        ],
+        [
+          "VES-02",
+          "LIQ-OUT"
+        ],
+        [
+          "LIQ-1",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 4,
+      "n_units_max": 6,
+      "convergence_expected": false,
+      "physics_checks": [
+        {
+          "type": "n_units_of_type",
+          "unit_type": "Vessel",
+          "count_min": 2
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 348,
+          "T_max_K": 368
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "expected_repair_iterations": 3,
+    "source": "Ethyl acetate purification from fermentation broth — a classic ternary azeotrope system with three binary azeotropes: EtOAc/EtOH (71.8°C), EtOAc/water (70.4°C heterogeneous), and EtOH/water (78.1°C). All three BIP pairs are in the corpus.",
+    "notes": "Three binary azeotropes in one system: EtOAc/EtOH (71.8°C, 54% EtOAc), EtOAc/water (70.4°C heterogeneous), EtOH/water (78.1°C, 89.4%). BIPs required for all three pairs: EtOAc/EtOH ✓, EtOAc/water ✓, EtOH/water ✓. Five-unit split topology with parallel paths stresses both BIP injection and repair loop.",
+    "expected_convergence": false,
+    "skip_reason": "three-phase LLE not supported in current wrapper — EtOAc/water heterogeneous azeotrope requires VLLE which NestedLoops flash cannot resolve"
+  },
+  {
+    "id": "HB_MU_14",
+    "name": "Cyclohexane-ethanol heat-flash-cool-pump with near-azeotrope",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Partially separate a cyclohexane and ethanol mixture (50 mol% cyclohexane) at 25°C and 1 atm: heat to 70°C to enter the two-phase region above the minimum-boiling azeotrope (64.9°C, 54.5 mol% cyclohexane), flash in a vessel to separate cyclohexane-rich vapour from ethanol-rich liquid, cool the liquid bottoms to 30°C, then pump to 4 bar.",
+    "compounds": [
+      "Cyclohexane",
+      "Ethanol"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "LIQ-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 3,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 335,
+          "T_max_K": 355
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "VES",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "source": "Cyclohexane recovery from ethanol extraction process. Feed at 50 mol% CyHex sits just below the azeotrope (54.5% CyHex). Heater must target above azeotrope bp (64.9°C) but result is limited by proximity to the azeotrope — tests whether the system correctly applies the near-azeotrope guard in separation_achieved.",
+    "notes": "CyHex bp=80.7°C, EtOH bp=78.4°C. Min-boiling azeotrope at 64.9°C, 54.5 mol% CyHex. Feed at 50% CyHex is below azeotrope — vapor enriched toward 54.5%. Separation limited to ~8% relative difference due to near-azeotrope VLE. BIP: cyclohexane/ethanol ✓.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_MU_15",
+    "name": "Ethanol–n-heptane five-unit two-stage flash train",
+    "tier": "multi_unit",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Separate an ethanol and n-heptane feed (40 mol% ethanol) at 25°C and 1 atm through a five-unit two-stage sequence. Heat to 82°C to partially vaporise the ethanol-rich phase, flash in the first vessel. Route the ethanol-rich vapour through a cooler to 35°C to partially recondense, then flash in the second vessel for further enrichment. Pump the heptane-rich liquid from the first vessel to 5 bar.",
+    "compounds": [
+      "Ethanol",
+      "n-Heptane"
+    ],
+    "reference_structure": {
+      "n_units": 5,
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Vessel",
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-1"
+        ],
+        [
+          "VES-01",
+          "LIQ-1"
+        ],
+        [
+          "VAP-1",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-02"
+        ],
+        [
+          "VES-02",
+          "VAP-OUT"
+        ],
+        [
+          "VES-02",
+          "LIQ-OUT"
+        ],
+        [
+          "LIQ-1",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 4,
+      "n_units_max": 6,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "n_units_of_type",
+          "unit_type": "Vessel",
+          "count_min": 2
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 348,
+          "T_max_K": 363
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 300,
+          "T_max_K": 318
+        },
+        {
+          "type": "mass_balance"
+        }
+      ]
+    },
+    "expected_repair_iterations": 3,
+    "source": "Ethanol-hydrocarbon liquid-liquid extraction pre-treatment. Strong positive deviations from Raoult's Law (ethanol/heptane are nearly immiscible at room temperature) drive a VLE minimum-boiling azeotrope near 71-72°C. Five-unit split topology with split-path flow exercises both BIP injection and multi-unit repair coupling.",
+    "notes": "EtOH bp=78.4°C, n-heptane bp=98.4°C. BIP: ethanol/n-heptane ✓. Azeotrope near 71-72°C at ~24 mol% EtOH. Feed at 40 mol% EtOH is above azeotrope composition — vapour is heptane-enriched in this regime. COOL-01 target at 35°C must keep VES-02 feed in two-phase region. Strong five-unit coupling expected to require 3+ repair iterations."
+  }
+]

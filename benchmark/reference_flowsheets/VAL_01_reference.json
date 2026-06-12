@@ -1,0 +1,99 @@
+{
+  "case_id": "VAL_01",
+  "case_name": "Methane Liquefaction Linde Cycle Three Stage",
+  "source_file": "Methane_Liquefaction_Cycle.dwxmz",
+  "compounds": ["Methane"],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {"tag": "K-01",  "type": "Compressor", "params": {"T_out": 400.58, "P_out": 500000.00,   "dP": null, "efficiency": null}},
+    {"tag": "K-02",  "type": "Compressor", "params": {"T_out": null,   "P_out": 2500000.00,  "dP": null, "efficiency": null}},
+    {"tag": "K-03",  "type": "Compressor", "params": {"T_out": 389.24, "P_out": 10000000.00, "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",     "params": {"T_out": 279.95, "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "CO-02", "type": "Cooler",     "params": {"T_out": 279.95, "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "CO-03", "type": "Cooler",     "params": {"T_out": 210.00, "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "EX-01", "type": "Expander",   "params": {"T_out": null,   "P_out": 100000.00,    "dP": null, "efficiency": null}},
+    {"tag": "V-01",  "type": "Vessel",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-02", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-03", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-04", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-05", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-06", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-07", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}},
+    {"tag": "HT-08", "type": "Heater",     "params": {"T_out": null,   "P_out": null,         "dP": null, "efficiency": null}}
+  ],
+  "connections": [],
+  "streams": {
+    "S-01": {
+      "T_K": 279.95, "T_C": 6.80,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-02": {
+      "T_K": 400.58, "T_C": 127.43,
+      "P_Pa": 500000.00, "P_bar": 5.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-03": {
+      "T_K": 279.95, "T_C": 6.85,
+      "P_Pa": 2500000.00, "P_bar": 25.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-04": {
+      "T_K": 402.31, "T_C": 129.16,
+      "P_Pa": 2500000.00, "P_bar": 25.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-05": {
+      "T_K": 279.95, "T_C": 6.85,
+      "P_Pa": 10000000.00, "P_bar": 100.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-06": {
+      "T_K": 389.24, "T_C": 116.08,
+      "P_Pa": 10000000.00, "P_bar": 100.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-07": {
+      "T_K": 210.00, "T_C": -63.15,
+      "P_Pa": 10000000.00, "P_bar": 100.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-08": {
+      "T_K": 111.47, "T_C": -161.68,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 0.017315,
+      "vapor_fraction": null,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-09": {
+      "T_K": 111.47, "T_C": -161.68,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 0.010499,
+      "vapor_fraction": 1.0,
+      "composition": {"Methane": 1.000000}
+    },
+    "S-10": {
+      "T_K": 111.47, "T_C": -161.68,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 0.006816,
+      "vapor_fraction": 0.0,
+      "composition": {"Methane": 1.000000}
+    }
+  }
+}

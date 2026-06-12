@@ -1,0 +1,239 @@
+{
+  "case_id": "VAL_03",
+  "case_name": "Hydrodealkylation Toluene to Benzene SRK Recycle",
+  "source_file": "Hydroalkylation_of_Toluene_to_Benzene.dwxmz",
+  "compounds": [
+    "Hydrogen",
+    "Toluene",
+    "Benzene",
+    "Methane",
+    "Biphenyl"
+  ],
+  "property_package": "Soave-Redlich-Kwong",
+  "solved": true,
+  "units": [
+    {
+      "tag": "MX-01",
+      "type": "Mixer",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "HT-01",
+      "type": "Heater",
+      "params": {
+        "T_out": 873.15,
+        "P_out": null,
+        "dP": null,
+        "efficiency": 1.0
+      }
+    },
+    {
+      "tag": "V-01",
+      "type": "Vessel",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "CO-01",
+      "type": "Cooler",
+      "params": {
+        "T_out": 353.15,
+        "P_out": null,
+        "dP": null,
+        "efficiency": 1.0
+      }
+    },
+    {
+      "tag": "V-02",
+      "type": "Vessel",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "HT-02",
+      "type": "Heater",
+      "params": {
+        "T_out": 375.15,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "V-03",
+      "type": "Vessel",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "P-01",
+      "type": "Pump",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "SP-01",
+      "type": "Splitter",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    },
+    {
+      "tag": "SP-02",
+      "type": "Splitter",
+      "params": {
+        "T_out": null,
+        "P_out": null,
+        "dP": null,
+        "efficiency": null
+      }
+    }
+  ],
+  "connections": [],
+  "streams": {
+    "Toluene": {
+      "T_K": 373.15,
+      "T_C": 100.0,
+      "P_Pa": 200000.0,
+      "P_bar": 2.0,
+      "flow_mol_s": 30.55,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 0.0,
+        "Toluene": 1.0,
+        "Benzene": 0.0,
+        "Methane": 0.0,
+        "Biphenyl": 0.0
+      }
+    },
+    "Recycled_Toluene": {
+      "T_K": 541.97,
+      "T_C": 268.82,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 0.53,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 0.0,
+        "Toluene": 0.968,
+        "Benzene": 0.032,
+        "Methane": 0.0,
+        "Biphenyl": 0.0
+      }
+    },
+    "Pure_Benzene": {
+      "T_K": 474.65,
+      "T_C": 201.5,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 28.14,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 0.00627,
+        "Toluene": 0.00126,
+        "Benzene": 0.96447,
+        "Methane": 0.028,
+        "Biphenyl": 0.0
+      }
+    },
+    "MSTR-020": {
+      "T_K": 373.15,
+      "T_C": 100.0,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 28.68,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 0.00616,
+        "Toluene": 0.01926,
+        "Benzene": 0.94708,
+        "Methane": 0.0275,
+        "Biphenyl": 0.0
+      }
+    },
+    "MSTR-016": {
+      "T_K": 353.15,
+      "T_C": 80.0,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 6610.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.453,
+        "Toluene": 0.000429,
+        "Benzene": 0.052,
+        "Methane": 0.494571,
+        "Biphenyl": 0.0
+      }
+    },
+    "MSTR-008": {
+      "T_K": 873.15,
+      "T_C": 600.0,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 6640.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.451,
+        "Toluene": 0.000509,
+        "Benzene": 0.0558,
+        "Methane": 0.492691,
+        "Biphenyl": 0.0
+      }
+    },
+    "Hot_Mixed_Stream": {
+      "T_K": 873.15,
+      "T_C": 600.0,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 6640.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.456,
+        "Toluene": 0.005098,
+        "Benzene": 0.0512,
+        "Methane": 0.487702,
+        "Biphenyl": 0.0
+      }
+    },
+    "Heavy_1": {
+      "T_K": 541.97,
+      "T_C": 268.82,
+      "P_Pa": 2350000.0,
+      "P_bar": 23.5,
+      "flow_mol_s": 0.534,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 0.0,
+        "Toluene": 0.9675,
+        "Benzene": 0.0325,
+        "Methane": 0.0,
+        "Biphenyl": 0.0
+      }
+    }
+  }
+}

@@ -55,8 +55,9 @@ class StreamResult:
     T_K:          float
     P_Pa:         float
     flow_mol_s:   float
-    composition:  dict[str, float]
-    is_feed:      bool = False
+    composition:    dict[str, float]
+    vapor_fraction: float = 0.0
+    is_feed:        bool  = False
 
     @property
     def T_C(self) -> float:
@@ -400,6 +401,22 @@ class Executor:
                     diagnostics={"stage": "connect_objects",
                                  "connection": [src, dst, src_port, dst_port]})
 
+        # ── Add recycle convergence blocks (only when recycle edges are present) ─
+        for rb in flowsheet.get("recycle_blocks", []):
+            _chk(f"add_recycle_block {rb['tag']}")
+            try:
+                sim.add_recycle_block(
+                    rb["tag"],
+                    inlet_stream=rb["inlet_stream"],
+                    outlet_stream=rb["outlet_stream"],
+                )
+            except Exception as e:
+                return ExecutionResult(
+                    solved=False,
+                    errors=[f"Failed to add recycle block '{rb['tag']}': "
+                            f"{type(e).__name__}: {e}"],
+                    diagnostics={"stage": "add_recycle_blocks", "block": rb})
+
         # ── Set feed stream conditions ────────────────────────────────────────
         for tag in feed_tags:
             s_cfg = streams_cfg[tag]
@@ -445,6 +462,7 @@ class Executor:
                     P_Pa=r["P_Pa"],
                     flow_mol_s=r["flow_mol_s"],
                     composition=r["composition"],
+                    vapor_fraction=r.get("vapor_fraction", 0.0),
                     is_feed=(tag in feed_tags),
                 )
 
@@ -503,6 +521,14 @@ def _set_unit_conditions(sim, u_cfg: dict) -> list[str]:
         elif utype == "Expander":
             sim.set_expander(tag, u_cfg["P_out"],
                              efficiency=u_cfg.get("efficiency", 0.75))
+        elif utype == "ConversionReactor":
+            sim.set_conversion_reactor(
+                tag,
+                temperature_K = u_cfg["temperature_K"],
+                pressure_Pa   = u_cfg["pressure_Pa"],
+                conversion    = u_cfg["conversion"],
+                reaction      = u_cfg.get("reaction", ""),
+            )
         else:
             return [f"Unit '{tag}' type '{utype}' condition-setting "
                     "not yet implemented in executor."]
@@ -577,10 +603,14 @@ def _post_execution_check(
                     f"{label}: {field_name} = {val}. "
                     "Solver returned non-finite value — convergence failure.")
 
-    # Mass balance: feeds vs terminal outlets only (excludes intermediate streams)
+    # Mass balance: feeds vs terminal outlets only (excludes intermediate streams).
+    # Skip for recycle-containing flowsheets — the recycle init stream appears as
+    # a feed (no src in connections), so feed_total would include recycle flow and
+    # the check would produce a false positive.
     terminal_tags = set(outlet_tags)
-    mb_errors = _mass_balance_check(results, feed_tags, terminal_tags)
-    errors.extend(mb_errors)
+    if not flowsheet.get("recycle_blocks"):
+        mb_errors = _mass_balance_check(results, feed_tags, terminal_tags)
+        errors.extend(mb_errors)
 
     return errors, warnings
 

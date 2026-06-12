@@ -56,8 +56,10 @@ class ThermoMapper:
         g.property_package = pkg
 
         if pkg in ("NRTL", "UNIQUAC"):
-            feed_T = _feed_temperature(g)
-            g, missing = self._injector.inject(g, T_K=feed_T)
+            # T_K=None: skip feed-temperature guard so cold-feed cases (e.g. 25°C
+            # feed into a 78°C flash) don't block BIP injection when the BIP fit
+            # range covers only the operating temperature, not the feed temperature.
+            g, missing = self._injector.inject(g, T_K=None)
             if missing:
                 g.binary_parameters = []
 

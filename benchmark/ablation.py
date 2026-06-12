@@ -60,19 +60,46 @@ CONFIGS: dict[str, AblationConfig] = {
 
 # ── Null Retriever ─────────────────────────────────────────────────────────────
 
+class _NullUnitSpecs:
+    """Stub for Retriever.units (UnitSpecRetriever interface)."""
+    def defaults(self, unit_type: str) -> dict:
+        return {}
+    def context_for_prompt(self, unit_type: str) -> str:
+        return ""
+    def get(self, unit_type: str):
+        return None
+
+
 class NullRetriever:
-    """Drop-in replacement for rag.Retriever that returns empty results."""
+    """
+    Drop-in replacement for rag.Retriever that returns empty/safe results.
 
+    Implements the full Retriever interface so agents don't crash when
+    the no_rule_store ablation replaces the real retriever with this stub.
+    """
+
+    def __init__(self) -> None:
+        # ParamMapper accesses .units.defaults() directly
+        self.units = _NullUnitSpecs()
+
+    # query_bips must return (list[dict], list[tuple]) — callers unpack as
+    # `bips, missing = retriever.query_bips(...)`.
     def query_bips(self, compounds: list[str], model: str = "NRTL",
-                   T_K: float | None = None) -> list:
-        return []
+                   T_K: float | None = None) -> tuple[list, list]:
+        return [], []
 
+    # Signature must match Retriever.select_package (5 positional args after self)
     def select_package(self, compounds: list[str],
                        description: str = "",
-                       exclude: list[str] | None = None) -> list[str]:
+                       pressure_pa: float = 101_325.0,
+                       temperature_k: float = 300.0,
+                       exclude: set | None = None) -> list[str]:
         return ["Peng-Robinson"]   # always default EOS; never activity-coeff
 
     def unit_context(self, unit_type: str) -> str:
+        return ""
+
+    def thermo_context(self, compounds: list[str]) -> str:
         return ""
 
     def has_full_coverage(self, compounds: list[str], model: str,
@@ -110,9 +137,20 @@ def apply_ablation(config: AblationConfig) -> Iterator[None]:
         with apply_ablation(CONFIGS["greedy"]):
             result = orchestrator.run(description)
     """
+    import sys as _sys
     patches = []
 
+    print(f"[ABLATION] ENTER mode={config.mode} "
+          f"disable_physics={config.disable_physics} "
+          f"disable_rules={config.disable_rules} "
+          f"disable_coupling={config.disable_coupling} "
+          f"beam_width={config.beam_width}", flush=True)
+
     # ── No physics: bubble_point_K → None ─────────────────────────────────────
+    # `from ir.thermo_estimation import bubble_point_K` creates a module-level
+    # name binding in every importer.  Patching only the source module leaves all
+    # cached references (param_mapper, consistency, etc.) pointing to the real
+    # function.  Use a sys.modules sweep to replace every live reference.
     if config.disable_physics:
         try:
             import ir.thermo_estimation as _te
@@ -121,29 +159,48 @@ def apply_ablation(config: AblationConfig) -> Iterator[None]:
             def _null_bubble_point(*args, **kwargs):
                 return None
 
-            patches.append((_te, "bubble_point_K", original_bp))
-            _te.bubble_point_K = _null_bubble_point
+            patched_mods: list[str] = []
+            # Patch source first, then every module that imported it by name
+            for _mod in [_te] + [m for m in _sys.modules.values()
+                                  if m is not None and m is not _te
+                                  and getattr(m, "bubble_point_K", None) is original_bp]:
+                patches.append((_mod, "bubble_point_K", original_bp))
+                _mod.bubble_point_K = _null_bubble_point
+                patched_mods.append(getattr(_mod, "__name__", repr(_mod)))
 
-            # Also patch in repair_agent where it's imported at module level
-            try:
-                import agents.stage4.repair_agent as _ra
-                if hasattr(_ra, "bubble_point_K"):
-                    patches.append((_ra, "bubble_point_K", _ra.bubble_point_K))
-                    _ra.bubble_point_K = _null_bubble_point
-            except ImportError:
-                pass
+            print(f"[ABLATION]   no_physics: patched {len(patched_mods)} modules: "
+                  f"{patched_mods}", flush=True)
 
-            try:
-                import agents.stage4.beam_search as _bs
-                if hasattr(_bs, "bubble_point_K"):
-                    patches.append((_bs, "bubble_point_K", _bs.bubble_point_K))
-                    _bs.bubble_point_K = _null_bubble_point
-            except ImportError:
-                pass
-        except ImportError:
-            pass
+            # ── Verify the patch is live ──────────────────────────────────────
+            # Call through each critical module's name binding; None = patch ok.
+            def _verify_bp_mod(mod_name: str) -> str:
+                mod = _sys.modules.get(mod_name)
+                if mod is None:
+                    return f"{mod_name}=NOT_LOADED"
+                fn  = getattr(mod, "bubble_point_K", None)
+                if fn is None:
+                    return f"{mod_name}=NO_ATTR"
+                try:
+                    result = fn(["Water"], 101325.0)
+                    status = "None=OK" if result is None else f"PATCH_FAILED({result})"
+                except Exception as _exc:
+                    status = f"ERROR({_exc})"
+                return f"{mod_name}={status}"
+
+            verifications = [
+                _verify_bp_mod("ir.thermo_estimation"),
+                _verify_bp_mod("agents.stage3.param_mapper"),
+                _verify_bp_mod("ir.consistency"),
+                _verify_bp_mod("agents.stage4.beam_search"),
+            ]
+            print(f"[ABLATION]   no_physics VERIFY: {verifications}", flush=True)
+        except ImportError as _e:
+            print(f"[ABLATION]   no_physics: import failed: {_e}", flush=True)
 
     # ── No rule store: replace Retriever with NullRetriever ───────────────────
+    # The orchestrator sub-agents were already given NullRetriever instances by
+    # make_orchestrator before apply_ablation is entered.  This class-level patch
+    # prevents any NEW Retriever() calls inside orch.run() from getting real data.
     if config.disable_rules:
         try:
             import rag.retriever as _rag
@@ -151,46 +208,52 @@ def apply_ablation(config: AblationConfig) -> Iterator[None]:
             patches.append((_rag, "Retriever", original_cls))
             _rag.Retriever = NullRetriever   # type: ignore[assignment]
 
-            # Patch the cached singleton if instantiated
-            try:
-                import agents.stage3.thermo_mapper as _tm
-                if hasattr(_tm, "_retriever"):
-                    patches.append((_tm, "_retriever", _tm._retriever))
-                    _tm._retriever = NullRetriever()
-            except ImportError:
-                pass
-        except ImportError:
-            pass
+            # ── Verify ────────────────────────────────────────────────────────
+            test_inst = _rag.Retriever()
+            print(f"[ABLATION]   no_rule_store VERIFY: "
+                  f"rag.Retriever() type={type(test_inst).__name__} "
+                  f"(NullRetriever=OK)", flush=True)
+        except ImportError as _e:
+            print(f"[ABLATION]   no_rule_store: import failed: {_e}", flush=True)
 
-    # ── Greedy: beam_width = 1 ─────────────────────────────────────────────────
+    # ── Greedy: beam_width=1 set directly on orch._repair in make_orchestrator ─
     if config.beam_width == 1:
-        try:
-            import agents.stage4.repair_agent as _ra
-            if hasattr(_ra, "RepairAgent"):
-                orig_init = _ra.RepairAgent.__init__
+        print(f"[ABLATION]   greedy: beam_width=1 applied by make_orchestrator "
+              f"(not via apply_ablation)", flush=True)
 
-                def _greedy_init(self, *args, beam_width=1, **kwargs):
-                    orig_init(self, *args, beam_width=1, **kwargs)
-
-                patches.append((_ra.RepairAgent, "__init__", orig_init))
-                _ra.RepairAgent.__init__ = _greedy_init
-        except ImportError:
-            pass
-
-    # ── No coupling: ParameterCouplingMap.coupled_targets → [] ────────────────
+    # ── No coupling: ParameterCouplingMap.get_coupled_boosts → {} ────────────
+    # Class-level patch is sufficient: module-level singletons like beam_search._coupling
+    # resolve methods via class lookup when no instance attribute overrides them.
     if config.disable_coupling:
         try:
             import ir.coupling as _coup
-            if hasattr(_coup, "ParameterCouplingMap"):
-                orig_ct = _coup.ParameterCouplingMap.coupled_targets
+            orig_boosts = _coup.ParameterCouplingMap.get_coupled_boosts
 
-                def _no_coupling(self, *args, **kwargs):
-                    return []
+            def _no_coupling_boosts(self, *args, **kwargs) -> dict:
+                return {}
 
-                patches.append((_coup.ParameterCouplingMap, "coupled_targets", orig_ct))
-                _coup.ParameterCouplingMap.coupled_targets = _no_coupling
-        except ImportError:
-            pass
+            patches.append((_coup.ParameterCouplingMap, "get_coupled_boosts", orig_boosts))
+            _coup.ParameterCouplingMap.get_coupled_boosts = _no_coupling_boosts
+
+            # ── Verify ────────────────────────────────────────────────────────
+            # Call on the beam_search singleton — should return {} unconditionally.
+            try:
+                import agents.stage4.beam_search as _bs
+                _coupling_inst = getattr(_bs, "_coupling", None)
+                if _coupling_inst is not None:
+                    probe = _coupling_inst.get_coupled_boosts(
+                        None, "HT-01", "T_out", set())
+                    ok = probe == {}
+                    print(f"[ABLATION]   no_coupling VERIFY: "
+                          f"beam_search._coupling.get_coupled_boosts(…) = {probe} "
+                          f"({'{}=OK' if ok else 'PATCH_FAILED'})", flush=True)
+                else:
+                    print(f"[ABLATION]   no_coupling VERIFY: "
+                          f"beam_search._coupling not found", flush=True)
+            except Exception as _ve:
+                print(f"[ABLATION]   no_coupling VERIFY error: {_ve}", flush=True)
+        except (ImportError, AttributeError) as _e:
+            print(f"[ABLATION]   no_coupling: patch failed: {_e}", flush=True)
 
     try:
         yield
@@ -198,6 +261,8 @@ def apply_ablation(config: AblationConfig) -> Iterator[None]:
         # Restore all patches in reverse order
         for obj, attr, original in reversed(patches):
             setattr(obj, attr, original)
+        print(f"[ABLATION] EXIT mode={config.mode} "
+              f"(restored {len(patches)} patches)", flush=True)
 
 
 def make_orchestrator(
@@ -210,6 +275,7 @@ def make_orchestrator(
     The RepairAgent beam_width is set directly at construction.
     """
     from agents.orchestrator_v2 import OrchestratorV2
+    from agents.rule_store import FailureRuleStore
     from rag.retriever import Retriever
 
     retriever = NullRetriever() if config.disable_rules else Retriever()
@@ -222,11 +288,26 @@ def make_orchestrator(
 
     # Override retriever in all sub-agents
     if config.disable_rules:
-        for attr in ("_retriever", "_thermo", "_params"):
+        # Agents that store _retriever directly
+        for attr in ("_retriever", "_params"):
             sub = getattr(orch, attr, None)
             if sub is not None and hasattr(sub, "_retriever"):
                 sub._retriever = retriever         # type: ignore[attr-defined]
         if hasattr(orch, "_repair") and hasattr(orch._repair, "_retriever"):
             orch._repair._retriever = retriever    # type: ignore[attr-defined]
+
+        # ThermoMapper stores the retriever only in its internal components
+        # (_selector, _injector, _llm) — not as self._retriever — so patch
+        # each component directly.
+        _thermo = getattr(orch, "_thermo", None)
+        if _thermo is not None:
+            for _comp_attr in ("_selector", "_injector", "_llm"):
+                _comp = getattr(_thermo, _comp_attr, None)
+                if _comp is not None and hasattr(_comp, "_retriever"):
+                    _comp._retriever = retriever   # type: ignore[attr-defined]
+
+        # Replace the loaded rule store with an empty one so synthesized rules
+        # from prior cases have no effect in the no_rule_store ablation.
+        orch._rule_store = FailureRuleStore()
 
     return orch, config

@@ -23,9 +23,13 @@ from __future__ import annotations
 import json
 import os
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any, Optional
 
 RULE_THRESHOLD = 3  # minimum occurrences before a rule is synthesized
+
+# Persistent rule store written after every repair; loaded at orchestrator init.
+RULES_PATH = str(Path(__file__).resolve().parent.parent / "results" / "rule_store.json")
 
 # ── Compound classification ────────────────────────────────────────────────────
 

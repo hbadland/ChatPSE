@@ -1,0 +1,687 @@
+[
+  {
+    "id": "HB_AMB_01",
+    "name": "IPA–water heat-flash (trade name: IPA)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "ambiguity_type": "trade_name",
+    "description": "Heat an IPA and water feed (40 mol% IPA) at 25°C and 1 atm to 84°C to enter the two-phase region above the minimum-boiling azeotrope between IPA and water (80.3°C, 87.7 mol% IPA), then flash-separate in a vessel to recover IPA-enriched vapour.",
+    "compounds": ["Isopropanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 348, "T_max_K": 365},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.05, "domain": "azeotrope"}
+      ]
+    },
+    "source": "IPA solvent recovery — a classic industrial separation. Tests whether BasisAgent resolves the trade abbreviation 'IPA' to 'Isopropanol' (DWSIM name) via the synonym database.",
+    "notes": "IPA = Isopropanol (DWSIM: 'Isopropanol'). Azeotrope at 80.3°C (353.5K), 87.7 mol% IPA. Feed at 40% IPA is below azeotrope — vapour enriched toward 87.7%. Heater target 84°C (357K) is above azeotrope bp. BIP in corpus as 2-propanol/water (alias resolution required by CalibrationAgent).",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_02",
+    "name": "MEK–water heat-flash (trade name: MEK)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "ambiguity_type": "trade_name",
+    "description": "Heat a MEK and water feed (55 mol% MEK) at 25°C and 1 atm to 80°C to vaporise MEK preferentially, then flash-separate in a vessel to recover the MEK-enriched vapour phase.",
+    "compounds": ["Methyl ethyl ketone", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 348, "T_max_K": 362},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.10}
+      ]
+    },
+    "source": "MEK solvent stripping. Tests resolution of the industrial abbreviation 'MEK' to 'Methyl ethyl ketone' (DWSIM name).",
+    "notes": "MEK = Methyl ethyl ketone (DWSIM: 'Methyl ethyl ketone'). MEK bp=79.6°C, water bp=100°C. MEK/water forms a heterogeneous azeotrope at 73.4°C with a miscibility gap, but at 55% MEK the system is in the homogeneous region at 80°C. NRTL BIP: methyl ethyl ketone/water ✓.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_03",
+    "name": "DME–propane compress-cool-flash (trade name: DME)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "mixed",
+    "ambiguity_type": "trade_name",
+    "description": "Process a DME and propane gas mixture (50 mol% each) at 25°C and 1 bar: compress to 8 bar in a compressor, then cool the compressed gas to -10°C in a cooler, and flash-separate the two-phase stream in a vessel to recover propane-rich vapour from DME-rich liquid.",
+    "compounds": ["Dimethyl ether", "Propane"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Compressor", "Cooler", "Vessel"],
+      "connections": [
+        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"],
+        ["COOL-01", "VES-01"], ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 3,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 253, "T_max_K": 278},
+        {"type": "mass_balance"}
+      ]
+    },
+    "source": "LPG refrigerant blend processing. DME is used as a propane extender in aerosol propellants and refrigerant blends. Tests resolution of 'DME' to 'Dimethyl ether' (DWSIM name).",
+    "notes": "DME = Dimethyl ether (DWSIM: 'Dimethyl ether'). DME bp=-24.8°C (248.4K), Propane bp=-42.1°C (231.1K). At 8 bar both components are partially condensed at -10°C. EOS (Peng-Robinson) is appropriate for this gas-phase mixture — no NRTL BIP for DME/propane in corpus and none needed.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_04",
+    "name": "MIBK–toluene heat-flash (trade name: MIBK)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "mixed",
+    "ambiguity_type": "trade_name",
+    "description": "Process an MIBK and toluene solvent mixture (40 mol% MIBK) at 25°C and 1 atm: heat to 120°C to partially vaporise the mixture near the boiling points of both components, flash-separate in a vessel, then cool the MIBK-rich liquid bottoms to 50°C for solvent recovery.",
+    "compounds": ["Methyl isobutyl ketone", "Toluene"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Heater", "Vessel", "Cooler"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-1"],
+        ["LIQ-1", "COOL-01"], ["COOL-01", "PRODUCT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 385, "T_max_K": 405},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.08}
+      ]
+    },
+    "source": "MIBK/toluene solvent recovery. Tests resolution of 'MIBK' to 'Methyl isobutyl ketone' (DWSIM name). MIBK bp=116.5°C and toluene bp=110.6°C are only 5.9 K apart — accurate VLE and BIP required to predict which component vaporises preferentially.",
+    "notes": "MIBK = Methyl isobutyl ketone (DWSIM: 'Methyl isobutyl ketone'). MIBK bp=116.5°C (389.7K), toluene bp=110.6°C (383.8K). Close-boiling polar ketone + aromatic hydrocarbon; toluene is marginally more volatile. At 120°C both components are above their respective boiling points. NRTL BIP: methyl isobutyl ketone/toluene required.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_05",
+    "name": "THF–water heat-flash with azeotrope (trade name: THF)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "ambiguity_type": "trade_name",
+    "description": "Heat a THF and water feed (60 mol% THF) at 25°C and 1 atm to 68°C to operate above the minimum-boiling azeotrope between THF and water (63.5°C, 94.6 mol% THF), then flash-separate in a vessel to recover the THF-enriched vapour.",
+    "compounds": ["Tetrahydrofuran", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 333, "T_max_K": 350},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.05, "domain": "azeotrope"}
+      ]
+    },
+    "source": "THF solvent recovery from aqueous waste streams. Tests resolution of 'THF' to 'Tetrahydrofuran' (DWSIM name). THF/water azeotrope at 63.5°C makes this an azeotrope-domain case.",
+    "notes": "THF = Tetrahydrofuran (DWSIM: 'Tetrahydrofuran'). THF bp=66°C (339K), water bp=100°C. Azeotrope at 63.5°C (336.7K), 94.6 mol% THF. Feed at 60% THF is below azeotrope — vapour enriched toward 94.6%. NRTL BIP: tetrahydrofuran/water ✓. Near-azeotrope guard applies in separation_achieved check.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_06",
+    "name": "Ethanol–water heat-flash (CAS numbers: 64-17-5 and 7732-18-5)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "ambiguity_type": "cas_number",
+    "description": "Separate an equimolar mixture of 64-17-5 and 7732-18-5 at 25°C and 1 atm by heating to 80°C and flash-separating in a vessel. The feed pressure is atmospheric and the heater outlet feeds directly into the flash vessel.",
+    "compounds": ["Ethanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 348, "T_max_K": 362},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.10, "domain": "azeotrope"}
+      ]
+    },
+    "source": "Ethanol dehydration pre-flash. Tests BasisAgent's ability to resolve CAS registry numbers: 64-17-5 = Ethanol, 7732-18-5 = Water. CAS resolution expected via BasisAgent LLM Stage 2.",
+    "notes": "64-17-5 = Ethanol (DWSIM: 'Ethanol'), 7732-18-5 = Water (DWSIM: 'Water'). Equimolar feed is far from the azeotrope (89.4% EtOH). At 80°C (353.2K) partial vaporisation gives ethanol-enriched vapour. NRTL BIP: ethanol/water ✓.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_07",
+    "name": "Acetone–benzene heat-flash (CAS numbers: 67-64-1 and 71-43-2)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "mixed",
+    "ambiguity_type": "cas_number",
+    "description": "Process a mixture of 67-64-1 (60 mol%) and 71-43-2 (40 mol%) at 25°C and 1 atm: heat to 60°C to vaporise the more volatile component selectively, then flash-separate in a vessel.",
+    "compounds": ["Acetone", "Benzene"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 326, "T_max_K": 342},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.10}
+      ]
+    },
+    "source": "Acetone-benzene separation. Tests CAS number resolution: 67-64-1 = Acetone, 71-43-2 = Benzene. The description intentionally omits compound names, requiring BasisAgent LLM to identify the compounds from CAS alone.",
+    "notes": "67-64-1 = Acetone (DWSIM: 'Acetone'), 71-43-2 = Benzene (DWSIM: 'Benzene'). Acetone bp=56.1°C (329.3K), benzene bp=80.1°C (353.2K). At 60°C (333K): above acetone bp, below benzene bp — acetone selectively vaporises. NRTL BIP: acetone/benzene ✓.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_08",
+    "name": "Toluene–n-hexane heat-flash (CAS numbers: 108-88-3 and 110-54-3)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "ambiguity_type": "cas_number",
+    "description": "Partially separate an equimolar mixture of 108-88-3 and 110-54-3 at 25°C and 1 atm by heating to 75°C and flash-separating in a vessel to recover the more volatile component in the vapour phase.",
+    "compounds": ["Toluene", "n-Hexane"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 341, "T_max_K": 358},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.15}
+      ]
+    },
+    "source": "Toluene-hexane naphtha fractionation. Tests CAS resolution: 108-88-3 = Toluene, 110-54-3 = n-Hexane. Near-ideal aromatic+alkane system — EOS (PR) is appropriate.",
+    "notes": "108-88-3 = Toluene (DWSIM: 'Toluene'), 110-54-3 = n-Hexane (DWSIM: 'n-Hexane'). n-Hexane bp=68.7°C (341.9K), toluene bp=110.6°C (383.8K). At 75°C n-hexane selectively vaporises. PR or SRK correct — near-ideal system.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_09",
+    "name": "Chloroform–methanol heat-flash with azeotrope (CAS: 67-66-3 and 67-56-1)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "ambiguity_type": "cas_number",
+    "description": "Process a binary mixture of 67-66-3 (50 mol%) and 67-56-1 (50 mol%) at 25°C and 1 atm: heat to 57°C to operate above the minimum-boiling azeotrope and flash-separate in a vessel.",
+    "compounds": ["Chloroform", "Methanol"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 323, "T_max_K": 337},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.05, "domain": "azeotrope"}
+      ]
+    },
+    "source": "Chloroform-methanol pharmaceutical solvent separation. Tests CAS resolution: 67-66-3 = Chloroform, 67-56-1 = Methanol. The minimum-boiling azeotrope at 53.4°C requires accurate NRTL BIPs to reproduce correctly.",
+    "notes": "67-66-3 = Chloroform (DWSIM: 'Chloroform'), 67-56-1 = Methanol (DWSIM: 'Methanol'). Min-boiling azeotrope at 53.4°C (326.6K), 87 mol% CHCl3. Heater at 57°C (330K) is above azeotrope bp and below both pure bps (61.2°C, 64.7°C). NRTL BIP: chloroform/methanol ✓.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_10",
+    "name": "Cyclohexane–ethanol heat-flash (CAS: 110-82-7 and 64-17-5)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "mixed",
+    "ambiguity_type": "cas_number",
+    "description": "Separate a mixture of 110-82-7 (50 mol%) and 64-17-5 (50 mol%) at 25°C and 1 atm by heating to 70°C and flash-separating in a vessel. Accurate vapour-liquid equilibrium is required due to strong non-ideality between the two components.",
+    "compounds": ["Cyclohexane", "Ethanol"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 335, "T_max_K": 353},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.05, "domain": "azeotrope"}
+      ]
+    },
+    "source": "Cyclohexane-ethanol extraction process. Tests CAS resolution: 110-82-7 = Cyclohexane, 64-17-5 = Ethanol. CAS 64-17-5 also appears in AMB_06 but paired with a different compound — valid as both test resolution of the same CAS in different contexts.",
+    "notes": "110-82-7 = Cyclohexane (DWSIM: 'Cyclohexane'), 64-17-5 = Ethanol (DWSIM: 'Ethanol'). CyHex bp=80.7°C, EtOH bp=78.4°C. Min-boiling azeotrope at 64.9°C (54.5% CyHex). At 70°C: above azeotrope (5.1 K margin). NRTL BIP: cyclohexane/ethanol ✓.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_11",
+    "name": "propan-2-ol–water heat-flash (IUPAC systematic name)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "ambiguity_type": "iupac_systematic",
+    "description": "Heat a propan-2-ol and water feed (45 mol% propan-2-ol) at 25°C and 1 atm to 84°C to enter the two-phase region above the minimum-boiling azeotrope, then flash-separate in a vessel to recover propan-2-ol-enriched vapour.",
+    "compounds": ["Isopropanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 348, "T_max_K": 365},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.05, "domain": "azeotrope"}
+      ]
+    },
+    "source": "IUPAC systematic name stress test. 'propan-2-ol' is the IUPAC name for isopropanol. Tests whether BasisAgent resolves IUPAC systematic nomenclature to the DWSIM registered name 'Isopropanol'.",
+    "notes": "propan-2-ol = Isopropanol (DWSIM: 'Isopropanol'). Same underlying system as AMB_01 (IPA+Water) but different naming path — tests IUPAC resolution vs trade-name resolution. Azeotrope at 80.3°C (353.5K), 87.7% IPA.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_12",
+    "name": "methylbenzene–n-heptane heat-flash (IUPAC systematic name)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "ambiguity_type": "iupac_systematic",
+    "description": "Partially separate an equimolar mixture of methylbenzene and n-heptane at 25°C and 1 atm by heating to 110°C and flash-separating in a vessel to recover n-heptane-enriched vapour from the methylbenzene-rich liquid.",
+    "compounds": ["Toluene", "n-Heptane"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 373, "T_max_K": 393},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.15}
+      ]
+    },
+    "source": "Toluene-heptane naphtha pre-flash. Tests IUPAC name resolution: 'methylbenzene' is the IUPAC systematic name for toluene. BasisAgent must resolve 'methylbenzene' → 'Toluene' (DWSIM name). Near-ideal aromatic+alkane system, EOS correct.",
+    "notes": "methylbenzene = Toluene (DWSIM: 'Toluene'). Toluene bp=110.6°C (383.8K), n-Heptane bp=98.4°C (371.6K). At 110°C: n-heptane preferentially vaporises (below toluene bp). Similar boiling points (12.2 K spread) require accurate VLE. PR EOS correct for this near-ideal system.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_13",
+    "name": "butan-2-one–water heat-flash (IUPAC systematic name)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "ambiguity_type": "iupac_systematic",
+    "description": "Heat a butan-2-one and water feed (55 mol% butan-2-one) at 25°C and 1 atm to 80°C to vaporise butan-2-one preferentially, then flash-separate in a vessel to recover the solvent-enriched vapour phase.",
+    "compounds": ["Methyl ethyl ketone", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 348, "T_max_K": 362},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.10}
+      ]
+    },
+    "source": "MEK solvent recovery using IUPAC name. Tests resolution of 'butan-2-one' (IUPAC systematic name) to 'Methyl ethyl ketone' (DWSIM registered name).",
+    "notes": "butan-2-one = Methyl ethyl ketone (DWSIM: 'Methyl ethyl ketone'). Same underlying system as AMB_02 but via IUPAC path instead of trade name. MEK bp=79.6°C, water bp=100°C. NRTL BIP: methyl ethyl ketone/water ✓.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_14",
+    "name": "2-methylpropan-1-ol–water heat-flash (IUPAC systematic name)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "ambiguity_type": "iupac_systematic",
+    "description": "Heat a 2-methylpropan-1-ol and water mixture (35 mol% 2-methylpropan-1-ol) at 25°C and 1 atm to 92°C to operate above the heterogeneous azeotrope and flash-separate in a vessel. Accurate vapour-liquid-liquid equilibrium is required for this partially miscible system.",
+    "compounds": ["2-methyl-1-propanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 357, "T_max_K": 375},
+        {"type": "mass_balance"}
+      ]
+    },
+    "source": "Isobutanol recovery from fermentation broth. Tests IUPAC name resolution: '2-methylpropan-1-ol' is the IUPAC systematic name for isobutanol. DWSIM registered name is '2-methyl-1-propanol'. The compound forms a heterogeneous azeotrope with water at 89.9°C.",
+    "notes": "2-methylpropan-1-ol = 2-methyl-1-propanol (DWSIM: '2-methyl-1-propanol'). bp=108°C (381K), water bp=100°C. Heterogeneous azeotrope at 89.9°C (363.1K). At 92°C: above azeotrope, both components partially vaporise. NRTL BIP: 2-methyl-1-propanol/water ✓.",
+    "expected_repair_iterations": 1
+  },
+  {
+    "id": "HB_AMB_15",
+    "name": "Ethanol–water heat-flash (missing temperature — partial spec)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "polar",
+    "ambiguity_type": "partially_specified",
+    "description": "Separate an ethanol and water feed (45 mol% ethanol) at 25°C and atmospheric pressure using a heater followed by a flash vessel. No specific heater outlet temperature is given — the system must infer an appropriate operating temperature to achieve a meaningful two-phase split.",
+    "compounds": ["Ethanol", "Water"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "mass_balance"}
+      ]
+    },
+    "source": "Ethanol-water partial spec: heater temperature missing. Tests whether the system correctly estimates T_out from the bubble point rather than applying a generic default. The repair loop must adjust T if the initial estimate produces single-phase flow.",
+    "notes": "Missing T: system must infer T_out ≈ 78–82°C from bubble_point_K(['Ethanol','Water'], 101325) ≈ 351K + margin. At 45% EtOH the mixture bubble point is near ethanol bp (78.4°C). T_out must exceed bubble point to produce two-phase flash. No T_min/T_max check — system must self-determine. NRTL BIP: ethanol/water ✓.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_16",
+    "name": "Acetone–methanol heat-flash (missing pressure — partial spec)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "ambiguity_type": "partially_specified",
+    "description": "Heat an acetone and methanol mixture (55 mol% acetone) from 20°C to 58°C and flash-separate in a vessel. The operating pressure is not specified — the system should assume appropriate conditions. The acetone-methanol system forms a minimum-boiling azeotrope.",
+    "compounds": ["Acetone", "Methanol"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "bip_injected", "model": "NRTL"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 325, "T_max_K": 342},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES",
+         "min_relative_diff": 0.05, "domain": "azeotrope"}
+      ]
+    },
+    "source": "Acetone-methanol azeotrope partial spec: pressure missing. Tests whether the system defaults to 1 atm and verifies the repair loop can find the correct T window (56–64°C) above the azeotrope without explicit pressure guidance.",
+    "notes": "Missing P: system must default to P=101325 Pa (1 atm). Acetone bp=56.1°C, methanol bp=64.7°C. Azeotrope at 55.7°C (328.9K), 88.5% acetone. Heater target 58°C is above azeotrope (2.3 K margin) and below acetone bp — narrow window. Expected to need repair iteration to find correct T. NRTL BIP: acetone/methanol ✓.",
+    "expected_repair_iterations": 2
+  },
+  {
+    "id": "HB_AMB_17",
+    "name": "Methane compress-cool-flash (missing temperature and pressure — partial spec)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "ambiguity_type": "partially_specified",
+    "description": "Compress pure methane gas and then cool it to achieve partial liquefaction in a flash vessel. Design a compress-then-cool process. No specific operating pressures or temperatures are given — the system must select conditions that place methane in the two-phase region.",
+    "compounds": ["Methane"],
+    "reference_structure": {
+      "n_units": 3,
+      "unit_types": ["Compressor", "Cooler", "Vessel"],
+      "connections": [
+        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"],
+        ["COOL-01", "VES-01"], ["VES-01", "GAS-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 4,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"},
+        {"type": "mass_balance"}
+      ]
+    },
+    "source": "Methane liquefaction process design. No T or P specified — tests whether the system can infer cryogenic conditions: compress to ~40-60 bar, cool below the methane saturation temperature at that pressure. At 50 bar, methane bubble point ≈ -100°C (173K). EOS (PR or LKP) required.",
+    "notes": "Single compound (Methane). System must infer: Compressor P_out in [20–80 bar] and Cooler T_out below methane bubble point at that P. At 50 bar: methane bp ≈ -100°C (173K). GlobalConsistencyPass must enforce T_out < bubble_point_K(['Methane'], P_out). LKP or PR required for cryogenic accuracy.",
+    "expected_repair_iterations": 3
+  },
+  {
+    "id": "HB_AMB_18",
+    "name": "Benzene–toluene heat-flash (missing composition — partial spec)",
+    "tier": "ambiguous",
+    "difficulty": "hard",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "ambiguity_type": "partially_specified",
+    "description": "Separate a roughly equal mixture of benzene and toluene using a heater and flash vessel. No specific feed composition, temperature, or pressure is given. The system must apply reasonable defaults and produce a meaningful two-phase separation between the two aromatic compounds.",
+    "compounds": ["Benzene", "Toluene"],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": ["Heater", "Vessel"],
+      "connections": [
+        ["FEED", "HT-01"], ["HT-01", "VES-01"],
+        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
+        {"type": "mass_balance"},
+        {"type": "separation_achieved", "unit_tag_pattern": "VES", "min_relative_diff": 0.10}
+      ]
+    },
+    "source": "BTX fractionation first step. Maximum ambiguity case — no composition, temperature, or pressure specified. Tests whether the system defaults composition to 50/50 equimolar, estimates T from the mixture bubble point (~90°C for equimolar BT at 1 atm), and defaults P to 1 atm. Near-ideal system: EOS correct.",
+    "notes": "All conditions missing. Expected defaults: composition=50/50, P=101325 Pa (1 atm), T_out ≈ 90–95°C (363–368K) above benzene bp (80.1°C) and below toluene bp (110.6°C). Benzene/toluene is near-ideal — PR or SRK appropriate. Equimolar at ~90°C gives VF≈0.4–0.6. No BIPs needed.",
+    "expected_repair_iterations": 3
+  }
+]

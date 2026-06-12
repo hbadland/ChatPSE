@@ -35,3 +35,22 @@ htmlcov/
 *.log
 *.tmp
 CLAUDE.md
+
+# HPC scripts (contain hardcoded server paths/usernames — keep local only)
+sync_to_hpc.sh
+run_validation_hpc.sh
+*_hpc.sh
+
+# Singularity / DWSIM binary artefacts
+*.sif
+*.dwxmz
+*.tar.gz
+
+# Ollama model cache
+.ollama/
+
+# Large dependency bundles
+deps/
+
+# PubChem enrichment cache (large, reproducible)
+rag/sources/.pubchem_cache.json

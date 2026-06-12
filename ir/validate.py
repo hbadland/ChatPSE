@@ -21,7 +21,7 @@ from typing import Optional
 from ir.graph import (
     FlowsheetGraph, PORT_SPECS, SUPPORTED_UNIT_TYPES,
     SeparatorNode, PumpNode, CompressorNode, ExpanderNode,
-    HeaterNode, CoolerNode, SplitterNode,
+    HeaterNode, CoolerNode, SplitterNode, TopologyError,
 )
 from ir.types import ErrorType, RepairStrategy, ErrorSeverity, ErrorTarget, SimError
 
@@ -223,9 +223,11 @@ def _graph_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
     issues: list[ValidationIssue] = []
     G = ErrorTarget.global_
 
-    if not graph.is_acyclic():
+    try:
+        graph.validate_dag()
+    except TopologyError as _te:
         issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY, G(),
-                           "connection graph contains a cycle", RepairStrategy.HUMAN))
+                           str(_te), RepairStrategy.HUMAN))
 
     for stream in graph.streams():
         src = graph.stream_source(stream.tag)
@@ -234,6 +236,21 @@ def _graph_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
             issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
                                ErrorTarget.stream(stream.tag),
                                "stream not connected to any unit",
+                               RepairStrategy.TOPOLOGY_FIX))
+
+    unit_tags = graph.unit_tags()
+    for stream in graph.streams():
+        if not stream.is_recycle:
+            continue
+        if not stream.recycle_target:
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.stream(stream.tag),
+                               "recycle stream missing recycle_target",
+                               RepairStrategy.TOPOLOGY_FIX))
+        elif stream.recycle_target not in unit_tags:
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.stream(stream.tag),
+                               f"recycle_target '{stream.recycle_target}' is not a valid unit tag",
                                RepairStrategy.TOPOLOGY_FIX))
 
     for node in graph.units():

@@ -1,0 +1,252 @@
+{
+  "case_id": "VAL_04",
+  "case_name": "Hydrogen Production Biogas Reforming WGS PSA",
+  "source_file": "Hydrogen_production_from_biogas.dwxmz",
+  "compounds": ["Methane", "Carbon dioxide", "Carbon monoxide", "Hydrogen", "Water"],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {"tag": "K-01",  "type": "Compressor", "params": {"T_out": null,    "P_out": 1600000.00, "dP": null, "efficiency": null}},
+    {"tag": "P-01",  "type": "Pump",       "params": {"T_out": null,    "P_out": 1600000.00, "dP": null, "efficiency": null}},
+    {"tag": "MX-01", "type": "Mixer",      "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "MX-02", "type": "Mixer",      "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",     "params": {"T_out": 1182.15, "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-02", "type": "Heater",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-03", "type": "Heater",     "params": {"T_out": 623.15,  "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-04", "type": "Heater",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-05", "type": "Heater",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-06", "type": "Heater",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "HT-07", "type": "Heater",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",     "params": {"T_out": 483.15,  "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "CO-02", "type": "Cooler",     "params": {"T_out": 311.15,  "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "V-01",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "V-02",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "V-03",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "V-04",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "SP-01", "type": "Splitter",   "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}}
+  ],
+  "connections": [],
+  "streams": {
+    "WATER": {
+      "T_K": 298.15, "T_C": 25.00,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 0.702000,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane":         0.000000,
+        "Carbon dioxide":  0.000000,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           1.000000
+      }
+    },
+    "BIOGAS": {
+      "T_K": 298.15, "T_C": 25.00,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 0.393000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.599400,
+        "Carbon dioxide":  0.400600,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           0.000000
+      }
+    },
+    "S-01": {
+      "T_K": 589.82, "T_C": 316.67,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 0.393000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.599400,
+        "Carbon dioxide":  0.400600,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           0.000000
+      }
+    },
+    "S-02": {
+      "T_K": 1182.15, "T_C": 909.00,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 0.393000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.599400,
+        "Carbon dioxide":  0.400600,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           0.000000
+      }
+    },
+    "S-03": {
+      "T_K": 298.28, "T_C": 25.13,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 0.702000,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane":         0.000000,
+        "Carbon dioxide":  0.000000,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           1.000000
+      }
+    },
+    "S-04": {
+      "T_K": 1182.15, "T_C": 909.00,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 0.702000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.000000,
+        "Carbon dioxide":  0.000000,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           1.000000
+      }
+    },
+    "S-05": {
+      "T_K": 1181.78, "T_C": 908.63,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 1.095000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.213913,
+        "Carbon dioxide":  0.143540,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Water":           0.642547
+      }
+    },
+    "S-06": {
+      "T_K": 1181.78, "T_C": 908.63,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 1.545000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.005698,
+        "Carbon dioxide":  0.101676,
+        "Carbon monoxide": 0.145827,
+        "Hydrogen":        0.437481,
+        "Water":           0.309318
+      }
+    },
+    "S-08": {
+      "T_K": 623.15, "T_C": 350.00,
+      "P_Pa": 1600000.00, "P_bar": 16.00000,
+      "flow_mol_s": 1.545000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.005698,
+        "Carbon dioxide":  0.101676,
+        "Carbon monoxide": 0.145827,
+        "Hydrogen":        0.437481,
+        "Water":           0.309318
+      }
+    },
+    "S-09": {
+      "T_K": 740.98, "T_C": 467.83,
+      "P_Pa": 1575000.00, "P_bar": 15.75000,
+      "flow_mol_s": 1.544000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.005698,
+        "Carbon dioxide":  0.211046,
+        "Carbon monoxide": 0.036457,
+        "Hydrogen":        0.545851,
+        "Water":           0.200948
+      }
+    },
+    "S-011": {
+      "T_K": 483.15, "T_C": 210.00,
+      "P_Pa": 1575000.00, "P_bar": 15.75000,
+      "flow_mol_s": 1.544000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.005698,
+        "Carbon dioxide":  0.211046,
+        "Carbon monoxide": 0.036457,
+        "Hydrogen":        0.545851,
+        "Water":           0.200948
+      }
+    },
+    "S-012": {
+      "T_K": 514.58, "T_C": 241.43,
+      "P_Pa": 1570000.00, "P_bar": 15.70000,
+      "flow_mol_s": 1.545000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.005698,
+        "Carbon dioxide":  0.238389,
+        "Carbon monoxide": 0.009114,
+        "Hydrogen":        0.574193,
+        "Water":           0.172606
+      }
+    },
+    "S-014": {
+      "T_K": 311.15, "T_C": 38.00,
+      "P_Pa": 1570000.00, "P_bar": 15.70000,
+      "flow_mol_s": 1.545000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.005698,
+        "Carbon dioxide":  0.238389,
+        "Carbon monoxide": 0.009114,
+        "Hydrogen":        0.574193,
+        "Water":           0.172606
+      }
+    },
+    "S-015": {
+      "T_K": 311.15, "T_C": 38.00,
+      "P_Pa": 1570000.00, "P_bar": 15.70000,
+      "flow_mol_s": 1.285000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.006855,
+        "Carbon dioxide":  0.286411,
+        "Carbon monoxide": 0.010966,
+        "Hydrogen":        0.691615,
+        "Water":           0.004153
+      }
+    },
+    "S-016": {
+      "T_K": 311.15, "T_C": 38.00,
+      "P_Pa": 1570000.00, "P_bar": 15.70000,
+      "flow_mol_s": 0.262000,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane":         0.000000,
+        "Carbon dioxide":  0.002086,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000005,
+        "Water":           0.997909
+      }
+    },
+    "S-017": {
+      "T_K": 311.15, "T_C": 38.00,
+      "P_Pa": 1570000.00, "P_bar": 15.70000,
+      "flow_mol_s": 0.583000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.015093,
+        "Carbon dioxide":  0.632192,
+        "Carbon monoxide": 0.024144,
+        "Hydrogen":        0.319427,
+        "Water":           0.009144
+      }
+    },
+    "H2": {
+      "T_K": 311.15, "T_C": 38.00,
+      "P_Pa": 1570000.00, "P_bar": 15.70000,
+      "flow_mol_s": 0.700000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane":         0.000000,
+        "Carbon dioxide":  0.000000,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        1.000000,
+        "Water":           0.000000
+      }
+    }
+  }
+}

@@ -20,7 +20,21 @@ from typing import Any, Optional
 
 _CASES_DIR = os.path.join(os.path.dirname(__file__), "cases")
 
-TIERS = ["sanity", "easy", "medium", "hard", "perturbation", "generalisation"]
+TIERS = [
+    "sanity", "easy", "medium", "hard", "perturbation", "generalisation",
+    # Extended hard-benchmark tiers — each maps to a separate file via _TIER_FILENAMES
+    "multi_unit", "missing_bip", "ambiguous", "adversarial",
+    # Ground-truth validation tier — cases derived from real DWSIM flowsheets
+    "validation",
+]
+
+# Tiers whose filename differs from the default "<tier>.json" pattern.
+_TIER_FILENAMES: dict[str, str] = {
+    "multi_unit": "hard_benchmark_mu.json",
+    "missing_bip": "hard_benchmark_mb.json",
+    "ambiguous": "hard_benchmark_amb.json",
+    "adversarial": "hard_benchmark_adv.json",
+}
 
 
 @dataclass
@@ -71,6 +85,11 @@ class BenchmarkCaseSpec:
     transfer_from:       Optional[str] = None
     structural_analog:   Optional[str] = None
     notes:               str = ""
+    # Validation-specific — path to ground-truth reference flowsheet JSON
+    reference_file:      Optional[str] = None
+    # Validation-specific — short NL prompt fed to the pipeline (distinct from
+    # the long documentation description).  Falls back to description if absent.
+    prompt:              Optional[str] = None
 
 
 def _parse_physics_check(raw: dict) -> PhysicsCheck:
@@ -121,6 +140,8 @@ def _parse_case(raw: dict) -> BenchmarkCaseSpec:
         transfer_from           = raw.get("transfer_from"),
         structural_analog       = raw.get("structural_analog"),
         notes                   = raw.get("notes", ""),
+        reference_file          = raw.get("reference_file"),
+        prompt                  = raw.get("prompt"),
     )
 
 
@@ -128,12 +149,23 @@ def _parse_case(raw: dict) -> BenchmarkCaseSpec:
 
 def load_tier(tier: str) -> list[BenchmarkCaseSpec]:
     """Load all cases from a single tier JSON file."""
-    path = os.path.join(_CASES_DIR, f"{tier}.json")
+    filename = _TIER_FILENAMES.get(tier, f"{tier}.json")
+    path = os.path.join(_CASES_DIR, filename)
     if not os.path.exists(path):
         raise FileNotFoundError(f"No case file for tier '{tier}' at {path}")
     with open(path, encoding="utf-8") as f:
         raw_cases = json.load(f)
     return [_parse_case(c) for c in raw_cases]
+
+
+def load_from_files(paths: list[str]) -> list[BenchmarkCaseSpec]:
+    """Load cases from arbitrary JSON file paths, bypassing the tier system."""
+    cases: list[BenchmarkCaseSpec] = []
+    for path in paths:
+        with open(path, encoding="utf-8") as f:
+            for raw in json.load(f):
+                cases.append(_parse_case(raw))
+    return cases
 
 
 def load_all(
@@ -155,7 +187,8 @@ def load_all(
     selected_tiers = tiers or TIERS
     cases: list[BenchmarkCaseSpec] = []
     for tier in selected_tiers:
-        path = os.path.join(_CASES_DIR, f"{tier}.json")
+        filename = _TIER_FILENAMES.get(tier, f"{tier}.json")
+        path = os.path.join(_CASES_DIR, filename)
         if os.path.exists(path):
             cases.extend(load_tier(tier))
     if difficulty:
@@ -170,7 +203,8 @@ def load_all(
 def load_by_id(case_id: str) -> BenchmarkCaseSpec:
     """Return a single case by ID, searching all tiers."""
     for tier in TIERS:
-        path = os.path.join(_CASES_DIR, f"{tier}.json")
+        filename = _TIER_FILENAMES.get(tier, f"{tier}.json")
+        path = os.path.join(_CASES_DIR, filename)
         if not os.path.exists(path):
             continue
         with open(path, encoding="utf-8") as f:
@@ -190,7 +224,8 @@ def summary() -> dict:
     counts: dict[str, int] = {}
     total = 0
     for tier in TIERS:
-        path = os.path.join(_CASES_DIR, f"{tier}.json")
+        filename = _TIER_FILENAMES.get(tier, f"{tier}.json")
+        path = os.path.join(_CASES_DIR, filename)
         if os.path.exists(path):
             with open(path, encoding="utf-8") as f:
                 n = len(json.load(f))

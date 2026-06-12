@@ -1,0 +1,90 @@
+{
+  "case_id": "VAL_10",
+  "case_name": "Syngas Production RLNG Steam Reforming Ammonia Plant",
+  "source_file": "Syngas_production_RLNG_DWSIM.dwxmz",
+  "compounds": [
+    "Water", "Methane", "Carbon monoxide",
+    "Hydrogen", "Carbon dioxide", "Oxygen", "Nitrogen"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {"tag": "MX-01", "type": "Mixer",    "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "MX-02", "type": "Mixer",    "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "HT-02", "type": "Heater",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "V-01",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "V-02",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "V-03",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "V-04",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "V-05",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "V-06",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "CO-02", "type": "Cooler",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "CO-03", "type": "Cooler",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
+    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}}
+  ],
+  "connections": [],
+  "streams": {
+    "SYNGAS": {
+      "T_K": 604.15, "T_C": 331.00,
+      "P_Pa": 3040000.00, "P_bar": 30.40000,
+      "flow_mol_s": 813.680556,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water":           0.005228,
+        "Methane":         0.001806,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.466676,
+        "Carbon dioxide":  0.000000,
+        "Oxygen":          0.031463,
+        "Nitrogen":        0.494832
+      }
+    },
+    "STEAM": {
+      "T_K": 653.15, "T_C": 380.00,
+      "P_Pa": 3040000.00, "P_bar": 30.40000,
+      "flow_mol_s": 388.883333,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water":           1.000000,
+        "Methane":         0.000000,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Carbon dioxide":  0.000000,
+        "Oxygen":          0.000000,
+        "Nitrogen":        0.000000
+      }
+    },
+    "R-LNG": {
+      "T_K": 613.15, "T_C": 340.00,
+      "P_Pa": 3730000.00, "P_bar": 37.30000,
+      "flow_mol_s": 138.912222,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water":           0.000000,
+        "Methane":         0.985197,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Carbon dioxide":  0.000800,
+        "Oxygen":          0.000000,
+        "Nitrogen":        0.014003
+      }
+    },
+    "AIR": {
+      "T_K": 1038.15, "T_C": 765.00,
+      "P_Pa": 3110000.00, "P_bar": 31.10000,
+      "flow_mol_s": 507.197222,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water":           0.000000,
+        "Methane":         0.000000,
+        "Carbon monoxide": 0.000000,
+        "Hydrogen":        0.000000,
+        "Carbon dioxide":  0.000000,
+        "Oxygen":          0.210000,
+        "Nitrogen":        0.790000
+      }
+    }
+  }
+}

@@ -52,6 +52,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 
+_CAS_RE = re.compile(r'^\d{1,7}-\d{2}-\d$')
+
 from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from context import COMPOUND_DATABASE
 
@@ -63,8 +65,34 @@ if _dwsim_list_path.exists():
     with open(_dwsim_list_path) as _f:
         for _line in _f:
             _name = _line.strip()
-            if _name:
+            if _name and not _name.startswith("#"):
                 _DWSIM_ALL[_name.lower()] = _name
+
+# ── Compound synonym map (alias → canonical DWSIM name) ───────────────────────
+# rag/sources/compound_synonyms.json maps each DWSIM name to a list of synonyms.
+# Inverted here so any synonym can be looked up in O(1).
+_DWSIM_SYNONYMS: dict[str, str] = {}   # synonym_lower → canonical DWSIM name
+_synonyms_path = Path(__file__).resolve().parent.parent / "rag" / "sources" / "compound_synonyms.json"
+if _synonyms_path.exists():
+    with open(_synonyms_path) as _sf:
+        _syn_data: dict[str, list[str]] = json.load(_sf)
+    for _canonical, _syn_list in _syn_data.items():
+        for _syn in _syn_list:
+            _DWSIM_SYNONYMS[_syn.lower()] = _canonical
+
+
+def _levenshtein(a: str, b: str) -> int:
+    """Edit distance between two strings (pure Python, O(len(a)*len(b)))."""
+    if len(a) < len(b):
+        a, b = b, a
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a):
+        curr = [i + 1]
+        for j, cb in enumerate(b):
+            curr.append(min(prev[j + 1] + 1, curr[j] + 1,
+                            prev[j] + (ca != cb)))
+        prev = curr
+    return prev[-1]
 
 
 # ── Database parsing ───────────────────────────────────────────────────────────
@@ -111,11 +139,15 @@ def _parse_database(
         # ── Single-component ──────────────────────────────────────────────────
         if section == "single" and len(cols) >= 3:
             dwsim_name  = cols[0]
+            cas_raw     = cols[1].strip()
             aliases_raw = cols[2]               # col 1 = CAS
             verified    = cols[4].strip() if len(cols) >= 5 else "?"
             # Split on ", " (comma+space) to preserve names like N,N-dimethylformamide
             aliases = [a.strip() for a in aliases_raw.split(", ") if len(a.strip()) >= 3]
             lookup[dwsim_name.lower()] = dwsim_name
+            # CAS number as a direct lookup key (e.g. "7732-18-5" → "Water")
+            if _CAS_RE.match(cas_raw):
+                lookup[cas_raw] = dwsim_name
             for alias in aliases:
                 lookup[alias.lower()] = dwsim_name
             if "?" in verified:
@@ -252,6 +284,11 @@ Output ONLY valid JSON -- no markdown fences, no prose:
 }
 
 Rules:
+- CRITICAL: Use the exact compound name as written in the process description. Do not
+  substitute chemical synonyms, isomers, or alternative names. If the description says
+  "p-xylene", output "p-Xylene" — not "m-Xylene", not "Xylene". The description text
+  is authoritative for compound identity. This applies to all positional isomers
+  (o-/m-/p-), chain isomers (n-/iso-/sec-/tert-), and stereoisomers.
 - MUST use compound names verbatim from the database below — exact spelling and capitalisation required.
 - MUST NOT invent, paraphrase, abbreviate, or translate compound names not in the database.
 - If a compound is in the Unsupported section, set status = "unsupported".
@@ -341,6 +378,22 @@ class BasisAgent:
         # ── Stage 1 — deterministic anchor scan ──────────────────────────────
         anchors = self._stage1_scan(description)
         stage1_count = len(anchors)
+
+        # ── Pure-component short-circuit ──────────────────────────────────────
+        # When the description explicitly uses "pure" (e.g. "pure methane feed",
+        # "pure component") AND Stage 1 resolved it to exactly one compound,
+        # Stage 2 must not run — it tends to hallucinate companions like n-Butane
+        # for what is genuinely a single-compound system.
+        if (not feedback
+                and re.search(r'\bpure\b', description, re.IGNORECASE)
+                and anchors
+                and all(isinstance(v, str) for v in anchors.values())
+                and len(set(anchors.values())) == 1):
+            return self._build_from_anchors(
+                description, anchors, stage1_count,
+                extra_warnings=["[basis] pure-component: Stage 2 skipped"],
+                stage="LOOKUP",
+            )
 
         # ── Stage 2 skip — all anchors verified, no LLM needed ───────────────
         if not feedback and self._can_skip_stage2(anchors, description):
@@ -550,18 +603,24 @@ class BasisAgent:
                             "— confirm it is the right compound."
                         )
                 else:
-                    # Not in full list — genuinely unknown or hallucinated name
+                    # Not in full list — genuinely unknown or hallucinated name.
+                    # Offer a 'did you mean?' hint when the list is populated.
+                    suggestion = _closest_dwsim_suggestion(dwsim)
+                    did_you_mean = (
+                        f" Did you mean '{suggestion}'?" if suggestion else ""
+                    )
                     if status == "unverified" or dwsim in self._unverified:
                         warnings.append(
-                            f"'{dwsim}' (from '{original}') is unverified and "
-                            "not found in the DWSIM compound list — may fail "
-                            "AddCompound(). Confirm the exact DWSIM name."
+                            f"'{dwsim}' (from '{original}') not found in the DWSIM "
+                            f"compound list.{did_you_mean} Confirm the exact DWSIM name "
+                            "or add it to compound_database.md."
                         )
                     else:
                         warnings.append(
-                            f"'{dwsim}' (from '{original}') is not in the DWSIM "
-                            "compound list — may fail AddCompound(). "
-                            "Check the exact DWSIM name and add to compound_database.md."
+                            f"'{dwsim}' (from '{original}') not found in the DWSIM "
+                            f"compound list.{did_you_mean} "
+                            "Add the correct DWSIM name to compound_database.md and "
+                            "rag/sources/compound_synonyms.json."
                         )
                 if note and status == "ok":
                     warnings.append(f"'{original}': {note}")
@@ -705,21 +764,57 @@ def _fuzzy_match_dwsim(name: str) -> tuple[str, str] | None:
     """
     Validate a proposed DWSIM compound name against the full compound list.
 
-    Returns (canonical_name, match_type) where match_type is:
-      "exact"  — case-insensitive exact match
-      "fuzzy"  — close match (≥85% similarity) — name had a spelling/casing error
-    Returns None if no acceptable match found.
+    Resolution order (first match wins):
+      1. exact        — case-insensitive exact match in _DWSIM_ALL
+      2. synonym      — match via _DWSIM_SYNONYMS (IUPAC/common/abbreviation aliases)
+      3. edit_dist    — Levenshtein distance ≤ 2 against all DWSIM names
+      4. difflib      — sequence similarity ≥ 85% (handles minor spelling variants)
+
+    Returns (canonical_name, match_type) or None if no acceptable match found.
     """
     if not _DWSIM_ALL:
         return None
     lower = name.lower()
+
+    # 1. Exact case-insensitive match
     exact = _DWSIM_ALL.get(lower)
     if exact:
         return exact, "exact"
+
+    # 2. Synonym lookup
+    syn = _DWSIM_SYNONYMS.get(lower)
+    if syn:
+        return syn, "synonym"
+
+    # 3. Levenshtein edit distance ≤ 2 (skip keys where length diff alone exceeds budget)
+    best_dist, best_key = 3, None
+    for key in _DWSIM_ALL:
+        if abs(len(lower) - len(key)) > 2:
+            continue
+        d = _levenshtein(lower, key)
+        if d < best_dist:
+            best_dist, best_key = d, key
+    if best_key is not None and best_dist <= 2:
+        return _DWSIM_ALL[best_key], "edit_dist"
+
+    # 4. difflib sequence similarity ≥ 85%
     matches = difflib.get_close_matches(lower, _DWSIM_ALL.keys(), n=1, cutoff=0.85)
     if matches:
         return _DWSIM_ALL[matches[0]], "fuzzy"
+
     return None
+
+
+def _closest_dwsim_suggestion(name: str) -> str | None:
+    """
+    Return the most similar DWSIM compound name for a 'did you mean?' hint,
+    even when below the strict fuzzy-match threshold.
+    Returns None when _DWSIM_ALL is empty or no reasonable match exists.
+    """
+    if not _DWSIM_ALL:
+        return None
+    matches = difflib.get_close_matches(name.lower(), _DWSIM_ALL.keys(), n=1, cutoff=0.5)
+    return _DWSIM_ALL[matches[0]] if matches else None
 
 
 def _parse_llm_response(raw: str) -> dict:

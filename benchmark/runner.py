@@ -31,13 +31,13 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from benchmark.case_schema import (
-    BenchmarkCaseSpec, load_all, load_tier, load_by_id, TIERS
+    BenchmarkCaseSpec, load_all, load_tier, load_by_id, load_from_files, TIERS
 )
 from benchmark.metrics import (
     RunMetrics, extract_metrics, aggregate, AggregateMetrics
 )
 from benchmark.logger import RunLog, extract_run_log
-from benchmark.physics_eval import run_physics_checks
+from benchmark.physics_eval import run_physics_checks, run_reference_comparison, CheckSeverity
 from benchmark.ablation import AblationConfig, CONFIGS, apply_ablation, make_orchestrator
 
 _RESULTS_DIR = os.path.join(
@@ -49,10 +49,12 @@ _RESULTS_DIR = os.path.join(
 
 @dataclass
 class CaseRunResult:
-    case:      BenchmarkCaseSpec
-    metrics:   RunMetrics
-    run_log:   RunLog
-    log_path:  str = ""
+    case:            BenchmarkCaseSpec
+    metrics:         RunMetrics
+    run_log:         RunLog
+    log_path:        str = ""
+    final_execution: Optional[object] = None  # ExecutionResult from DWSIM solver
+    final_graph:     Optional[object] = None  # FlowsheetGraph after last repair
 
 
 @dataclass
@@ -73,13 +75,14 @@ class BenchmarkRunSet:
 
     def to_dict(self) -> dict:
         return {
-            "ablation_mode":   self.ablation_mode,
-            "model":           self.model,
-            "tiers":           self.tiers,
-            "timestamp":       self.timestamp,
-            "n_cases":         len(self.case_results),
-            "aggregate":       self.aggregate.__dict__ if self.aggregate else {},
-            "tier_aggregates": {k: v.__dict__ for k, v in self.tier_aggregates.items()},
+            "ablation_mode":        self.ablation_mode,
+            "model":                self.model,
+            "tiers":                self.tiers,
+            "timestamp":            self.timestamp,
+            "n_cases":              len(self.case_results),
+            "aggregate":            self.aggregate.__dict__ if self.aggregate else {},
+            "tier_aggregates":      {k: v.__dict__ for k, v in self.tier_aggregates.items()},
+            "failure_mode_summary": _failure_mode_summary(self.case_results),
             "case_results": [
                 {
                     "case_id":   r.case.id,
@@ -93,13 +96,54 @@ class BenchmarkRunSet:
         }
 
     def save(self, results_dir: str | None = None) -> str:
+        from benchmark.metrics import aggregate as _aggregate
+
         d = results_dir or os.path.join(_RESULTS_DIR, "summaries")
         os.makedirs(d, exist_ok=True)
         tiers_str = "_".join(self.tiers[:3])
         fname = f"{self.ablation_mode}_{tiers_str}_{self.timestamp}.json"
         path  = os.path.join(d, fname)
+
+        # Write final DWSIM execution results.
+        dwsim_path = path.replace(".json", "_dwsim_results.json")
+        with open(dwsim_path, "w", encoding="utf-8") as f:
+            json.dump(_execution_results_dict(self.case_results),
+                      f, indent=2, default=str)
+
+        # Write one flowsheet file per case to results/flowsheets/.
+        flowsheets_dir = os.path.join(_RESULTS_DIR, "flowsheets")
+        os.makedirs(flowsheets_dir, exist_ok=True)
+        for r in self.case_results:
+            fs = _flowsheet_dict(r)
+            fs_path = os.path.join(flowsheets_dir, f"{r.case.id}_flowsheet.json")
+            with open(fs_path, "w", encoding="utf-8") as f:
+                json.dump(fs, f, indent=2, default=str)
+            txt_path = os.path.join(flowsheets_dir, f"{r.case.id}_flowsheet.txt")
+            with open(txt_path, "w", encoding="utf-8") as f:
+                f.write(_flowsheet_report(fs, r))
+
+            # For validation cases: compare against the ground-truth reference.
+            ref_file = getattr(r.case, "reference_file", None)
+            if ref_file:
+                cr = _write_comparison(r.case, fs, ref_file, flowsheets_dir)
+                if cr is not None:
+                    r.metrics.match_score     = cr.match_score
+                    r.metrics.validation_pass = cr.overall_pass
+                    r.metrics.failure_modes   = cr.failure_modes
+                    r.metrics.mape_T_pct      = cr.mape_T_pct
+
+        # Re-aggregate after comparison scores are written onto metrics, then
+        # write summary JSON so match_score / validation_pass are included.
+        all_metrics = self.metrics_list()
+        self.aggregate = _aggregate(all_metrics, self.ablation_mode)
+        for tier in self.tiers:
+            tier_m = [m for m in all_metrics if m.tier == tier]
+            if tier_m:
+                self.tier_aggregates[tier] = _aggregate(tier_m, self.ablation_mode)
+
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2, default=str)
+
         return path
 
     def to_markdown(self) -> str:
@@ -116,7 +160,8 @@ class BenchmarkRunSet:
                 f"| Success rate | {agg.success_rate:.1%} |",
                 f"| Valid IR | {agg.valid_ir_rate:.1%} |",
                 f"| Valid JSON | {agg.valid_json_rate:.1%} |",
-                f"| Physics checks pass | {agg.physics_pass_rate:.1%} |",
+                f"| Physics checks pass (all) | {agg.physics_pass_rate:.1%} |",
+                f"| Physics checks pass (CRITICAL) | {agg.critical_physics_pass_rate:.1%} |",
                 f"| Mean iterations | {agg.mean_iterations:.2f} |",
                 f"| Mean sim calls | {agg.mean_sim_calls:.2f} |",
                 f"| Mean candidates | {agg.mean_candidates:.1f} |",
@@ -127,6 +172,21 @@ class BenchmarkRunSet:
             ]
             if agg.recovery_rate is not None:
                 lines.append(f"| Recovery rate | {agg.recovery_rate:.1%} |")
+            if agg.mean_match_score > 0.0:
+                lines += [
+                    f"| Mean match score (val) | {agg.mean_match_score:.3f} |",
+                    f"| Validation pass rate | {agg.pct_validation_pass:.1%} |",
+                ]
+            if agg.mean_mape_T_pct > 0.0:
+                lines.append(
+                    f"| Mean MAPE T (val) | {agg.mean_mape_T_pct:.2f}% |")
+            if agg.ref_match_rate > 0.0 or agg.mean_ref_mape_T > 0.0:
+                lines += [
+                    f"| **Ref match rate** | **{agg.ref_match_rate:.1%}** |",
+                    f"| Ref MAPE T (±5 K) | {agg.mean_ref_mape_T:.2f}% |",
+                    f"| Ref MAPE P (±5%) | {agg.mean_ref_mape_P:.2f}% |",
+                    f"| Ref VF MAE (±0.05) | {agg.mean_ref_mape_vf:.4f} |",
+                ]
             lines.append("")
 
         if self.tier_aggregates:
@@ -140,15 +200,43 @@ class BenchmarkRunSet:
                 )
             lines.append("")
 
+        fms = _failure_mode_summary(self.case_results)
+        if fms.get("by_mode"):
+            n_cmp = fms["n_compared"]
+            lines += [
+                "### Validation Failure Modes\n",
+                f"Compared: {n_cmp}  |  Overall pass: {fms['n_overall_pass']}/{n_cmp}\n",
+                "| Failure mode | Count | % of compared |",
+                "|---|---|---|",
+            ]
+            for mode, info in sorted(fms["by_mode"].items(),
+                                     key=lambda kv: -kv[1]["count"]):
+                diag = " *(diagnostic)*" if mode == "flow_fail" else ""
+                lines.append(
+                    f"| {mode}{diag} | {info['count']} | {info['pct']:.0%} |")
+            lines.append("")
+
         lines += ["### Per-case Results\n",
-                  "| ID | Tier | Difficulty | Domain | Success | Iter | Candidates | Phys ✓ |",
-                  "|----|------|------------|--------|---------|------|------------|--------|"]
+                  "| ID | Tier | Difficulty | Domain | Success | Match | Val pass | MAPE T% | Ref✓ | Ref T% | Recycle | Iter | Phys ✓ |",
+                  "|----|------|------------|--------|---------|-------|----------|---------|------|--------|---------|------|--------|"]
         for r in self.case_results:
             m = r.metrics
+            match_str = f"{m.match_score:.2f}" if m.match_score > 0.0 else "—"
+            vpass_str = ("✓" if m.validation_pass else "✗") if m.match_score > 0.0 else "—"
+            mape_str  = f"{m.mape_T_pct:.1f}%" if m.mape_T_pct > 0.0 else "—"
+            if m.has_reference:
+                ref_pass_str = "✓" if m.reference_match_pass else "✗"
+                ref_t_str    = f"{m.reference_mape_T:.1f}%"
+            else:
+                ref_pass_str = ref_t_str = "—"
+            graph     = getattr(r, "final_graph", None)
+            rec_str   = ("✓" if getattr(graph, "has_recycles", False) else "✗") if graph is not None else "?"
             lines.append(
                 f"| {r.case.id} | {r.case.tier} | {r.case.difficulty} "
                 f"| {r.case.domain} | {'✓' if m.success else '✗'} "
-                f"| {m.n_iterations} | {m.n_candidates_total} "
+                f"| {match_str} | {vpass_str} "
+                f"| {mape_str} | {ref_pass_str} | {ref_t_str} | {rec_str} "
+                f"| {m.n_iterations} "
                 f"| {m.physics_checks_passed}/{m.physics_checks_run} |"
             )
         return "\n".join(lines)
@@ -242,6 +330,61 @@ class BenchmarkRunner:
         config   = CONFIGS.get(ablation_mode, CONFIGS["full_ccs"])
         return self._run_set(cases, config, tiers=selected)
 
+    def run_case_files(
+        self,
+        file_paths:    list[str],
+        ablation_mode: str = "full_ccs",
+    ) -> BenchmarkRunSet:
+        """Run all cases loaded from specific JSON files, bypassing the tier system.
+
+        Useful for running the extended hard-benchmark files directly:
+
+            runner.run_case_files([
+                "benchmark/cases/hard_benchmark_mu.json",
+                "benchmark/cases/hard_benchmark_adv.json",
+            ])
+        """
+        cases  = load_from_files(file_paths)
+        config = CONFIGS.get(ablation_mode, CONFIGS["full_ccs"])
+        # Derive tier labels from the loaded cases for run-set metadata.
+        tiers  = sorted({c.tier for c in cases})
+        return self._run_set(cases, config, tiers=tiers)
+
+    def run_targeted_ablation(
+        self,
+        case_ids: list[str],
+        modes:    list[str] | None = None,
+        verbose:  bool = True,
+    ) -> dict[str, BenchmarkRunSet]:
+        """
+        Run ablation only on the specified subset of case IDs.
+
+        Useful for isolating cases that exercise the repair loop (>1 iteration)
+        where physics/coupling/rule_store components actually differentiate.
+
+        Returns {ablation_mode: BenchmarkRunSet}.
+        """
+        selected_modes = modes or list(CONFIGS.keys())
+        results: dict[str, BenchmarkRunSet] = {}
+
+        for mode in selected_modes:
+            if verbose:
+                print(f"\n{'='*60}")
+                print(f"  Ablation (targeted {len(case_ids)} cases): {mode}")
+                print(f"{'='*60}")
+
+            config = CONFIGS.get(mode, CONFIGS["full_ccs"])
+            cases  = [load_by_id(cid) for cid in case_ids]
+            tiers  = sorted({c.tier for c in cases})
+
+            run_set = self._run_set(cases, config, tiers=tiers)
+            results[mode] = run_set
+
+            if verbose:
+                print(run_set.aggregate)
+
+        return results
+
     def run_ablation(
         self,
         tiers:   list[str] | None = None,
@@ -282,13 +425,56 @@ class BenchmarkRunner:
         orch, _ = make_orchestrator(config, self._model, self._max_iter)
         reset_call_count()
 
+        import sys as _sys
+        print(f"[ABLATION] case={case.id} mode={config.mode} "
+              f"disable_physics={config.disable_physics} "
+              f"disable_rules={config.disable_rules} "
+              f"disable_coupling={config.disable_coupling} "
+              f"beam_width={config.beam_width} "
+              f"rule_store_patterns={orch._rule_store.num_patterns()} "
+              f"active_rules={orch._rule_store.num_active()}",
+              flush=True, file=_sys.stderr)
+
+        # Verify no_rule_store: all retriever references must be NullRetriever.
+        # ThermoMapper stores the retriever in sub-components, not self._retriever.
+        if config.disable_rules:
+            def _check_ret(label: str, obj) -> None:
+                if obj is None:
+                    return
+                ret = getattr(obj, "_retriever", None)
+                if ret is None:
+                    return  # attribute absent — skip silently
+                status = "NullRetriever=OK" if type(ret).__name__ == "NullRetriever" \
+                         else f"PATCH_FAILED({type(ret).__name__})"
+                print(f"[ABLATION]   no_rule_store VERIFY: {label}._retriever = {status}",
+                      flush=True, file=_sys.stderr)
+
+            _check_ret("orch._params",   getattr(orch, "_params",  None))
+            _check_ret("orch._repair",   getattr(orch, "_repair",  None))
+            _thermo = getattr(orch, "_thermo", None)
+            if _thermo is not None:
+                for _comp in ("_selector", "_injector", "_llm"):
+                    _check_ret(f"orch._thermo.{_comp}", getattr(_thermo, _comp, None))
+
+        if config.beam_width == 1:
+            _bw = getattr(getattr(orch, "_repair", None), "_beam_width", "NO_ATTR")
+            print(f"[ABLATION]   greedy VERIFY: orch._repair._beam_width={_bw} "
+                  f"(1=OK)", flush=True, file=_sys.stderr)
+
         if self._verbose:
             print(f"  [{case.id}/{case.tier}] {case.name[:50]} …", end=" ", flush=True)
+
+        # Use the short benchmark prompt when available; fall back to description.
+        nl_input = getattr(case, "prompt", None) or case.description
 
         t0 = time.time()
         try:
             with apply_ablation(config):
-                pr = orch.run(case.description)
+                pr = orch.run(
+                    nl_input,
+                    reference_file=getattr(case, "reference_file", None),
+                    tier=case.tier,
+                )
         except Exception as exc:
             import sys as _sys, traceback as _tb
             print(f"[RUNNER] EXCEPTION in {case.id}: {exc}", flush=True, file=_sys.stderr)
@@ -303,9 +489,37 @@ class BenchmarkRunner:
         checks = run_physics_checks(case, pr)
         n_checks_run    = len(checks)
         n_checks_passed = sum(1 for c in checks if c.get("passed", False))
+        n_critical_run    = sum(1 for c in checks
+                                if c.get("severity") == CheckSeverity.CRITICAL)
+        n_critical_passed = sum(1 for c in checks
+                                if c.get("severity") == CheckSeverity.CRITICAL
+                                and c.get("passed", False))
 
         # Attach physics check results to pr so metrics extractor can read them
         pr._physics_checks = checks   # type: ignore[attr-defined]
+
+        # ── Reference-match comparison (validation cases only) ─────────────────
+        # Runs live during the benchmark with stricter ±5 K / ±5% / ±0.05 thresholds.
+        # Distinct from BenchmarkRunSet.save()'s _write_comparison() which uses looser
+        # ±10 K tolerances for archival reporting and runs after all cases complete.
+        ref_mape_T = ref_mape_P = ref_mape_vf = 0.0
+        ref_match_pass = False
+        has_reference  = bool(getattr(case, "reference_file", None))
+        if has_reference:
+            _ref_checks, ref_mape_T, ref_mape_P, ref_mape_vf = \
+                run_reference_comparison(case, pr)
+            if _ref_checks:
+                checks.extend(_ref_checks)
+                pr._physics_checks = checks
+                n_checks_run    += len(_ref_checks)
+                n_checks_passed += sum(1 for c in _ref_checks if c.get("passed", False))
+                _crit = [c for c in _ref_checks
+                         if c.get("severity") == CheckSeverity.CRITICAL]
+                n_critical_run    += len(_crit)
+                n_critical_passed += sum(1 for c in _crit if c.get("passed", False))
+                _active_crit = [c for c in _crit if c.get("source") != "none"]
+                ref_match_pass = (bool(_active_crit)
+                                  and all(c["passed"] for c in _active_crit))
 
         # Derive compatible attributes for metrics extractor
         pr.ir_valid   = getattr(pr, "ir_valid",   False) or (
@@ -318,9 +532,16 @@ class BenchmarkRunner:
 
         # Extract metrics
         m = extract_metrics(pr, case, config.mode, llm_calls)
-        m.physics_checks_run    = n_checks_run
-        m.physics_checks_passed = n_checks_passed
-        m.physics_check_details = checks
+        m.physics_checks_run              = n_checks_run
+        m.physics_checks_passed           = n_checks_passed
+        m.physics_check_details           = checks
+        m.critical_physics_checks_run     = n_critical_run
+        m.critical_physics_checks_passed  = n_critical_passed
+        m.has_reference                   = has_reference
+        m.reference_mape_T                = ref_mape_T
+        m.reference_mape_P                = ref_mape_P
+        m.reference_mape_vf               = ref_mape_vf
+        m.reference_match_pass            = ref_match_pass
 
         # Extract trajectory log
         run_log  = extract_run_log(pr, case.id, config.mode, self._model)
@@ -334,7 +555,14 @@ class BenchmarkRunner:
             print(f"{outcome}  iter={m.n_iterations}  "
                   f"phys={n_checks_passed}/{n_checks_run}  {elapsed:.1f}s")
 
-        return CaseRunResult(case=case, metrics=m, run_log=run_log, log_path=log_path)
+        return CaseRunResult(
+            case            = case,
+            metrics         = m,
+            run_log         = run_log,
+            log_path        = log_path,
+            final_execution = getattr(pr, "final_execution", None),
+            final_graph     = getattr(pr, "final_graph", None),
+        )
 
     def _run_set(
         self,
@@ -368,6 +596,302 @@ class BenchmarkRunner:
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
+_FAILURE_MODES = [
+    "pkg_mismatch", "unit_count_out_of_range", "stream_not_found",
+    "temperature_fail", "pressure_fail", "composition_fail",
+    "vapor_fraction_fail", "flow_fail",
+]
+
+
+def _failure_mode_summary(case_results: list) -> dict:
+    """Aggregate comparison failure modes across all validation cases that were compared."""
+    compared = [r for r in case_results
+                if getattr(r.case, "reference_file", None) and r.metrics.match_score > 0.0]
+    if not compared:
+        return {}
+    n = len(compared)
+    counts = {m: 0 for m in _FAILURE_MODES}
+    for r in compared:
+        for mode in r.metrics.failure_modes:
+            if mode in counts:
+                counts[mode] += 1
+    return {
+        "n_compared":     n,
+        "n_overall_pass": sum(1 for r in compared if r.metrics.validation_pass),
+        "by_mode": {
+            k: {"count": v, "pct": round(v / n, 3)}
+            for k, v in counts.items() if v > 0
+        },
+    }
+
+
+def _write_comparison(
+    case,
+    system_fs:      dict,
+    reference_file: str,
+    out_dir:        str,
+):
+    """Load reference, run comparison, write JSON + txt diff report.
+
+    Returns the ComparisonResult so the caller can pull match_score and
+    overall_pass back onto the RunMetrics; returns None if skipped.
+    """
+    from benchmark.comparison import (
+        load_reference, compare_flowsheets, comparison_report)
+
+    ref = load_reference(reference_file)
+    if ref is None:
+        return None
+
+    n_min = getattr(getattr(case, "expected", None), "n_units_min", None)
+    n_max = getattr(getattr(case, "expected", None), "n_units_max", None)
+
+    cr = compare_flowsheets(
+        system_fs, ref,
+        reference_file=reference_file,
+        n_units_min=n_min,
+        n_units_max=n_max,
+    )
+
+    case_id      = getattr(case, "id", str(case))
+    cr_json_path = os.path.join(out_dir, f"{case_id}_comparison.json")
+    cr_txt_path  = os.path.join(out_dir, f"{case_id}_comparison.txt")
+
+    with open(cr_json_path, "w", encoding="utf-8") as f:
+        json.dump({
+            "case_id":              cr.case_id,
+            "case_name":            cr.case_name,
+            "reference_file":       cr.reference_file,
+            "overall_pass":         cr.overall_pass,
+            "match_score":          cr.match_score,
+            "mape_T_pct":           cr.mape_T_pct,
+            "pkg_match":            cr.pkg_match,
+            "unit_type_match":      cr.unit_type_match,
+            "unit_count_in_range":  cr.unit_count_in_range,
+            "unit_types_system":    cr.unit_types_system,
+            "unit_types_reference": cr.unit_types_reference,
+            "failure_modes":        cr.failure_modes,
+            "warnings":             cr.warnings,
+            "field_results": [
+                {"stream": fr.stream, "field": fr.field,
+                 "system": fr.system, "reference": fr.reference,
+                 "diff": fr.diff, "passed": fr.passed,
+                 "tolerance": fr.tolerance,
+                 "is_diagnostic": fr.is_diagnostic}
+                for fr in cr.field_results
+            ],
+        }, f, indent=2)
+
+    with open(cr_txt_path, "w", encoding="utf-8") as f:
+        f.write(comparison_report(cr))
+
+    return cr
+
+
+def _flowsheet_dict(r: CaseRunResult) -> dict:
+    """
+    Build a self-contained flowsheet record for one case combining:
+      - unit topology (tags, types, parameters) from the final IR graph
+      - stream conditions (T, P, composition, vapour fraction) from DWSIM
+
+    Saved to results/flowsheets/{case_id}_flowsheet.json for direct
+    comparison against ground-truth flowsheets converted from .dwxml files.
+    """
+    graph = getattr(r, "final_graph", None)
+    ex    = r.final_execution
+
+    # ── Unit topology from IR graph ───────────────────────────────────────────
+    units:       list[dict] = []
+    connections: list[list] = []
+
+    if graph is not None:
+        for node in graph.units():
+            units.append({
+                "tag":    node.tag,
+                "type":   node.unit_type,
+                "params": {k: round(float(v), 4) if isinstance(v, (int, float)) else v
+                           for k, v in node.params.items()},
+            })
+        # Reconstruct connections from graph edges (stream-mediated)
+        try:
+            for stream in graph.streams() if hasattr(graph, "streams") else []:
+                src = graph.stream_source(stream.tag)
+                dst = graph.stream_dest(stream.tag)
+                if src and dst:
+                    connections.append([src, stream.tag, dst])
+        except Exception:
+            pass  # connection extraction is best-effort
+
+    # ── Stream conditions from DWSIM execution ────────────────────────────────
+    streams: dict = {}
+    if ex is not None:
+        for tag, s in (getattr(ex, "stream_results", {}) or {}).items():
+            streams[tag] = {
+                "T_K":            round(float(s.T_K), 4),
+                "T_C":            round(float(s.T_K) - 273.15, 4),
+                "P_Pa":           round(float(s.P_Pa), 2),
+                "P_bar":          round(float(s.P_Pa) / 1e5, 5),
+                "flow_mol_s":     round(float(s.flow_mol_s), 6),
+                "vapor_fraction": round(float(getattr(s, "vapor_fraction", 0.0)), 6),
+                "composition":    {k: round(float(v), 6)
+                                   for k, v in s.composition.items()},
+            }
+
+    has_recycles   = graph.has_recycles if graph is not None else False
+    recycle_blocks = graph.metadata.get("recycle_blocks", []) if graph is not None else []
+
+    return {
+        "case_id":          r.case.id,
+        "case_name":        r.case.name,
+        "tier":             r.case.tier,
+        "compounds":        r.case.compounds,
+        "property_package": graph.property_package if graph is not None else "",
+        "solved":           bool(getattr(ex, "solved", False)) if ex else False,
+        "has_recycles":     has_recycles,
+        "recycle_blocks":   recycle_blocks,
+        "units":            units,
+        "connections":      connections,
+        "streams":          streams,
+    }
+
+
+def _flowsheet_report(fs: dict, r: CaseRunResult) -> str:
+    """
+    Produce a human-readable plain-text report of the converged flowsheet.
+    Saved alongside the JSON as {case_id}_flowsheet.txt.
+    """
+    W = 60
+    bar  = "═" * W
+    line = "─" * W
+
+    solved_str = "YES" if fs["solved"] else "NO"
+    n_iter     = getattr(r.metrics, "n_iterations", "?")
+
+    has_rec    = fs.get("has_recycles", False)
+    rec_blocks = fs.get("recycle_blocks", [])
+    if has_rec and rec_blocks:
+        rec_str = "YES — " + ", ".join(
+            f"{rb['tag']}({rb['inlet_stream']}→{rb['outlet_stream']})"
+            for rb in rec_blocks)
+    elif has_rec:
+        rec_str = "YES"
+    else:
+        rec_str = "NO"
+
+    lines = [
+        bar,
+        f"FLOWSHEET REPORT — {fs['case_id']}",
+        fs["case_name"],
+        bar,
+        f"Compounds        : {', '.join(fs['compounds'])}",
+        f"Property package : {fs['property_package']}",
+        f"Solved           : {solved_str}  ({n_iter} iterations)",
+        f"Recycle streams  : {rec_str}",
+        "",
+    ]
+
+    # ── Units ─────────────────────────────────────────────────────────────────
+    lines += ["UNITS", line]
+    if fs["units"]:
+        col_tag  = max(len(u["tag"])  for u in fs["units"])
+        col_type = max(len(u["type"]) for u in fs["units"])
+        col_tag  = max(col_tag,  5)
+        col_type = max(col_type, 6)
+        lines.append(f"{'Tag':<{col_tag}}  {'Type':<{col_type}}  Parameters")
+        for u in fs["units"]:
+            param_str = "   ".join(
+                f"{k} = {v:.4g} K" if k == "T_out"
+                else f"{k} = {v:.4g} Pa" if k in ("P_out", "dP")
+                else f"{k} = {v:.4g}"
+                for k, v in u["params"].items()
+                if isinstance(v, (int, float))
+            )
+            lines.append(f"{u['tag']:<{col_tag}}  {u['type']:<{col_type}}  {param_str}")
+    else:
+        lines.append("  (no unit data — graph not available)")
+    lines.append("")
+
+    # ── Connections ───────────────────────────────────────────────────────────
+    lines += ["CONNECTIONS", line]
+    if fs["connections"]:
+        for conn in fs["connections"]:
+            lines.append("  " + "  →  ".join(str(c) for c in conn))
+    else:
+        lines.append("  (no connection data)")
+    lines.append("")
+
+    # ── Streams ───────────────────────────────────────────────────────────────
+    lines += ["STREAMS", line]
+    streams = fs.get("streams", {})
+    if streams:
+        compounds = fs["compounds"]
+        # Header
+        comp_hdrs = "  ".join(f"{c[:8]:>8}" for c in compounds)
+        lines.append(
+            f"{'Stream':<12}  {'T (°C)':>7}  {'P (bar)':>7}  "
+            f"{'Flow':>8}  {'VF':>5}  {comp_hdrs}"
+        )
+        lines.append(line)
+        for tag, s in streams.items():
+            comp_vals = "  ".join(
+                f"{s['composition'].get(c, 0.0):>8.4f}" for c in compounds)
+            lines.append(
+                f"{tag:<12}  {s['T_C']:>7.2f}  {s['P_bar']:>7.4f}  "
+                f"{s['flow_mol_s']:>8.4f}  {s['vapor_fraction']:>5.3f}  {comp_vals}"
+            )
+    else:
+        lines.append("  (no stream data — DWSIM did not converge)")
+    lines.append("")
+    lines.append(bar)
+
+    return "\n".join(lines) + "\n"
+
+
+def _execution_results_dict(case_results: list[CaseRunResult]) -> dict:
+    """
+    Serialise the final DWSIM execution result for every case.
+
+    Stream conditions (T_K, P_Pa, flow_mol_s, composition, vapor_fraction)
+    come directly from the DWSIM solver via ExecutionResult.stream_results.
+    solved=True with non-empty stream_results proves DWSIM ran and converged.
+    """
+    out: dict = {}
+    for r in case_results:
+        ex = r.final_execution
+        if ex is None:
+            out[r.case.id] = {
+                "case_id": r.case.id, "case_name": r.case.name,
+                "tier": r.case.tier, "compounds": r.case.compounds,
+                "solved": False, "stream_results": {},
+                "note": "no execution recorded",
+            }
+            continue
+
+        stream_results = {}
+        for tag, s in (getattr(ex, "stream_results", {}) or {}).items():
+            stream_results[tag] = {
+                "T_K":            round(float(s.T_K), 4),
+                "T_C":            round(float(s.T_K) - 273.15, 4),
+                "P_Pa":           round(float(s.P_Pa), 2),
+                "P_bar":          round(float(s.P_Pa) / 1e5, 5),
+                "flow_mol_s":     round(float(s.flow_mol_s), 6),
+                "vapor_fraction": round(float(getattr(s, "vapor_fraction", 0.0)), 6),
+                "composition":    {k: round(float(v), 6)
+                                   for k, v in s.composition.items()},
+            }
+
+        out[r.case.id] = {
+            "case_id":        r.case.id,
+            "case_name":      r.case.name,
+            "tier":           r.case.tier,
+            "compounds":      r.case.compounds,
+            "solved":         bool(getattr(ex, "solved", False)),
+            "solver_errors":  list(getattr(ex, "solver_errors", []) or []),
+            "stream_results": stream_results,
+        }
+    return out
+
+
 def _make_failed_result(error_msg: str):
     """Minimal PipelineResult-like object for exception cases."""
     class _FailedResult:
@@ -387,6 +911,54 @@ def _make_failed_result(error_msg: str):
     r = _FailedResult()
     r.warnings = [f"EXCEPTION: {error_msg}"]
     return r
+
+
+def find_repair_cases(
+    results_dir: str | None = None,
+    ablation_mode: str = "full_ccs",
+    min_iterations: int = 2,
+) -> list[str]:
+    """
+    Parse per-run JSON logs to find case IDs that required multiple repair
+    iterations in the given ablation mode.
+
+    These are the cases where physics/coupling/rule_store actually differentiate
+    between ablation modes — run targeted_ablation on them to see a real signal.
+
+    Parameters
+    ----------
+    results_dir    : directory containing per-run JSON files (default: results/per_run/)
+    ablation_mode  : which mode to analyse (default: "full_ccs")
+    min_iterations : minimum iteration count to include (default: 2)
+
+    Returns
+    -------
+    Sorted list of case IDs with n_iterations >= min_iterations.
+    """
+    from benchmark.logger import load_all_logs
+
+    d = results_dir or os.path.join(_RESULTS_DIR, "per_run")
+    logs = load_all_logs(d)
+    if not logs:
+        print(f"[find_repair_cases] no logs found in {d}")
+        return []
+
+    repair_cases: dict[str, int] = {}
+    for log in logs:
+        if log.get("ablation_mode") != ablation_mode:
+            continue
+        case_id  = log.get("case_id", "")
+        n_iters  = len(log.get("iterations", []))
+        # Keep the latest run for each case (logs are sorted by filename/timestamp)
+        if n_iters >= min_iterations:
+            repair_cases[case_id] = n_iters
+
+    result = sorted(repair_cases.keys())
+    print(f"[find_repair_cases] mode={ablation_mode} min_iter={min_iterations}: "
+          f"{len(result)} cases — {result}")
+    for cid, n in sorted(repair_cases.items()):
+        print(f"  {cid}: {n} iterations")
+    return result
 
 
 def ablation_table(results: dict[str, BenchmarkRunSet]) -> str:

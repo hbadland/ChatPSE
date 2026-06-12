@@ -22,7 +22,8 @@ from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from rag.retriever import Retriever
 
 # Units whose required params cannot be defaulted without some input
-_REQUIRES_ASSIGNMENT = {"Heater", "Cooler", "Pump", "Compressor", "Expander"}
+_REQUIRES_ASSIGNMENT = {"Heater", "Cooler", "Pump", "Compressor", "Expander",
+                        "ConversionReactor"}
 # Units that are fully handled by defaults + normaliser
 _DEFAULTS_ONLY       = {"Vessel", "Mixer", "Splitter"}
 
@@ -240,6 +241,28 @@ def _extract_pressures(text: str) -> list[float]:
     return sorted(set(round(p, 0) for p in pressures))
 
 
+def _extract_conversion(text: str) -> Optional[float]:
+    """Extract a reaction conversion fraction (0–1) from description text.
+
+    Matches: "X% conversion", "complete/full conversion", "equilibrium conversion".
+    Returns None if no conversion language is found.
+    """
+    # "75% conversion", "0.85 conversion"
+    m = re.search(r'(\d+(?:\.\d+)?)\s*%\s*conv', text, re.IGNORECASE)
+    if m:
+        return min(float(m.group(1)) / 100.0, 0.99)
+    m = re.search(r'conv\w*\s+of\s+(\d+(?:\.\d+)?)\s*%', text, re.IGNORECASE)
+    if m:
+        return min(float(m.group(1)) / 100.0, 0.99)
+    # "complete conversion" / "full conversion" / "100% conversion"
+    if re.search(r'\b(complete|full)\s+conv', text, re.IGNORECASE):
+        return 0.99
+    # "equilibrium" — use a conservative heuristic
+    if re.search(r'\bequilibrium\b', text, re.IGNORECASE):
+        return 0.85
+    return None
+
+
 def _parse_params_from_description(
     unit_type:      str,
     description:    str,
@@ -265,11 +288,13 @@ def _parse_params_from_description(
                           if feed_T is None or t > feed_T + 1.0]
             if candidates:
                 params["T_out"] = round(min(candidates), 2)
+                params["_desc_T_out"] = True  # sentinel: T_out came from description
         else:
             candidates = [t for t in desc_temps
                           if feed_T is None or t < feed_T - 1.0]
             if candidates:
                 params["T_out"] = round(max(candidates), 2)
+                params["_desc_T_out"] = True
 
     elif unit_type in ("Pump", "Compressor"):
         candidates = [p for p in desc_pressures
@@ -282,6 +307,18 @@ def _parse_params_from_description(
                       if feed_P is None or p < feed_P * 0.95]
         if candidates:
             params["P_out"] = round(max(candidates), 0)
+
+    elif unit_type == "ConversionReactor":
+        # Temperature: highest extracted T (reactors run hot)
+        if desc_temps:
+            params["temperature_K"] = round(max(desc_temps), 2)
+        # Pressure: highest extracted P (reactors often run elevated)
+        if desc_pressures:
+            params["pressure_Pa"] = round(max(desc_pressures), 0)
+        # Conversion fraction
+        conv = _extract_conversion(description)
+        if conv is not None:
+            params["conversion"] = conv
 
     return params
 
@@ -337,6 +374,17 @@ def _estimate_params(
     elif node.unit_type == "Expander" and "P_out" not in params:
         base = feed_P or 506_625.0
         est["P_out"] = max(round(base / 3.0, 0), 101_325.0)
+
+    elif node.unit_type == "ConversionReactor":
+        if "temperature_K" not in params:
+            # Default to feed T + 300 K (reactions are endothermic/high-T)
+            est["temperature_K"] = round((feed_T or 298.15) + 300.0, 2)
+        if "pressure_Pa" not in params:
+            est["pressure_Pa"] = round(feed_P or 101_325.0, 0)
+        if "conversion" not in params:
+            est["conversion"] = 0.90  # conservative default
+        if "reaction" not in params:
+            est["reaction"] = ""
 
     return est
 
@@ -409,11 +457,12 @@ def _feed_conditions(
 
 def _required_params(unit_type: str) -> list[str]:
     _MAP = {
-        "Heater":     ["T_out"],
-        "Cooler":     ["T_out"],
-        "Pump":       ["P_out"],
-        "Compressor": ["P_out"],
-        "Expander":   ["P_out"],
+        "Heater":            ["T_out"],
+        "Cooler":            ["T_out"],
+        "Pump":              ["P_out"],
+        "Compressor":        ["P_out"],
+        "Expander":          ["P_out"],
+        "ConversionReactor": ["temperature_K", "pressure_Pa", "conversion"],
     }
     return _MAP.get(unit_type, [])
 
@@ -439,6 +488,13 @@ def _param_constraint(
         if unit_type == "Expander" and feed_P is not None:
             return unit_label, f"must be < {feed_P:.0f} Pa (feed pressure)"
         return unit_label, "must be in range 1000–1e8 Pa"
+    if param_name == "temperature_K":
+        base = f"> {feed_T:.1f} K (feed T)" if feed_T else "in range 300–2000 K"
+        return "K", f"reactor outlet temperature, {base}"
+    if param_name == "pressure_Pa":
+        return "Pa", "reactor operating pressure, must be in range 1000–1e8 Pa"
+    if param_name == "conversion":
+        return "fraction", "fractional conversion of limiting reactant, must be 0–1"
     return "?", "must be physically reasonable"
 
 
@@ -448,17 +504,25 @@ def _validate_single_param(unit_type: str, param: str, value: float) -> list[str
         errors.append(f"T_out={value} K out of range (50–2000 K)")
     if param == "P_out" and not (100.0 < value < 1e8):
         errors.append(f"P_out={value} Pa out of range (100–1e8 Pa)")
+    if param == "temperature_K" and not (50.0 < value < 3000.0):
+        errors.append(f"temperature_K={value} K out of range (50–3000 K)")
+    if param == "pressure_Pa" and not (100.0 < value < 1e8):
+        errors.append(f"pressure_Pa={value} Pa out of range (100–1e8 Pa)")
+    if param == "conversion" and not (0.0 <= value <= 1.0):
+        errors.append(f"conversion={value} out of range (0–1)")
     return errors
 
 
 def _relevant_sentence(description: str, unit_type: str) -> str:
     """Extract the most relevant sentence from description for this unit type."""
     keywords = {
-        "Heater":     ["heat", "warm", "raise temperature", "preheat"],
-        "Cooler":     ["cool", "chill", "condense", "reduce temperature"],
-        "Pump":       ["pump", "pressurize", "raise pressure"],
-        "Compressor": ["compress", "pressurize", "compress"],
-        "Expander":   ["expand", "turbine", "let down", "reduce pressure"],
+        "Heater":            ["heat", "warm", "raise temperature", "preheat"],
+        "Cooler":            ["cool", "chill", "condense", "reduce temperature"],
+        "Pump":              ["pump", "pressurize", "raise pressure"],
+        "Compressor":        ["compress", "pressurize", "compress"],
+        "Expander":          ["expand", "turbine", "let down", "reduce pressure"],
+        "ConversionReactor": ["react", "reform", "convert", "shift", "methanat",
+                              "combust", "oxidis", "oxidiz", "conversion", "reformer"],
     }
     words = keywords.get(unit_type, [])
     sentences = re.split(r'[.;,]', description)

@@ -27,6 +27,20 @@ from ir.constraint_solver import (
 
 _solver = ConstraintSolver()
 
+# ── desc_T_out plausibility window ────────────────────────────────────────────
+# When T_out was extracted from the description (_desc_T_out sentinel), we trust
+# it only if the implied temperature rise sits within this window.  Outside it,
+# the extraction is likely wrong (too small → LLM read feed temp; too large →
+# LLM returned °C value instead of K, e.g. "80" instead of "353.15").
+_DESC_T_MIN_DELTA: float = 5.0    # K — minimum plausible rise above feed_T
+_DESC_T_MAX_DELTA: float = 200.0  # K — maximum plausible rise above feed_T
+
+
+def _desc_t_plausible(t_out: float, feed_T: float) -> bool:
+    """True when a description-extracted T_out is in the plausible operating range."""
+    delta = t_out - feed_T
+    return _DESC_T_MIN_DELTA <= delta <= _DESC_T_MAX_DELTA
+
 
 # ── Propagated stream conditions (ephemeral — not stored in IR) ───────────────
 
@@ -160,6 +174,23 @@ class GlobalConsistencyPass:
         if t_out is None or in_T is None:
             return
         t_out = float(t_out)
+
+        if node.params.get("_desc_T_out"):
+            # Tier 1 — monotonic: a heater must raise temperature by at least 1 K.
+            if t_out > in_T + 1.0 and _desc_t_plausible(t_out, in_T):
+                # Tier 2 — plausibility window passed: trust the description.
+                return
+            # Outside the plausibility window: likely extraction error — apply
+            # bubble-point correction and warn.
+            bp    = bubble_point_K(compounds, in_P or 101_325.0)
+            new_T = round((bp + 15.0) if (bp and bp > in_T) else (in_T + 30.0), 2)
+            node.params["T_out"] = new_T
+            changes.append(
+                f"CONSISTENCY[desc_T_out overridden]: {node.tag} "
+                f"T_out {t_out}→{new_T} K "
+                f"appears implausible (feed_T={in_T:.1f} K); bubble-point correction applied")
+            return
+
         if t_out > in_T:
             return
         bp    = bubble_point_K(compounds, in_P or 101_325.0)
@@ -307,30 +338,50 @@ class GlobalConsistencyPass:
                 )
                 bp = bubble_point_K(graph.compounds, in_P)
 
-                # Rule: unit feeding a Vessel must deliver T ≥ BP + margin
+                # Rule: unit feeding a Vessel must deliver T ≥ BP + margin.
+                # Two-tier _desc_T_out check: trust description only if plausible.
                 if isinstance(dst, SeparatorNode) and bp is not None:
                     if isinstance(node, HeaterNode):
                         t_out = node.params.get("T_out")
                         if t_out is not None:
-                            result = _solver.resolve(
-                                "T_out",
-                                float(t_out),
-                                [Constraint(
-                                    param    = "T_out",
-                                    priority = ConstraintPriority.PHYSICAL_FEASIBILITY,
-                                    source   = f"Vessel flash: T > BP+5 (BP={bp:.1f} K)",
-                                    min_val  = bp + 5.0,
-                                )],
+                            t_out_f = float(t_out)
+                            in_T = next(
+                                (conds[s.tag].T for s in graph.inlet_streams(unit_tag)
+                                 if s.tag in conds and conds[s.tag].T is not None),
+                                None,
                             )
-                            if abs(result.resolved_value - float(t_out)) > 0.1:
-                                new_T = round(max(result.resolved_value, bp + 15.0), 2)
-                                old   = node.params["T_out"]
-                                node.params["T_out"] = new_T
-                                tag_str = f"CONFLICT:{result.dropped_sources}" if result.conflict else "ok"
-                                changes.append(
-                                    f"CONSISTENCY[backward/{tag_str}]: {node.tag}→{dst_tag}: "
-                                    f"T_out {old}→{new_T} K "
-                                    f"(Vessel needs T > BP={bp:.1f} K)")
+                            if node.params.get("_desc_T_out"):
+                                if in_T is not None and _desc_t_plausible(t_out_f, in_T):
+                                    pass  # Trust the description
+                                else:
+                                    new_T = round(bp + 15.0, 2)
+                                    old   = node.params["T_out"]
+                                    node.params["T_out"] = new_T
+                                    feed_str = f"{in_T:.1f}" if in_T is not None else "unknown"
+                                    changes.append(
+                                        f"CONSISTENCY[desc_T_out overridden]: {node.tag}→{dst_tag}: "
+                                        f"T_out {t_out_f}→{new_T} K "
+                                        f"appears implausible (feed_T={feed_str} K); bubble-point correction applied")
+                            else:
+                                result = _solver.resolve(
+                                    "T_out",
+                                    t_out_f,
+                                    [Constraint(
+                                        param    = "T_out",
+                                        priority = ConstraintPriority.PHYSICAL_FEASIBILITY,
+                                        source   = f"Vessel flash: T > BP+5 (BP={bp:.1f} K)",
+                                        min_val  = bp + 5.0,
+                                    )],
+                                )
+                                if abs(result.resolved_value - t_out_f) > 0.1:
+                                    new_T = round(max(result.resolved_value, bp + 15.0), 2)
+                                    old   = node.params["T_out"]
+                                    node.params["T_out"] = new_T
+                                    tag_str = f"CONFLICT:{result.dropped_sources}" if result.conflict else "ok"
+                                    changes.append(
+                                        f"CONSISTENCY[backward/{tag_str}]: {node.tag}→{dst_tag}: "
+                                        f"T_out {old}→{new_T} K "
+                                        f"(Vessel needs T > BP={bp:.1f} K)")
 
                 # Rule: unit feeding a Pump must deliver liquid (T ≤ BP − 10)
                 if isinstance(dst, PumpNode) and bp is not None:
@@ -393,7 +444,25 @@ class GlobalConsistencyPass:
                 if bp is None:
                     continue
 
-                if t_out < bp + 5.0:
+                # Two-tier _desc_T_out check: trust description only if plausible.
+                if node.params.get("_desc_T_out"):
+                    in_T = next(
+                        (conds[s.tag].T for s in inlets
+                         if s.tag in conds and conds[s.tag].T is not None),
+                        None,
+                    )
+                    if in_T is not None and _desc_t_plausible(t_out, in_T):
+                        continue  # Plausibility window passed: trust the description
+                    if t_out < bp + 5.0:
+                        new_T = round(bp + 15.0, 2)
+                        old   = node.params["T_out"]
+                        node.params["T_out"] = new_T
+                        feed_str = f"{in_T:.1f}" if in_T is not None else "unknown"
+                        changes.append(
+                            f"CONSISTENCY[desc_T_out overridden]: {node.tag}→{dst_tag}: "
+                            f"T_out {old}→{new_T} K "
+                            f"appears implausible (feed_T={feed_str} K); bubble-point correction applied")
+                elif t_out < bp + 5.0:
                     new_T = round(bp + 15.0, 2)
                     old   = node.params["T_out"]
                     node.params["T_out"] = new_T

@@ -88,10 +88,31 @@ class RunMetrics:
     # Margin model snapshot (Fix 1)
     margin_snapshot: dict = field(default_factory=dict)
 
-    # Physics checks passed
+    # Physics checks passed (all severities)
     physics_checks_run:  int  = 0
     physics_checks_passed: int = 0
     physics_check_details: list[dict] = field(default_factory=list)
+
+    # Ground-truth comparison (validation tier only)
+    match_score:      float = 0.0   # 0.0–1.0 from compare_flowsheets()
+    validation_pass:  bool  = False  # overall_pass from compare_flowsheets()
+    failure_modes:    dict  = field(default_factory=dict)  # structured failure categories
+    mape_T_pct:       float = 0.0   # mean |ΔT/T_ref|×100 across matched streams
+
+    # Reference-match scoring (stricter ±5 K / ±5% / ±0.05 thresholds)
+    has_reference:         bool  = False  # case had a reference_file and comparison ran
+    reference_mape_T:      float = 0.0   # mean |ΔT/T_ref|×100 at ±5 K threshold
+    reference_mape_P:      float = 0.0   # mean |ΔP/P_ref|×100 at ±5% threshold
+    reference_mape_vf:     float = 0.0   # mean |ΔVF| at ±0.05 threshold
+    reference_match_pass:  bool  = False  # all streams within T/P/VF thresholds
+
+    # Physics checks — CRITICAL severity only
+    # Only CRITICAL failures count against the critical_physics_pass_rate.
+    # WARNING/INFO failures are surfaced in physics_check_details but do not
+    # affect this rate, so a pass/fail decision on thermodynamic correctness
+    # is not diluted by structural/presence checks.
+    critical_physics_checks_run:    int = 0
+    critical_physics_checks_passed: int = 0
 
     @property
     def explore_exploit_ratio(self) -> Optional[float]:
@@ -106,10 +127,17 @@ class RunMetrics:
             return 1.0
         return self.physics_checks_passed / self.physics_checks_run
 
+    @property
+    def critical_physics_pass_rate(self) -> float:
+        if self.critical_physics_checks_run == 0:
+            return 1.0
+        return self.critical_physics_checks_passed / self.critical_physics_checks_run
+
     def to_dict(self) -> dict:
         d = {k: v for k, v in self.__dict__.items()}
-        d["explore_exploit_ratio"] = self.explore_exploit_ratio
-        d["physics_check_pass_rate"] = self.physics_check_pass_rate
+        d["explore_exploit_ratio"]        = self.explore_exploit_ratio
+        d["physics_check_pass_rate"]      = self.physics_check_pass_rate
+        d["critical_physics_pass_rate"]   = self.critical_physics_pass_rate
         return d
 
 
@@ -397,10 +425,11 @@ class AggregateMetrics:
     ablation_mode:        str
 
     # Core rates
-    success_rate:         float = 0.0
-    valid_ir_rate:        float = 0.0
-    valid_json_rate:      float = 0.0
-    physics_pass_rate:    float = 0.0
+    success_rate:                float = 0.0
+    valid_ir_rate:               float = 0.0
+    valid_json_rate:             float = 0.0
+    physics_pass_rate:           float = 0.0
+    critical_physics_pass_rate:  float = 0.0
 
     # Core averages
     mean_iterations:      float = 0.0
@@ -424,6 +453,17 @@ class AggregateMetrics:
     # Robustness (perturbation tier only)
     recovery_rate:        Optional[float] = None
 
+    # Validation tier — ground-truth comparison (archive tolerances)
+    mean_match_score:     float = 0.0   # mean over cases that had a reference
+    pct_validation_pass:  float = 0.0   # fraction of validation cases that passed
+    mean_mape_T_pct:      float = 0.0   # mean temperature MAPE across compared cases
+
+    # Reference-match scoring (strict ±5 K / ±5% / ±0.05 thresholds)
+    ref_match_rate:   float = 0.0   # fraction of reference cases passing all T+P checks
+    mean_ref_mape_T:  float = 0.0   # mean temperature MAPE at strict threshold
+    mean_ref_mape_P:  float = 0.0   # mean pressure MAPE at strict threshold
+    mean_ref_mape_vf: float = 0.0   # mean vapour-fraction MAE at strict threshold
+
     # CCS-specific
     mean_recurrence_rate:               float = 0.0
     mean_steps_to_consistency:          float = 0.0
@@ -443,6 +483,7 @@ class AggregateMetrics:
             f"  valid_ir_rate   : {self.valid_ir_rate:.1%}",
             f"  valid_json_rate : {self.valid_json_rate:.1%}",
             f"  physics_pass    : {self.physics_pass_rate:.1%}",
+            f"  crit_phys_pass  : {self.critical_physics_pass_rate:.1%}",
             f"  mean_iterations : {self.mean_iterations:.2f}",
             f"  mean_sim_calls  : {self.mean_sim_calls:.2f}",
             f"  mean_candidates : {self.mean_candidates:.1f}",
@@ -454,6 +495,19 @@ class AggregateMetrics:
         ]
         if self.recovery_rate is not None:
             lines.append(f"  recovery_rate   : {self.recovery_rate:.1%}")
+        if self.mean_match_score > 0.0 or self.pct_validation_pass > 0.0:
+            lines += [
+                f"  mean_match_score: {self.mean_match_score:.1%}",
+                f"  validation_pass : {self.pct_validation_pass:.1%}",
+                f"  mean_mape_T_pct : {self.mean_mape_T_pct:.2f}%",
+            ]
+        if self.ref_match_rate > 0.0 or self.mean_ref_mape_T > 0.0:
+            lines += [
+                f"  ref_match_rate  : {self.ref_match_rate:.1%}",
+                f"  ref_mape_T      : {self.mean_ref_mape_T:.2f}%",
+                f"  ref_mape_P      : {self.mean_ref_mape_P:.2f}%",
+                f"  ref_mape_vf     : {self.mean_ref_mape_vf:.4f}",
+            ]
         lines += [
             f"  recurrence_rate : {self.mean_recurrence_rate:.3f}",
             f"  osc_recur_rate  : {self.mean_oscillation_recurrence_rate:.3f}",
@@ -462,6 +516,37 @@ class AggregateMetrics:
             f"  err_per_cand    : {self.mean_error_reduction_per_candidate:.3f}",
         ]
         return "\n".join(lines)
+
+
+def _ref_match_aggregate(metrics: list[RunMetrics]) -> dict:
+    """
+    Compute reference-match aggregate fields from a list of RunMetrics.
+
+    Only cases where has_reference=True are included in the averages, so
+    mixed batches (sanity + validation) don't dilute the rates with zeros.
+    """
+    ref_cases = [m for m in metrics if m.has_reference]
+    if not ref_cases:
+        return {
+            "ref_match_rate":   0.0,
+            "mean_ref_mape_T":  0.0,
+            "mean_ref_mape_P":  0.0,
+            "mean_ref_mape_vf": 0.0,
+        }
+
+    def _mean(vals):
+        return statistics.mean(vals) if vals else 0.0
+
+    t_vals  = [m.reference_mape_T  for m in ref_cases if m.reference_mape_T  > 0.0]
+    p_vals  = [m.reference_mape_P  for m in ref_cases if m.reference_mape_P  > 0.0]
+    vf_vals = [m.reference_mape_vf for m in ref_cases]
+
+    return {
+        "ref_match_rate":   sum(m.reference_match_pass for m in ref_cases) / len(ref_cases),
+        "mean_ref_mape_T":  round(_mean(t_vals),  2),
+        "mean_ref_mape_P":  round(_mean(p_vals),  2),
+        "mean_ref_mape_vf": round(_mean(vf_vals), 4),
+    }
 
 
 def aggregate(
@@ -497,7 +582,8 @@ def aggregate(
         success_rate        = rate([m.success for m in metrics]),
         valid_ir_rate       = rate([m.valid_ir for m in metrics]),
         valid_json_rate     = rate([m.valid_json for m in metrics]),
-        physics_pass_rate   = mean([m.physics_check_pass_rate for m in metrics]),
+        physics_pass_rate          = mean([m.physics_check_pass_rate for m in metrics]),
+        critical_physics_pass_rate = mean([m.critical_physics_pass_rate for m in metrics]),
         mean_iterations     = mean([m.n_iterations for m in metrics]),
         mean_sim_calls      = mean([m.n_sim_calls for m in metrics]),
         mean_llm_calls      = mean([m.n_llm_calls for m in metrics]),
@@ -513,6 +599,16 @@ def aggregate(
         pct_bip_injected    = rate([m.bip_injected for m in metrics]),
         recovery_rate       = rate([m.recovery_success for m in pert_metrics])
                               if pert_metrics else None,
+        mean_match_score    = mean([m.match_score for m in metrics
+                                    if m.match_score > 0.0]) if any(
+                                    m.match_score > 0.0 for m in metrics) else 0.0,
+        pct_validation_pass = rate([m.validation_pass for m in metrics
+                                    if m.match_score > 0.0]) if any(
+                                    m.match_score > 0.0 for m in metrics) else 0.0,
+        mean_mape_T_pct     = mean([m.mape_T_pct for m in metrics
+                                    if m.mape_T_pct > 0.0]) if any(
+                                    m.mape_T_pct > 0.0 for m in metrics) else 0.0,
+        **_ref_match_aggregate(metrics),
         mean_recurrence_rate               = mean([m.error_recurrence_rate for m in metrics]),
         mean_steps_to_consistency          = mean([m.steps_to_full_consistency for m in metrics]),
         mean_error_reduction_per_candidate = mean([m.error_reduction_per_candidate for m in metrics]),

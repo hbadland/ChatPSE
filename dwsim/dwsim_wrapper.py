@@ -50,15 +50,18 @@ from DWSIM.Automation import Automation3
 from DWSIM.Interfaces.Enums.GraphicObjects import ObjectType
 
 _UNIT_TYPE_MAP = {
-    "Heater":     ObjectType.Heater,
-    "Cooler":     ObjectType.Cooler,
-    "Vessel":     ObjectType.Vessel,
-    "Mixer":      ObjectType.Mixer,
-    "Splitter":   ObjectType.Splitter,
-    "Compressor": ObjectType.Compressor,
-    "Expander":   ObjectType.Expander,
-    "Pump":       ObjectType.Pump,
-    "MaterialStream": ObjectType.MaterialStream,
+    "Heater":            ObjectType.Heater,
+    "Cooler":            ObjectType.Cooler,
+    "Vessel":            ObjectType.Vessel,
+    "Mixer":             ObjectType.Mixer,
+    "Splitter":          ObjectType.Splitter,
+    "Compressor":        ObjectType.Compressor,
+    "Expander":          ObjectType.Expander,
+    "Pump":              ObjectType.Pump,
+    "MaterialStream":    ObjectType.MaterialStream,
+    # Discovered at add_unit time when None; see add_unit().
+    "ConversionReactor": getattr(ObjectType, "OT_React_Conversion",
+                          getattr(ObjectType, "React_Conversion", None)),
 }
 
 # .NET reflection property accessors (cached on first use)
@@ -80,6 +83,61 @@ def _get_phases(obj):
     if _PH_PROP is None:
         _PH_PROP = obj.GetType().GetProperty("Phases")
     return _PH_PROP.GetValue(obj)
+
+
+def _parse_reaction_stoich(reaction_str: str) -> "tuple[dict, dict]":
+    """Parse 'A + 2B → 3C + D' into ({A:1, B:2}, {C:3, D:1}).
+
+    Accepts → ⇌ = -> as arrow.  Coefficient may precede name with a space
+    ('3 H2') or be adjacent ('3H2').  Returns empty dicts on parse failure.
+    """
+    import re
+    s = reaction_str.replace("→", "->").replace("⇌", "->").replace("=", "->")
+    if "->" not in s:
+        return {}, {}
+    lhs, rhs = s.split("->", 1)
+
+    def _side(text: str) -> dict:
+        result: dict = {}
+        for token in re.split(r'\s*\+\s*', text.strip()):
+            token = token.strip()
+            if not token:
+                continue
+            # "3 H2" or "3.5 CO2"
+            m = re.match(r'^(\d+(?:\.\d+)?)\s+(.+)$', token)
+            if m:
+                result[m.group(2).strip()] = float(m.group(1))
+                continue
+            # "3H2" (digit-letter boundary, no space)
+            m2 = re.match(r'^(\d+(?:\.\d+)?)([A-Za-z].*)$', token)
+            if m2:
+                result[m2.group(2).strip()] = float(m2.group(1))
+                continue
+            result[token] = 1.0
+        return result
+
+    return _side(lhs), _side(rhs)
+
+
+def _add_stoich(stoich_type, comps_list, comp_name: str, coeff: float) -> None:
+    """Append a ReactionStoichiometry entry to comps_list via reflection."""
+    try:
+        stoich_obj = System.Activator.CreateInstance(stoich_type)
+        st = stoich_type
+        for fname, val in [
+            ("CompName",    System.String(comp_name)),
+            ("StoichCoeff", System.Double(coeff)),
+            ("IsReactant",  System.Boolean(coeff < 0)),
+        ]:
+            f = st.GetField(fname)
+            p = st.GetProperty(fname)
+            if f is not None:
+                f.SetValue(stoich_obj, val)
+            elif p is not None and p.CanWrite:
+                p.SetValue(stoich_obj, val)
+        comps_list.Add(stoich_obj)
+    except Exception:
+        pass
 
 
 class DWSIMFlowsheet:
@@ -105,12 +163,14 @@ class DWSIMFlowsheet:
         if name not in self._property_packages:
             pkg = self._sim.CreateAndAddPropertyPackage(name)
             self._property_packages[name] = pkg
+            # Note: FlashAlgorithm on the property package is not a settable enum
+            # in this DWSIM version.  Flash algorithm selection is done per-Vessel
+            # via PreferredFlashAlgorithmTag (see set_vessel).
 
     def set_unit_property_package(self, unit_tag: str, pp_name: str) -> None:
         """Assign a property package to a single unit operation."""
         if pp_name not in self._property_packages:
-            pkg = self._sim.CreateAndAddPropertyPackage(pp_name)
-            self._property_packages[pp_name] = pkg
+            self.set_property_package(pp_name)
         obj = self._sim.GetFlowsheetSimulationObject(unit_tag)
         obj.PropertyPackage = self._property_packages[pp_name]
 
@@ -234,6 +294,16 @@ class DWSIMFlowsheet:
 
     def add_unit(self, tag: str, unit_type: str, x: int = 0, y: int = 0) -> None:
         ot = _UNIT_TYPE_MAP.get(unit_type)
+        # ConversionReactor ObjectType varies by DWSIM build — discover at runtime.
+        if ot is None and unit_type == "ConversionReactor":
+            for attr_name in dir(ObjectType):
+                if "react" in attr_name.lower() and "conv" in attr_name.lower():
+                    ot = getattr(ObjectType, attr_name, None)
+                    if ot is not None:
+                        _UNIT_TYPE_MAP["ConversionReactor"] = ot  # cache for next call
+                        print(f"  [DWSIM] ConversionReactor ObjectType discovered: {attr_name}",
+                              flush=True, file=sys.stderr)
+                        break
         if ot is None:
             raise ValueError(f"Unknown unit type '{unit_type}'. Valid: {list(_UNIT_TYPE_MAP)}")
         self._sim.AddObject(ot, x, y, tag)
@@ -287,6 +357,36 @@ class DWSIMFlowsheet:
     def set_vessel(self, tag: str, dP: float = 0.0) -> None:
         obj = self._sim.GetFlowsheetSimulationObject(tag)
         obj.SetPropertyValue("PROP_SEP_0", float(dP))
+
+        # Force NestedLoops (Rachford-Rice) flash on this Vessel.
+        # PreferredFlashAlgorithmTag is a string property on the Vessel object;
+        # it takes priority over the property package's default algorithm.
+        # NestedLoops is more robust than BostonBrittMainProperty for polar VLE.
+        _target_tag = "NestedLoops"
+        try:
+            # Read current value first so we can log what DWSIM defaults to.
+            _current = getattr(obj, "PreferredFlashAlgorithmTag", "<no attr>")
+            print(f"  [DWSIM] Vessel {tag} PreferredFlashAlgorithmTag "
+                  f"before={_current!r}", flush=True, file=sys.stderr)
+            # Try direct attribute assignment first.
+            obj.PreferredFlashAlgorithmTag = _target_tag
+            print(f"  [DWSIM] Vessel {tag} PreferredFlashAlgorithmTag "
+                  f"→ {_target_tag!r} (direct)", flush=True, file=sys.stderr)
+        except Exception as _direct_err:
+            # Fall back to reflection if direct assignment raises.
+            try:
+                t    = obj.GetType()
+                prop = t.GetProperty("PreferredFlashAlgorithmTag")
+                if prop is not None and prop.CanWrite:
+                    prop.SetValue(obj, _target_tag)
+                    print(f"  [DWSIM] Vessel {tag} PreferredFlashAlgorithmTag "
+                          f"→ {_target_tag!r} (reflection)", flush=True, file=sys.stderr)
+                else:
+                    print(f"  [DWSIM] Vessel {tag} PreferredFlashAlgorithmTag "
+                          f"not writable ({_direct_err})", flush=True, file=sys.stderr)
+            except Exception as _refl_err:
+                print(f"  [DWSIM] Vessel {tag} flash tag not set "
+                      f"({_direct_err}; {_refl_err})", flush=True, file=sys.stderr)
 
     def set_splitter(self, tag: str, split_fractions: dict[str, float],
                      dP: float = 0.0) -> None:
@@ -349,6 +449,285 @@ class DWSIMFlowsheet:
         t.GetProperty("AdiabaticEfficiency").SetValue(
             obj, float(efficiency * 100.0))
 
+    def set_conversion_reactor(self, tag: str, temperature_K: float,
+                               pressure_Pa: float, conversion: float,
+                               reaction: str = "") -> None:
+        """Configure a DWSIM conversion reactor (OT_React_Conversion).
+
+        Sets outlet temperature, pressure drop to zero (feed pressure maintained),
+        and wires up a conversion reaction via the flowsheet reaction manager.
+
+        temperature_K : reactor outlet temperature [K]
+        pressure_Pa   : reactor operating pressure [Pa] (used only for logging;
+                        DWSIM conversion reactors maintain feed pressure by default)
+        conversion    : fractional conversion of limiting reactant (0–1)
+        reaction      : stoichiometry string, e.g. "CH4 + H2O → CO + 3H2"
+        """
+        obj    = self._sim.GetFlowsheetSimulationObject(tag)
+        t_type = obj.GetType()
+
+        # ── Temperature ───────────────────────────────────────────────────────
+        # Try OutletTemperature (Nullable<Double>) then Temperature (Double)
+        _set_ok = False
+        for prop_name in ("OutletTemperature", "Temperature"):
+            prop = t_type.GetProperty(prop_name)
+            if prop is not None and prop.CanWrite:
+                try:
+                    prop.SetValue(obj, System.Nullable[System.Double](float(temperature_K)))
+                    _set_ok = True
+                    break
+                except Exception:
+                    try:
+                        prop.SetValue(obj, System.Double(float(temperature_K)))
+                        _set_ok = True
+                        break
+                    except Exception:
+                        pass
+        if not _set_ok:
+            print(f"  [DWSIM] ConversionReactor {tag}: could not set OutletTemperature",
+                  flush=True, file=sys.stderr)
+
+        # ── Pressure drop → 0 (preserves feed pressure) ───────────────────────
+        for prop_name in ("PressureDrop", "DeltaP"):
+            prop = t_type.GetProperty(prop_name)
+            if prop is not None and prop.CanWrite:
+                try:
+                    prop.SetValue(obj, System.Double(0.0))
+                    break
+                except Exception:
+                    pass
+
+        # ── Reaction setup ────────────────────────────────────────────────────
+        rxn_id = self._setup_conversion_reaction(tag, reaction, conversion)
+        if rxn_id is None:
+            print(
+                f"  [DWSIM] ConversionReactor {tag}: reaction setup failed — "
+                f"T={temperature_K:.1f} K and P_drop=0 set; conversion not applied. "
+                "Flowsheet may not solve correctly.",
+                flush=True, file=sys.stderr)
+            return
+
+        # Add reaction ID to reactor's Reactions list
+        for list_prop in ("Reactions", "ReactionsIDs", "ReactionsList"):
+            prop = t_type.GetProperty(list_prop)
+            if prop is not None:
+                rxn_list = prop.GetValue(obj)
+                if rxn_list is not None:
+                    try:
+                        rxn_list.Add(System.String(rxn_id))
+                        break
+                    except Exception:
+                        pass
+
+        # Set per-reaction conversion in ReactionConversions dict
+        for dict_prop in ("ReactionConversions", "Conversions", "ReactionConversionsDict"):
+            prop = t_type.GetProperty(dict_prop)
+            if prop is not None:
+                conv_dict = prop.GetValue(obj)
+                if conv_dict is not None:
+                    try:
+                        conv_dict[System.String(rxn_id)] = System.Double(float(conversion))
+                        print(
+                            f"  [DWSIM] ConversionReactor {tag}: "
+                            f"conversion={conversion:.3f} set for reaction {rxn_id[:8]}…",
+                            flush=True, file=sys.stderr)
+                        break
+                    except Exception:
+                        pass
+
+    def _setup_conversion_reaction(self, reactor_tag: str,
+                                   reaction_str: str,
+                                   conversion: float) -> "Optional[str]":
+        """Create and register a conversion reaction in the flowsheet reaction manager.
+
+        Returns the reaction GUID string, or None if the DWSIM reaction API is
+        unavailable on this build (T/P will still be set correctly).
+        """
+        try:
+            rxn_id = str(System.Guid.NewGuid())
+
+            # Locate the Reaction class by searching loaded assemblies
+            rxn_type = None
+            stoich_type = None
+            search = [
+                ("DWSIM.Thermodynamics.Reactions.Reaction",
+                 "DWSIM.Thermodynamics.Reactions.ReactionStoichiometry"),
+                ("DWSIM.SharedClasses.Reactions.Reaction",
+                 "DWSIM.SharedClasses.Reactions.ReactionStoichiometry"),
+                ("DWSIM.UnitOperations.Reactions.Reaction",
+                 "DWSIM.UnitOperations.Reactions.ReactionStoichiometry"),
+            ]
+            for rxn_name, stoich_name in search:
+                for asm in System.AppDomain.CurrentDomain.GetAssemblies():
+                    try:
+                        rt = asm.GetType(rxn_name)
+                        st = asm.GetType(stoich_name)
+                        if rt is not None:
+                            rxn_type   = rt
+                            stoich_type = st
+                            break
+                    except Exception:
+                        pass
+                if rxn_type is not None:
+                    break
+
+            if rxn_type is None:
+                return None
+
+            rxn_obj = System.Activator.CreateInstance(rxn_type)
+
+            # Set ID and name
+            for pname, val in [("ID",   System.String(rxn_id)),
+                                ("Tag",  System.String(f"Rxn_{reactor_tag}")),
+                                ("Name", System.String(f"Rxn_{reactor_tag}"))]:
+                p = rxn_type.GetProperty(pname)
+                if p is not None and p.CanWrite:
+                    try:
+                        p.SetValue(rxn_obj, val)
+                    except Exception:
+                        pass
+
+            # Set reaction type to Conversion
+            for pname in ("ReactionType", "RxnType", "Type"):
+                p = rxn_type.GetProperty(pname)
+                if p is not None and p.CanWrite:
+                    try:
+                        rtype = p.PropertyType
+                        for enum_name in ("Conversion", "ConversionReaction", "Kinetic"):
+                            try:
+                                p.SetValue(rxn_obj,
+                                           System.Enum.Parse(rtype, enum_name))
+                                break
+                            except Exception:
+                                pass
+                        break
+                    except Exception:
+                        pass
+
+            # Parse stoichiometry and add components
+            if reaction_str and stoich_type is not None:
+                reactants, products = _parse_reaction_stoich(reaction_str)
+                comp_lower = {c.lower(): c for c in self._compounds}
+                comps_prop = rxn_type.GetProperty("Components")
+                if comps_prop is not None:
+                    comps_list = comps_prop.GetValue(rxn_obj)
+                    for formula, coeff in reactants.items():
+                        name = comp_lower.get(formula.lower(), formula)
+                        _add_stoich(stoich_type, comps_list, name, -abs(coeff))
+                    for formula, coeff in products.items():
+                        name = comp_lower.get(formula.lower(), formula)
+                        _add_stoich(stoich_type, comps_list, name, abs(coeff))
+
+            # Register reaction with the flowsheet
+            sim_type = self._sim.GetType()
+            for coll_name in ("Reactions", "AvailableReactions", "MasterReactionTable"):
+                prop = sim_type.GetProperty(coll_name)
+                if prop is not None:
+                    coll = prop.GetValue(self._sim)
+                    if coll is not None:
+                        try:
+                            coll.Add(rxn_obj)
+                            return rxn_id
+                        except Exception:
+                            try:
+                                coll[System.String(rxn_id)] = rxn_obj
+                                return rxn_id
+                            except Exception:
+                                pass
+            return None
+
+        except Exception as exc:
+            print(f"  [DWSIM] _setup_conversion_reaction for {reactor_tag}: {exc}",
+                  flush=True, file=sys.stderr)
+            return None
+
+    def add_recycle_block(self, tag: str, inlet_stream: str,
+                          outlet_stream: str, tol: float = 1e-4) -> None:
+        """Add a DWSIM Recycle convergence block between two tear-stream endpoints.
+
+        inlet_stream  : tag of the calculated stream (outlet of downstream unit)
+        outlet_stream : tag of the assumed/initial stream (inlet of upstream unit)
+        tol           : convergence tolerance applied to T, P, and flow
+
+        Uses ObjectType.OT_Recycle when available; falls back to assembly
+        reflection searching for any class with 'recycle' in its name.
+        """
+        import System
+
+        # ── 1. Add the recycle block object ───────────────────────────────────
+        recycle_ot = None
+        for attr_name in dir(ObjectType):
+            if "recycle" in attr_name.lower():
+                candidate = getattr(ObjectType, attr_name, None)
+                if candidate is not None:
+                    recycle_ot = candidate
+                    break
+
+        if recycle_ot is not None:
+            self._sim.AddObject(recycle_ot, 0, 0, tag)
+        else:
+            # Reflection fallback: search all loaded assemblies for a Recycle class.
+            recycle_cls = None
+            for assembly in System.AppDomain.CurrentDomain.GetAssemblies():
+                try:
+                    matched = [t for t in assembly.GetTypes()
+                               if "recycle" in t.Name.lower()
+                               and t.IsClass and not t.IsAbstract]
+                except Exception:
+                    continue
+                if matched:
+                    recycle_cls = matched[0]
+                    break
+            if recycle_cls is None:
+                raise RuntimeError(
+                    "DWSIM Recycle class not found in any loaded assembly. "
+                    "Ensure DWSIM.UnitOperations.dll is referenced.")
+            instance = System.Activator.CreateInstance(recycle_cls)
+            for pname in ("Tag", "ComponentName", "Name"):
+                p = recycle_cls.GetProperty(pname)
+                if p is not None and p.CanWrite:
+                    p.SetValue(instance, System.String(tag))
+                    break
+            fs_type = self._sim.GetType()
+            added = False
+            for mname in ("AddSimulationObject", "AddFlowsheetObject"):
+                for mi in fs_type.GetMethods():
+                    if mi.Name == mname:
+                        try:
+                            mi.Invoke(self._sim, [instance])
+                            added = True
+                            break
+                        except Exception:
+                            pass
+                if added:
+                    break
+            if not added:
+                raise RuntimeError(
+                    f"Could not register Recycle block '{tag}' with the flowsheet.")
+
+        # ── 2. Set convergence tolerances (best-effort; try all known names) ──
+        obj = self._sim.GetFlowsheetSimulationObject(tag)
+        if obj is not None:
+            t_type = obj.GetType()
+            for pname in ("ConvergenceTolerance", "Tolerance",
+                          "TemperatureTolerance", "PressureTolerance",
+                          "FlowTolerance", "MaximumResidual"):
+                prop = t_type.GetProperty(pname)
+                if prop is not None and prop.CanWrite:
+                    try:
+                        prop.SetValue(obj, System.Double(tol))
+                    except Exception:
+                        pass
+
+        # ── 3. Wire streams through the block ─────────────────────────────────
+        inlet_go   = self._get_graphic_object(inlet_stream)
+        outlet_go  = self._get_graphic_object(outlet_stream)
+        recycle_go = self._get_graphic_object(tag)
+        # calculated stream → recycle block inlet
+        self._sim.ConnectObjects(inlet_go,   recycle_go, 0, 0)
+        # recycle block outlet → assumed/init stream
+        self._sim.ConnectObjects(recycle_go, outlet_go,  0, 0)
+
     # ── Solve & read ──────────────────────────────────────────────────────────
 
     def solve(self, timeout: int = 120) -> dict:
@@ -382,10 +761,13 @@ class DWSIMFlowsheet:
 
                 solved = bool(self._sim.Solved)
 
-                # CalculateFlowsheet() returns no error list; when unsolved,
-                # harvest error messages from individual unit operation objects.
-                if not solved and not errors:
+                # Always harvest per-unit ErrorMessage so we know which unit
+                # operation failed and why — not just a generic "did not converge".
+                # This runs even when CalculateFlowsheet2 already returned errors,
+                # because that list is often just "Object X error" with no detail.
+                if not solved:
                     go = self._sim.GraphicObjects
+                    unit_msgs: list[str] = []
                     for key in go.Keys:
                         gobj = go[key]
                         if str(gobj.ObjectType) == "MaterialStream":
@@ -394,10 +776,16 @@ class DWSIMFlowsheet:
                             obj = self._sim.GetFlowsheetSimulationObject(
                                 str(gobj.Tag))
                             msg = str(getattr(obj, "ErrorMessage", None) or "")
-                            if msg and msg.lower() not in ("", "none"):
-                                errors.append(f"{gobj.Tag}: {msg}")
+                            if msg and msg.lower() not in ("", "none", "null"):
+                                unit_msgs.append(f"{gobj.Tag}: {msg}")
                         except Exception:
                             pass
+                    # Prepend unit-level messages so the classifier sees them first.
+                    # Deduplicate against anything CalculateFlowsheet2 already added.
+                    existing = {m.lower() for m in errors}
+                    for m in unit_msgs:
+                        if m.lower() not in existing:
+                            errors.insert(0, m)
                 r = {"solved": solved, "errors": errors}
                 go = self._sim.GraphicObjects
                 for key in go.Keys:
@@ -470,4 +858,19 @@ class DWSIMFlowsheet:
         except Exception:
             composition = {n: 0.0 for n in self._compounds}
 
-        return {"T_K": T, "P_Pa": P, "flow_mol_s": flow, "composition": composition}
+        # Read vapor phase mole fraction from Phase[1].Properties.molarfraction
+        vapor_fraction = 0.0
+        try:
+            phases = _get_phases(obj)
+            ph1 = phases[1]
+            ph1_pp_prop = ph1.GetType().GetProperty("Properties")
+            ph1_pp = ph1_pp_prop.GetValue(ph1)
+            vf_prop = ph1_pp.GetType().GetProperty("molarfraction")
+            if vf_prop is not None:
+                vf = vf_prop.GetValue(ph1_pp)
+                vapor_fraction = float(vf) if vf is not None else 0.0
+        except Exception:
+            pass
+
+        return {"T_K": T, "P_Pa": P, "flow_mol_s": flow, "composition": composition,
+                "vapor_fraction": vapor_fraction}
