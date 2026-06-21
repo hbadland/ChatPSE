@@ -21,6 +21,8 @@ import time
 import traceback
 from typing import Annotated, Any, Optional
 
+import networkx as nx
+
 # ── LangGraph availability ────────────────────────────────────────────────────
 try:
     from langgraph.graph import StateGraph, END
@@ -53,7 +55,9 @@ from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
 from agents.rule_store import FailureRuleStore, RULES_PATH
 from ir import FlowsheetGraph, normalise, validate, to_dwsim
 from ir.consistency import GlobalConsistencyPass
+from ir.graph import SeparatorNode, EdgeIR
 from ir.margin_model import get_global_margin_model
+from ir.types import ErrorType as _ErrorType
 from ir.types import RepairStrategy as _RepairStrategy
 from rag.retriever import Retriever
 
@@ -89,10 +93,17 @@ class PipelineState(TypedDict):
     # ── Stage 1 ───────────────────────────────────────────────────────────────
     sem_units:      Optional[Any]   # SemanticUnits
     sem_topo:       Optional[Any]   # SemanticTopology
+    # Original is_recycle/recycle_target per stream tag, captured BEFORE the
+    # recycle guards mutate the SemanticStreams.  Used by topology_repair (Fix 2)
+    # to repropagate a recycle flag that a guard dropped.
+    recycle_origin: dict            # tag → {is_recycle, recycle_target, dropped_by}
 
     # ── Stage 2 ───────────────────────────────────────────────────────────────
     ir_graph:       Optional[Any]   # FlowsheetGraph
     ir_report:      Optional[Any]   # ValidationReport
+    # Streams referencing a unit tag absent from the unit list (Fix 3).
+    # Not deterministically repairable — flagged and routed to the LLM repair.
+    missing_units:  list[dict]      # [{stream, missing_tag, role}]
 
     # ── Stage 3 ───────────────────────────────────────────────────────────────
     dwsim_json:     Optional[dict]
@@ -128,7 +139,18 @@ def _route_stage1(state: PipelineState) -> str:
 
 
 def _route_validate(state: PipelineState) -> str:
-    return END if state["outcome"] == "INVALID_IR" else "thermo"
+    outcome = state["outcome"]
+    if outcome == "INVALID_IR":
+        return END
+    if outcome == "INVALID_TOPOLOGY":
+        return "topology_repair"
+    return "thermo"
+
+
+def _route_topology_repair(state: PipelineState) -> str:
+    # TOPO_OK → graph is now valid, continue normally; otherwise hand off to the
+    # LLM repair node (unfixed deterministic patterns, or Fix-3 missing units).
+    return "thermo" if state["outcome"] == "TOPO_OK" else "repair"
 
 
 def _route_thermo(state: PipelineState) -> str:
@@ -137,6 +159,154 @@ def _route_thermo(state: PipelineState) -> str:
 
 def _route_execute(state: PipelineState) -> str:
     return END if state["outcome"] in ("PASS", "HUMAN", "MAX_ITER") else "repair"
+
+
+# ── Deterministic topology-repair helpers (no LLM, pure, unit-testable) ────────
+#
+# Each helper takes a FlowsheetGraph (and supporting data) and returns a change
+# log.  Fix 1 and Fix 2 mutate the graph in place; Fix 3 is detection-only.
+# They are deliberately module-level so they can be exercised directly with a
+# hand-built graph — without LangGraph, DWSIM, or an LLM.
+
+# Validation evidence fragments that mark a *repairable* topology pattern.
+_VESSEL_OUTLET_MARKERS = (
+    "Vessel must have exactly 2 outlets",
+    "Vessel needs ≥2 outlet(s)",
+)
+_CYCLE_MARKER = "Cycle detected in non-recycle streams"
+
+
+def _is_vessel_outlet_issue(issue: Any) -> bool:
+    """True when the issue is a Vessel that is missing one of its two outlets."""
+    err = issue.error
+    if err.error_type != _ErrorType.INVALID_TOPOLOGY:
+        return False
+    return any(m in err.evidence for m in _VESSEL_OUTLET_MARKERS)
+
+
+def _is_cycle_issue(issue: Any) -> bool:
+    err = issue.error
+    return (err.error_type == _ErrorType.INVALID_TOPOLOGY
+            and _CYCLE_MARKER in err.evidence)
+
+
+def _repair_vessel_outlets(graph: FlowsheetGraph) -> list[str]:
+    """
+    Fix 1 — add the missing phase outlet to any Vessel that has exactly one.
+
+    The missing phase is read from the existing outlet's PORT SPEC (port 0 =
+    vapour, port 1 = liquid): if the existing outlet is the vapour port, add the
+    liquid port, and vice versa.  The new outlet is a real connected terminal
+    product stream (src = vessel, dst = None) — never a dangling port — which
+    to_dwsim serialises as a single [vessel, stream, port, 0] connection and
+    which is skipped by the mass-balance check (Vessels are excluded there).
+
+    Idempotent: a Vessel that does not have exactly one outlet is left untouched,
+    so re-entering after the fix (which yields two outlets) is a no-op.
+    """
+    changes: list[str] = []
+    existing_tags = set(graph.stream_tags())
+    for node in graph.units():
+        if not isinstance(node, SeparatorNode):
+            continue
+        outlets = graph.outlet_streams(node.tag)
+        if len(outlets) != 1:
+            continue  # 0 outlets or already-repaired 2 outlets → not our case
+
+        existing = outlets[0]
+        existing_phase = node.outlet_phase(existing.src_port)  # per port spec
+        if existing_phase == "vapour":
+            missing_port, missing_phase = 1, "liquid"
+        else:
+            missing_port, missing_phase = 0, "vapour"
+
+        # Idempotency guard: never duplicate a port that is already present.
+        if any(s.src_port == missing_port for s in outlets):
+            continue
+
+        new_tag = f"{node.tag}_{missing_phase.upper()}OUT"
+        _n = 1
+        while new_tag in existing_tags:
+            _n += 1
+            new_tag = f"{node.tag}_{missing_phase.upper()}OUT{_n}"
+
+        edge = EdgeIR(
+            tag      = new_tag,
+            src_port = missing_port,
+            phase    = missing_phase,
+            metadata = {"synthetic_outlet": True, "is_product": True},
+        )
+        # dst=None → terminal product/sink stream (graph.product_streams()).
+        graph.add_stream(edge, node.tag, None)
+        existing_tags.add(new_tag)
+        changes.append(
+            f"[TOPO_REPAIR] Vessel {node.tag}: added {missing_phase} "
+            f"product outlet {new_tag}")
+    return changes
+
+
+def _repropagate_recycles(
+    graph:          FlowsheetGraph,
+    recycle_origin: dict,
+) -> list[str]:
+    """
+    Fix 2 — restore an is_recycle flag that a recycle guard dropped.
+
+    Traces the cycle that validate_dag() detected (via the unit→unit graph) and,
+    for each edge in it whose ORIGINAL SemanticStream was is_recycle=True (per
+    recycle_origin, captured before the guards ran), re-tags the EdgeIR as a
+    recycle so validate_dag() will exclude it and the DAG becomes valid.
+
+    Logs the stage at which the flag was dropped.  Idempotent: an edge already
+    flagged is_recycle is skipped, and if no cycle remains nothing happens.
+    """
+    changes: list[str] = []
+    ug = graph.unit_graph()
+    try:
+        cycle = nx.find_cycle(ug)
+    except nx.NetworkXNoCycle:
+        return changes
+
+    for u, v in cycle:
+        stream_tag = ug.edges[u, v].get("stream_tag")
+        if not stream_tag:
+            continue
+        edge = graph.stream(stream_tag)
+        if edge is None or edge.is_recycle:
+            continue  # idempotent — already a recycle
+        origin = recycle_origin.get(stream_tag)
+        if not (origin and origin.get("is_recycle")):
+            continue  # flag was never set originally — Fix 2 does not invent one
+        edge.is_recycle = True
+        # recycle_target must be a valid unit tag (validate.py enforces this).
+        edge.recycle_target = (
+            origin.get("recycle_target") or edge.recycle_target or v)
+        stage = origin.get("dropped_by") or "unknown"
+        changes.append(
+            f"[TOPO_REPAIR] repropagated is_recycle on {stream_tag} "
+            f"(lost at {stage})")
+    return changes
+
+
+def _detect_missing_units(graph: FlowsheetGraph, sem_topo: Any) -> list[dict]:
+    """
+    Fix 3 — detect (do NOT repair) streams that reference a unit tag absent from
+    the unit list.  Returns [{stream, missing_tag, role}].  A missing unit's
+    type cannot be invented deterministically, so the caller routes these to the
+    LLM repair node for a real re-extraction attempt.
+    """
+    missing: list[dict] = []
+    if sem_topo is None:
+        return missing
+    unit_tags = graph.unit_tags()
+    seen: set[tuple[str, str]] = set()
+    for s in getattr(sem_topo, "streams", []):
+        for role, tag in (("src", s.src), ("dst", s.dst)):
+            if tag and tag not in unit_tags and (s.tag, tag) not in seen:
+                seen.add((s.tag, tag))
+                missing.append(
+                    {"stream": s.tag, "missing_tag": tag, "role": role})
+    return missing
 
 
 # ── Pipeline class ────────────────────────────────────────────────────────────
@@ -196,20 +366,28 @@ class GraphPipeline:
     def _build_graph(self):
         g = StateGraph(PipelineState)
 
-        g.add_node("basis",    self._basis_node)
-        g.add_node("topology", self._topology_node)
-        g.add_node("build",    self._build_node)
-        g.add_node("validate", self._validate_node)
-        g.add_node("thermo",   self._thermo_node)
-        g.add_node("execute",  self._execute_node)
-        g.add_node("repair",   self._repair_node)
+        g.add_node("basis",           self._basis_node)
+        g.add_node("topology",        self._topology_node)
+        g.add_node("build",           self._build_node)
+        g.add_node("validate",        self._validate_node)
+        g.add_node("topology_repair", self._topology_repair_node)
+        g.add_node("thermo",          self._thermo_node)
+        g.add_node("execute",         self._execute_node)
+        g.add_node("repair",          self._repair_node)
 
         g.set_entry_point("basis")
 
         g.add_conditional_edges("basis",    _route_basis,    {"topology": "topology", END: END})
         g.add_conditional_edges("topology", _route_stage1,   {"build": "build",       END: END})
         g.add_edge("build", "validate")
-        g.add_conditional_edges("validate", _route_validate, {"thermo": "thermo",     END: END})
+        # validate → topology_repair (repairable INVALID_TOPOLOGY) | thermo | END
+        g.add_conditional_edges("validate", _route_validate,
+                                {"thermo": "thermo",
+                                 "topology_repair": "topology_repair",
+                                 END: END})
+        # topology_repair → thermo (now valid) | repair (LLM hand-off)
+        g.add_conditional_edges("topology_repair", _route_topology_repair,
+                                {"thermo": "thermo", "repair": "repair"})
         g.add_conditional_edges("thermo",   _route_thermo,   {"execute": "execute",   END: END})
         g.add_conditional_edges("execute",  _route_execute,  {"repair": "repair",     END: END})
         g.add_edge("repair", "execute")
@@ -235,8 +413,10 @@ class GraphPipeline:
             "compounds":      [],
             "sem_units":      None,
             "sem_topo":       None,
+            "recycle_origin": {},
             "ir_graph":       None,
             "ir_report":      None,
+            "missing_units":  [],
             "dwsim_json":     None,
             "reference_data": None,
             "tried_packages": [],
@@ -359,6 +539,18 @@ class GraphPipeline:
             )
             print("[GP] step: stream_ext.extract END", flush=True)
 
+            # Capture original recycle flags BEFORE the guards mutate the
+            # SemanticStreams, so topology_repair (Fix 2) can repropagate a flag
+            # that a guard later drops — and report which guard dropped it.
+            recycle_origin: dict[str, dict] = {
+                _s.tag: {
+                    "is_recycle":     bool(getattr(_s, "is_recycle", False)),
+                    "recycle_target": getattr(_s, "recycle_target", None),
+                    "dropped_by":     None,
+                }
+                for _s in sem_topo.streams
+            }
+
             # ── Recycle guard 1: target-validity + fuzzy resolution ───────────
             _unit_tag_set = {u.tag for u in sem_units.units}
             for _s in sem_topo.streams:
@@ -385,6 +577,7 @@ class GraphPipeline:
                     new_warns.append(
                         f"[recycle] '{_s.tag}' recycle_target={_s.recycle_target!r} "
                         "unresolvable — cleared to avoid false positive")
+                    recycle_origin[_s.tag]["dropped_by"] = "guard1-target"
                     _s.is_recycle     = False
                     _s.recycle_target = None
 
@@ -411,6 +604,7 @@ class GraphPipeline:
                         new_warns.append(
                             f"[recycle] '{_s.tag}' cleared — multiple recycles from "
                             f"'{_src_tag}', kept '{_keep.tag}' → '{_keep.recycle_target}'")
+                        recycle_origin[_s.tag]["dropped_by"] = "guard2-multi"
                         _s.is_recycle     = False
                         _s.recycle_target = None
 
@@ -425,6 +619,7 @@ class GraphPipeline:
                         new_warns.append(
                             f"[recycle] '{_s.tag}' is_recycle=True but no trigger "
                             "phrase in description — cleared to avoid false positive")
+                        recycle_origin[_s.tag]["dropped_by"] = "guard3-phrase"
                         _s.is_recycle     = False
                         _s.recycle_target = None
 
@@ -433,9 +628,10 @@ class GraphPipeline:
             return {"outcome": "PLAN_FAILED", "warnings": [f"Stage 1 failed: {exc}"]}
 
         return {
-            "sem_units": sem_units,
-            "sem_topo":  sem_topo,
-            "warnings":  new_warns,
+            "sem_units":      sem_units,
+            "sem_topo":       sem_topo,
+            "recycle_origin": recycle_origin,
+            "warnings":       new_warns,
         }
 
     def _build_node(self, state: PipelineState) -> dict:
@@ -486,10 +682,88 @@ class GraphPipeline:
             new_warns = [str(e) for e in ir_report.errors()]
             for e in ir_report.errors():
                 print(f"[GP] INVALID_IR: {e}", flush=True, file=sys.stderr)
+
+            crit       = ir_report.errors()
+            has_vessel = any(_is_vessel_outlet_issue(i) for i in crit)   # Fix 1
+            has_cycle  = any(_is_cycle_issue(i) for i in crit)           # Fix 2
+            missing    = _detect_missing_units(graph, state.get("sem_topo"))  # Fix 3
+
+            # Route to the deterministic topology_repair node only when the
+            # invalidity matches one of the three repairable patterns; every
+            # other INVALID_IR dead-ends at END exactly as before.
+            if has_vessel or has_cycle or missing:
+                print(f"[GP] INVALID_TOPOLOGY (repairable): "
+                      f"vessel_outlet={has_vessel} cycle={has_cycle} "
+                      f"missing_units={len(missing)}", flush=True, file=sys.stderr)
+                return {
+                    "ir_report":     ir_report,
+                    "outcome":       "INVALID_TOPOLOGY",
+                    "missing_units": missing,
+                    "warnings":      new_warns,
+                }
             return {"ir_report": ir_report, "outcome": "INVALID_IR", "warnings": new_warns}
 
         new_warns = [str(w) for w in ir_report.warnings()]
         return {"ir_report": ir_report, "warnings": new_warns}
+
+    def _topology_repair_node(self, state: PipelineState) -> dict:
+        """
+        Deterministic topology repair — NO LLM calls.  Reached only when
+        _validate_node flagged a repairable INVALID_TOPOLOGY pattern.
+
+          Fix 1: add a Vessel's missing phase outlet (terminal product stream).
+          Fix 2: repropagate an is_recycle flag a guard dropped, breaking a cycle.
+          Fix 3: flag streams referencing a missing unit (NOT repairable here) and
+                 hand off to the LLM repair node for a real re-extraction attempt.
+
+        After Fix 1/2 the graph is re-validated: if valid → thermo; otherwise
+        (including any Fix-3 missing-unit case) → LLM repair node.  Safe to enter
+        twice — the helpers are idempotent (no duplicate outlet, no re-tag).
+        """
+        graph          = state["ir_graph"]
+        recycle_origin = state.get("recycle_origin") or {}
+        missing_units  = list(state.get("missing_units") or [])
+        changes: list[str] = []
+
+        # ── Fix 1 + Fix 2 (deterministic, in-place) ───────────────────────────
+        changes += _repair_vessel_outlets(graph)
+        changes += _repropagate_recycles(graph, recycle_origin)
+
+        # ── Fix 3 (flag only — cannot invent a missing unit's type) ───────────
+        if not missing_units:
+            missing_units = _detect_missing_units(graph, state.get("sem_topo"))
+        for m in missing_units:
+            print(f"[TOPO_REPAIR] flagged missing unit {m['missing_tag']} "
+                  f"referenced by {m['stream']} — routing to LLM repair",
+                  flush=True, file=sys.stderr)
+        for c in changes:
+            print(c, flush=True, file=sys.stderr)
+
+        # ── Re-validate (validate() includes validate_dag) ────────────────────
+        report = validate(graph)
+        print(f"[GP] step: topology_repair re-validate  valid={report.valid}  "
+              f"fixes={len(changes)}  missing_units={len(missing_units)}",
+              flush=True, file=sys.stderr)
+
+        if report.valid and not missing_units:
+            return {
+                "ir_graph":  graph,
+                "ir_report": report,
+                "outcome":   "TOPO_OK",
+                "warnings":  changes,
+            }
+
+        # Hand off to the LLM repair node with the residual validation errors.
+        return {
+            "ir_graph":      graph,
+            "ir_report":     report,
+            "errors":        [i.error for i in report.errors()],
+            "missing_units": missing_units,
+            "outcome":       "TOPO_REPAIR_LLM",
+            "warnings":      changes
+                             + [f"[missing_unit] {m}" for m in missing_units]
+                             + [str(e) for e in report.errors()],
+        }
 
     def _thermo_node(self, state: PipelineState) -> dict:
         graph     = state["ir_graph"]
@@ -581,6 +855,14 @@ class GraphPipeline:
         # Iteration ceiling check (mirrors the for-loop break in orchestrator_v2)
         if iteration >= eff_max_iter:
             return {"outcome": "MAX_ITER"}
+
+        # Defensive: a topology_repair → repair hand-off can reach the execute
+        # loop before thermo built the flowsheet.  With no flowsheet there is
+        # nothing to run — escalate rather than crash the executor on None.
+        if state["dwsim_json"] is None:
+            print("[GP] execute: no dwsim_json (flowsheet not built) — HUMAN",
+                  flush=True, file=sys.stderr)
+            return {"outcome": "HUMAN"}
 
         # RepairMemory: init on first call, carry across iterations
         repair_memory: RepairMemory = state["repair_memory"] or RepairMemory()
