@@ -364,9 +364,25 @@ class OrchestratorV2:
         self._classifier  = ErrorClassifier(model=model)
         self._repair      = RepairAgent(model=model, retriever=self._retriever)
 
+        self._graph_pipeline = None  # lazily initialised when USE_LANGGRAPH=1
+
     def run(self, description: str,
             reference_file: Optional[str] = None,
             tier: str = "standard") -> PipelineResult:
+        # USE_LANGGRAPH=1 — delegate to the LangGraph scaffold transparently.
+        import os as _os
+        if _os.environ.get("USE_LANGGRAPH", "").strip() in ("1", "true", "yes"):
+            if self._graph_pipeline is None:
+                from agents.graph_pipeline import GraphPipeline
+                self._graph_pipeline = GraphPipeline(
+                    model=self._model,
+                    max_iterations=self._max_iter,
+                    rule_store=self._rule_store,
+                )
+                print("[ORCH] USE_LANGGRAPH=1 — delegating to GraphPipeline", flush=True)
+            return self._graph_pipeline.run(
+                description, reference_file=reference_file, tier=tier)
+
         t_start = time.time()
         result  = PipelineResult(description=description, outcome="MAX_ITER")
 

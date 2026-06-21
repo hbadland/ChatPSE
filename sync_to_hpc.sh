@@ -3,7 +3,7 @@ HPC="hgb25@login.cx3.hpc.imperial.ac.uk"
 DEST="/rds/general/user/hgb25/home/multiAgentFlowsheet"
 
 # ── Agents ────────────────────────────────────────────────────────────────────
-scp agents/orchestrator_v2.py agents/executor.py agents/llm.py agents/basis.py agents/rule_store.py "$HPC:$DEST/agents/"
+scp agents/orchestrator_v2.py agents/graph_pipeline.py agents/executor.py agents/llm.py agents/basis.py agents/rule_store.py "$HPC:$DEST/agents/"
 scp agents/stage1/unit_extractor.py agents/stage1/stream_extractor.py "$HPC:$DEST/agents/stage1/"
 scp agents/stage2/graph_builder.py "$HPC:$DEST/agents/stage2/"
 scp agents/stage3/param_mapper.py agents/stage3/thermo_mapper.py "$HPC:$DEST/agents/stage3/"
@@ -13,7 +13,7 @@ scp agents/stage4/error_classifier.py agents/stage4/beam_search.py agents/stage4
 scp dwsim/dwsim_wrapper.py dwsim/test_recycle_block.py "$HPC:$DEST/dwsim/"
 
 # ── IR layer ──────────────────────────────────────────────────────────────────
-scp ir/graph.py ir/validate.py ir/normalise.py ir/thermo_estimation.py ir/consistency.py ir/to_dwsim.py ir/test_recycle.py "$HPC:$DEST/ir/"
+scp ir/graph.py ir/validate.py ir/normalise.py ir/repair.py ir/thermo_estimation.py ir/consistency.py ir/to_dwsim.py ir/test_recycle.py "$HPC:$DEST/ir/"
 
 # ── Benchmark (full directory) ───────────────────────────────────────────────
 scp benchmark/__init__.py \

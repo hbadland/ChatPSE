@@ -38,7 +38,7 @@ class DeterministicRepair:
         Dispatch on error.repair_strategy.  Returns (graph, changes).
         Raises ValueError for CONDITION_FIX — caller must route to LLMRepair.
         """
-        tried_packages = tried_packages or set()
+        tried_packages = set(tried_packages) if tried_packages else set()
         s = error.repair_strategy
 
         if s == RepairStrategy.PARAM_INJECT:
@@ -179,7 +179,7 @@ class DeterministicRepair:
         tried:     set[str],
     ) -> tuple[FlowsheetGraph, list[str]]:
         candidates = retriever.select_package(
-            graph.compounds, exclude=tried | {graph.property_package})
+            graph.compounds, exclude=set(tried) | {graph.property_package})
         if not candidates:
             return graph, ["THERMO_SWITCH: all packages exhausted"]
         g       = graph.copy()

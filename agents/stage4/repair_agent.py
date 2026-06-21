@@ -342,7 +342,7 @@ class RepairAgent:
     ) -> tuple[FlowsheetGraph, list[str]]:
         g              = graph.copy()
         changes:list[str] = []
-        tried_packages = tried_packages or set()
+        tried_packages = set(tried_packages) if tried_packages else set()
         memory         = memory or RepairMemory()
 
         cond_errors  = [e for e in errors
