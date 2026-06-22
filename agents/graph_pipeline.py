@@ -49,6 +49,10 @@ except ImportError:
     _TC_AVAILABLE = False
 from agents.stage2 import GraphBuilder
 from agents.stage3 import ThermoMapper, ParamMapper
+# Reuse ParamMapper's description parsers so the topology_repair phase guard reads
+# the SAME temperature/pressure signal ParamMapper will later use for T_out — the
+# unit params themselves are not populated until _thermo_node (after this node).
+from agents.stage3.param_mapper import _extract_temperatures, _extract_pressures
 from agents.stage4 import ErrorClassifier, RepairAgent
 from agents.stage4.repair_agent import RepairMemory
 from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
@@ -56,6 +60,7 @@ from agents.rule_store import FailureRuleStore, RULES_PATH
 from ir import FlowsheetGraph, normalise, validate, to_dwsim
 from ir.consistency import GlobalConsistencyPass
 from ir.graph import SeparatorNode, EdgeIR
+from ir.thermo_estimation import boiling_point_K
 from ir.margin_model import get_global_margin_model
 from ir.types import ErrorType as _ErrorType
 from ir.types import RepairStrategy as _RepairStrategy
@@ -148,9 +153,13 @@ def _route_validate(state: PipelineState) -> str:
 
 
 def _route_topology_repair(state: PipelineState) -> str:
-    # TOPO_OK → graph is now valid, continue normally; otherwise hand off to the
-    # LLM repair node (unfixed deterministic patterns, or Fix-3 missing units).
-    return "thermo" if state["outcome"] == "TOPO_OK" else "repair"
+    outcome = state["outcome"]
+    if outcome == "TOPO_OK":            # graph now valid → continue normally
+        return "thermo"
+    if outcome == "TOPO_INFEASIBLE":    # single-phase vessel — correctly unrepairable
+        return END
+    # Unfixed deterministic patterns, or Fix-3 missing units → LLM repair.
+    return "repair"
 
 
 def _route_thermo(state: PipelineState) -> str:
@@ -175,6 +184,11 @@ _VESSEL_OUTLET_MARKERS = (
 )
 _CYCLE_MARKER = "Cycle detected in non-recycle streams"
 
+# How far above the dew-point upper bound a feed must sit before it is treated as
+# unambiguously single-phase superheated vapour.  Wide enough (≈ one flash stage)
+# that only clear superheat suppresses the outlet — borderline cases still get it.
+_SUPERHEAT_MARGIN_K = 12.0
+
 
 def _is_vessel_outlet_issue(issue: Any) -> bool:
     """True when the issue is a Vessel that is missing one of its two outlets."""
@@ -190,7 +204,122 @@ def _is_cycle_issue(issue: Any) -> bool:
             and _CYCLE_MARKER in err.evidence)
 
 
-def _repair_vessel_outlets(graph: FlowsheetGraph) -> list[str]:
+def _dew_point_upper_bound(
+    compounds: list[str],
+    P:         float,
+) -> Optional[float]:
+    """
+    Rigorous UPPER bound on a mixture's dew point at pressure P: the highest
+    pure-component boiling point.  Above it every component's K-value > 1, so no
+    liquid phase can exist.  Returns None when the boiling point is unknown for
+    ANY compound — in that case the bound is untrustworthy and the superheat
+    guard CANNOT be evaluated (the caller must surface this, not silently pass).
+    """
+    if not compounds:
+        return None
+    bps = [boiling_point_K(c, P) for c in compounds]
+    if any(b is None for b in bps):
+        return None
+    return max(bps) if bps else None
+
+
+def _vessel_feed_conditions(
+    graph:       FlowsheetGraph,
+    vessel:      Any,
+    description: str = "",
+) -> tuple[Optional[float], Optional[float]]:
+    """
+    Best-effort (T, P) of a Vessel's feed at topology_repair time.
+
+    Critical ordering note: this node runs BEFORE _thermo_node, so neither
+    ParamMapper (which sets upstream Heater T_out) nor the GlobalConsistencyPass
+    has run, and StreamExtractor only sets T/P on FEED streams — the Vessel's
+    inlet (an internal stream) carries no T.  So we source feed T/P in order:
+      1. the inlet stream's own T/P (usually None for internal streams),
+      2. the immediate upstream unit's T_out / P_out param (usually unset here),
+      3. the DESCRIPTION — replicating ParamMapper's heater/cooler/reactor target
+         rule on the immediate upstream unit, so the guard reads the same signal
+         ParamMapper will later turn into T_out.
+    Returns (None, …) only when no source yields a temperature at all.
+    """
+    inlets = graph.inlet_streams(vessel.tag)
+    feed_T = next((s.T for s in inlets if s.T is not None), None)
+    feed_P = next((s.P for s in inlets if s.P is not None), None)
+
+    # 2. immediate upstream unit params (rarely set this early, but cheap to try)
+    if feed_T is None or feed_P is None:
+        for inlet in inlets:
+            src = graph.stream_source(inlet.tag)
+            u   = graph.unit(src) if src else None
+            if u is None:
+                continue
+            if feed_T is None and u.params.get("T_out") is not None:
+                feed_T = float(u.params["T_out"])
+            if feed_P is None and u.params.get("P_out") is not None:
+                feed_P = float(u.params["P_out"])
+
+    # 3. description fallback via the immediate upstream unit (no LLM)
+    if feed_T is None and description:
+        desc_temps = _extract_temperatures(description)
+        if desc_temps:
+            for inlet in inlets:
+                src = graph.stream_source(inlet.tag)
+                u   = graph.unit(src) if src else None
+                if u is None:
+                    continue
+                up_feed_T = next(
+                    (s.T for s in graph.inlet_streams(u.tag) if s.T is not None),
+                    None)
+                if u.unit_type == "Heater":
+                    cands = [t for t in desc_temps
+                             if up_feed_T is None or t > up_feed_T + 1.0]
+                    if cands:
+                        feed_T = min(cands)   # matches ParamMapper Heater rule
+                        break
+                elif u.unit_type == "Cooler":
+                    cands = [t for t in desc_temps
+                             if up_feed_T is None or t < up_feed_T - 1.0]
+                    if cands:
+                        feed_T = max(cands)
+                        break
+                elif u.unit_type == "ConversionReactor":
+                    feed_T = max(desc_temps)
+                    break
+
+    # Pressure fallback from the description (max → never UNDER-estimate P, which
+    # would lower the dew bound and risk over-suppression).
+    if feed_P is None and description:
+        desc_press = _extract_pressures(description)
+        if desc_press:
+            feed_P = max(desc_press)
+
+    return feed_T, feed_P
+
+
+def _feed_is_superheated_vapour(
+    compounds: list[str],
+    feed_T:    Optional[float],
+    feed_P:    Optional[float],
+) -> bool:
+    """
+    Positively confirm the feed is single-phase superheated vapour: T clears the
+    dew-point upper bound by a wide margin (only unambiguous superheat).  Returns
+    False for subcooled / two-phase / unknown / un-evaluable feeds, so the caller
+    keeps the default behaviour (add the outlet).
+    """
+    if feed_T is None or not compounds:
+        return False
+    P = feed_P if feed_P is not None else 101_325.0
+    dew_upper = _dew_point_upper_bound(compounds, P)
+    if dew_upper is None:
+        return False
+    return feed_T > dew_upper + _SUPERHEAT_MARGIN_K
+
+
+def _repair_vessel_outlets(
+    graph:       FlowsheetGraph,
+    description: str = "",
+) -> tuple[list[str], list[str]]:
     """
     Fix 1 — add the missing phase outlet to any Vessel that has exactly one.
 
@@ -201,10 +330,29 @@ def _repair_vessel_outlets(graph: FlowsheetGraph) -> list[str]:
     to_dwsim serialises as a single [vessel, stream, port, 0] connection and
     which is skipped by the mass-balance check (Vessels are excluded there).
 
-    Idempotent: a Vessel that does not have exactly one outlet is left untouched,
-    so re-entering after the fix (which yields two outlets) is a no-op.
+    PHYSICAL GUARD: a missing outlet is only added when a second phase can
+    actually exist.  If the feed is positively single-phase superheated vapour
+    (T above the dew-point upper bound), NO liquid outlet is fabricated — the
+    single outlet is physically correct and the Vessel is left as-is (the case
+    is then correctly unrepairable and routed to END).  Subcooled / two-phase /
+    unknown feeds keep the default behaviour (add the outlet), since an
+    under-heated feed is recoverable by the consistency pass downstream.
+
+    This guard fires ONLY on a Vessel that was extracted with exactly ONE outlet
+    — the intended-outlet-count signal.  A superheated separator that the LLM
+    extracted with TWO outlets (e.g. PERT_SAN03_T+80, "flash the superheated
+    vapour") is already VALID, never reaches this node, and converges with zero
+    liquid (single_phase_vapor_ok).  A superheated separator extracted with ONE
+    outlet (PERT_HARD01_T+80, "produces no liquid") is INVALID and unrepairable
+    → END.  This matches v2 exactly: v2 aborts on any 1-outlet Vessel, so
+    suppressing here can never turn a v2-pass into a v3-fail.
+
+    Returns (changes, suppressed_vessel_tags).  Idempotent: a Vessel that does
+    not have exactly one outlet is left untouched, so re-entering after the fix
+    (which yields two outlets) is a no-op.
     """
-    changes: list[str] = []
+    changes:    list[str] = []
+    suppressed: list[str] = []
     existing_tags = set(graph.stream_tags())
     for node in graph.units():
         if not isinstance(node, SeparatorNode):
@@ -212,6 +360,36 @@ def _repair_vessel_outlets(graph: FlowsheetGraph) -> list[str]:
         outlets = graph.outlet_streams(node.tag)
         if len(outlets) != 1:
             continue  # 0 outlets or already-repaired 2 outlets → not our case
+
+        # Physical guard: do not fabricate a second phase that cannot exist.
+        feed_T, feed_P = _vessel_feed_conditions(graph, node, description)
+        P_eval    = feed_P if feed_P is not None else 101_325.0
+        dew_upper = _dew_point_upper_bound(graph.compounds, P_eval)
+
+        if feed_T is None or dew_upper is None:
+            # The guard could not be evaluated.  Surface it loudly rather than
+            # silently defaulting — a guard reading a None feed-T / dew point is
+            # a guard that is not actually protecting anything for this case.
+            if dew_upper is None:
+                _missing = [c for c in graph.compounds
+                            if boiling_point_K(c, P_eval) is None]
+                reason = f"no dew-point data for compounds {_missing}"
+            else:
+                reason = "feed temperature unavailable at topology_repair time"
+            warn = (f"[TOPO_REPAIR] WARNING: Vessel {node.tag}: superheat guard "
+                    f"could not be evaluated ({reason}) — adding outlet WITHOUT "
+                    f"phase confirmation")
+            print(warn, flush=True, file=sys.stderr)
+            changes.append(warn)
+            # fall through to the default add below
+        elif feed_T > dew_upper + _SUPERHEAT_MARGIN_K:
+            suppressed.append(node.tag)
+            changes.append(
+                f"[TOPO_REPAIR] Vessel {node.tag}: feed is single-phase "
+                f"superheated vapour (T={feed_T:.1f} K > dew≈{dew_upper:.1f} K "
+                f"+ {_SUPERHEAT_MARGIN_K:.0f} K) — NOT adding a second outlet "
+                f"(no liquid phase exists); case left unrepairable")
+            continue
 
         existing = outlets[0]
         existing_phase = node.outlet_phase(existing.src_port)  # per port spec
@@ -242,7 +420,7 @@ def _repair_vessel_outlets(graph: FlowsheetGraph) -> list[str]:
         changes.append(
             f"[TOPO_REPAIR] Vessel {node.tag}: added {missing_phase} "
             f"product outlet {new_tag}")
-    return changes
+    return changes, suppressed
 
 
 def _repropagate_recycles(
@@ -385,9 +563,9 @@ class GraphPipeline:
                                 {"thermo": "thermo",
                                  "topology_repair": "topology_repair",
                                  END: END})
-        # topology_repair → thermo (now valid) | repair (LLM hand-off)
+        # topology_repair → thermo (valid) | repair (LLM) | END (infeasible)
         g.add_conditional_edges("topology_repair", _route_topology_repair,
-                                {"thermo": "thermo", "repair": "repair"})
+                                {"thermo": "thermo", "repair": "repair", END: END})
         g.add_conditional_edges("thermo",   _route_thermo,   {"execute": "execute",   END: END})
         g.add_conditional_edges("execute",  _route_execute,  {"repair": "repair",     END: END})
         g.add_edge("repair", "execute")
@@ -726,7 +904,9 @@ class GraphPipeline:
         changes: list[str] = []
 
         # ── Fix 1 + Fix 2 (deterministic, in-place) ───────────────────────────
-        changes += _repair_vessel_outlets(graph)
+        vessel_changes, suppressed = _repair_vessel_outlets(
+            graph, state.get("norm_desc", ""))
+        changes += vessel_changes
         changes += _repropagate_recycles(graph, recycle_origin)
 
         # ── Fix 3 (flag only — cannot invent a missing unit's type) ───────────
@@ -751,6 +931,20 @@ class GraphPipeline:
                 "ir_report": report,
                 "outcome":   "TOPO_OK",
                 "warnings":  changes,
+            }
+
+        # Single-phase Vessel(s) whose missing outlet was deliberately NOT
+        # fabricated: the flowsheet is physically infeasible and correctly
+        # unrepairable — route to END rather than the LLM repair node.
+        if suppressed:
+            print(f"[GP] topology_repair: single-phase vessel(s) {suppressed} — "
+                  f"INVALID (correctly unrepairable) → END",
+                  flush=True, file=sys.stderr)
+            return {
+                "ir_graph":  graph,
+                "ir_report": report,
+                "outcome":   "TOPO_INFEASIBLE",
+                "warnings":  changes + [str(e) for e in report.errors()],
             }
 
         # Hand off to the LLM repair node with the residual validation errors.
