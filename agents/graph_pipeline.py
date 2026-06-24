@@ -16,6 +16,7 @@ from __future__ import annotations
 import hashlib
 import json
 import operator
+import os
 import sys
 import time
 import traceback
@@ -37,8 +38,8 @@ from agents.basis import BasisAgent
 from agents.executor import Executor
 from agents.llm import DEFAULT_MODEL
 from agents.stage1 import UnitExtractor, StreamExtractor
-from agents.stage1.unit_extractor import SemanticUnits
-from agents.stage1.stream_extractor import SemanticTopology
+from agents.stage1.unit_extractor import SemanticUnits, SemanticUnit
+from agents.stage1.stream_extractor import SemanticTopology, SemanticStream
 # TopologyChain is NOT used in Phase 1 — imported only so GraphPipeline.__init__
 # can log its availability, matching OrchestratorV2's startup message.
 try:
@@ -59,8 +60,9 @@ from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
 from agents.rule_store import FailureRuleStore, RULES_PATH
 from ir import FlowsheetGraph, normalise, validate, to_dwsim
 from ir.consistency import GlobalConsistencyPass
-from ir.graph import SeparatorNode, EdgeIR
+from ir.graph import SeparatorNode, EdgeIR, PORT_SPECS
 from ir.thermo_estimation import boiling_point_K
+from ir.to_dwsim import _best_ref_stream_by_composition
 from ir.margin_model import get_global_margin_model
 from ir.types import ErrorType as _ErrorType
 from ir.types import RepairStrategy as _RepairStrategy
@@ -89,6 +91,12 @@ class PipelineState(TypedDict):
     reference_file: Optional[str]
     max_iterations: int
     t_start:        float
+
+    # ── Variant B (reference-assisted topology injection — diagnostic) ────────
+    variant_b_active:      bool          # VARIANT_B=1 AND a reference_file exists
+    topology_source:       Optional[str] # "reference-exact" | "reference-inferred-connections"
+    reference_unit_params: dict          # tag → {T_out, P_out, …} from the reference
+    variant_b_inferred_feed: bool        # the feed stream was synthesised, not given
 
     # ── Stage 0 ───────────────────────────────────────────────────────────────
     basis_result:   Optional[Any]
@@ -134,6 +142,12 @@ class PipelineState(TypedDict):
 
 
 # ── Routing functions (module-level, stateless) ───────────────────────────────
+
+def _route_entry(state: PipelineState) -> str:
+    # Variant B (diagnostic): when active, skip the LLM basis+topology nodes
+    # entirely and enter at reference_topology.  Otherwise the normal entry.
+    return "reference_topology" if state.get("variant_b_active") else "basis"
+
 
 def _route_basis(state: PipelineState) -> str:
     return END if state["outcome"] == "BASIS_FAILED" else "topology"
@@ -487,12 +501,347 @@ def _detect_missing_units(graph: FlowsheetGraph, sem_topo: Any) -> list[dict]:
     return missing
 
 
+# ── Variant B: reference-assisted topology injection (diagnostic) ──────────────
+#
+# Purpose: isolate the thermo-mapping + convergence half of the pipeline from LLM
+# topology extraction by feeding known topology from the reference flowsheets.
+# Activated by VARIANT_B=1 AND a reference_file; off by default (no-op).
+#
+# IMPORTANT REALITY: every reference file ships an EMPTY connections array (only
+# per-unit params and per-stream conditions were annotated).  So connectivity is
+# always INFERRED here, never read — which contaminates the diagnostic and is
+# flagged loudly (topology_source="reference-inferred-connections").
+
+def _variant_b_enabled() -> bool:
+    return os.environ.get("VARIANT_B", "").strip().lower() in ("1", "true", "yes")
+
+
+# Cases whose underlying process is REACTIVE (a stable property of the case, not
+# of the reference data).  The reference-generation systematically dropped reactor
+# units, so for these a reference with no reactor unit is INCOMPLETE and its
+# convergence/MAPE numbers are not meaningful ground truth.  See the project note
+# "reference reactor bug".  The untrusted flag is computed structurally (reactive
+# case AND no reactor in the reference), so it AUTO-CLEARS once a reference is
+# re-extracted with its reactor.
+_REACTIVE_CASES = {"VAL_03", "VAL_04", "VAL_05", "VAL_10"}
+
+
+def _reference_has_reactor(reference: Optional[dict]) -> bool:
+    for u in (reference or {}).get("units", []):
+        t = str(u.get("type", "")).lower()
+        if "react" in t or "gibbs" in t:
+            return True
+    return False
+
+
+def _reference_trust(reference: Optional[dict]) -> Optional[str]:
+    """Return an untrusted-reason string for a reactive case whose reference is
+    missing its reactor, else None (trusted)."""
+    case_id = (reference or {}).get("case_id")
+    if case_id in _REACTIVE_CASES and not _reference_has_reactor(reference):
+        return "missing reactor"
+    return None
+
+
+def _load_reference_json(reference_file: Optional[str]) -> Optional[dict]:
+    """Load a reference flowsheet dict (mirrors _thermo_node's loader paths)."""
+    if not reference_file:
+        return None
+    from pathlib import Path as _Path
+    for _p in (_Path(reference_file),
+               _Path(__file__).resolve().parent.parent / reference_file):
+        try:
+            with open(_p) as _rf:
+                return json.load(_rf)
+        except FileNotFoundError:
+            continue
+        except Exception as exc:  # noqa: BLE001
+            print(f"[VARIANT_B] error reading reference_file {reference_file}: {exc}",
+                  flush=True, file=sys.stderr)
+            return None
+    return None
+
+
+def _required_outlets(unit_type: str) -> int:
+    specs = PORT_SPECS.get(unit_type, [])
+    n = len([s for s in specs if s.direction == "outlet" and s.required])
+    return max(n, 1)
+
+
+def _required_inlet_phase(unit_type: str) -> str:
+    """Required inlet phase for a unit, or 'any' (Pump→liquid, Compressor/Expander→vapour)."""
+    for s in PORT_SPECS.get(unit_type, []):
+        if s.direction == "inlet" and s.required and s.phase in ("liquid", "vapour"):
+            return s.phase
+    return "any"
+
+
+def _infer_sequential_topology(
+    sem_units: SemanticUnits,
+    compounds: list[str],
+) -> tuple[SemanticTopology, bool]:
+    """
+    Deterministic MINIMAL connectivity for references that lack connections.
+
+    Builds a linear backbone in unit-tag order (unit[i] → unit[i+1]), a single
+    synthesised feed into unit[0], and fills each unit's REQUIRED extra outlets
+    (Vessel/Splitter need 2) with terminal product streams so the IR can satisfy
+    port constraints.  No recycles are inferred.
+
+    Phase-aware ordering: a Vessel's two outlets are port 0 = vapour, port 1 =
+    liquid (assigned by GraphBuilder in creation order).  When a Vessel feeds a
+    unit that requires a liquid inlet (e.g. a Pump), the backbone is created
+    SECOND so it lands on the liquid port — avoiding a spurious phase mismatch
+    introduced purely by the inferred ordering.  This is still inference, not
+    data — the caller flags it as such.  Returns (topology, inferred_feed=True).
+    """
+    units = sem_units.units
+    streams: list[SemanticStream] = []
+    if not units:
+        return SemanticTopology(streams=streams), True
+
+    # Synthesised feed (equimolar) into the first unit — guarantees a valid feed.
+    feed_comp = ({c: round(1.0 / len(compounds), 6) for c in compounds}
+                 if compounds else {})
+    streams.append(SemanticStream(
+        tag="VB-FEED", src=None, dst=units[0].tag, is_feed=True,
+        T=298.15, P=101_325.0, flow=1.0, composition=feed_comp))
+
+    # Per-unit outlet streams, created in phase-aware order so port assignment
+    # (GraphBuilder assigns ports in creation order) respects downstream needs.
+    sidx = prod = 0
+    for i, u in enumerate(units):
+        succ   = units[i + 1].tag if i < len(units) - 1 else None
+        n_out  = _required_outlets(u.type)
+        # By default the backbone (to successor) is the first outlet (port 0).
+        # For a Vessel feeding a liquid-only unit, place it on port 1 (liquid).
+        backbone_slot = 0
+        if (succ is not None and u.type == "Vessel" and n_out >= 2
+                and _required_inlet_phase(units[i + 1].type) == "liquid"):
+            backbone_slot = 1
+        for slot in range(n_out):
+            if succ is not None and slot == backbone_slot:
+                streams.append(SemanticStream(
+                    tag=f"VB-S{sidx:02d}", src=u.tag, dst=succ, is_feed=False))
+                sidx += 1
+            else:
+                streams.append(SemanticStream(
+                    tag=f"VB-P{prod:02d}", src=u.tag, dst=None, is_feed=False))
+                prod += 1
+
+    return SemanticTopology(streams=streams), True
+
+
+def _sem_stream_from_ref(
+    tag:  str,
+    src:  Optional[str],
+    dst:  Optional[str],
+    cond: dict,
+) -> SemanticStream:
+    """A SemanticStream carrying the reference stream's conditions verbatim."""
+    return SemanticStream(
+        tag=tag, src=src, dst=dst, is_feed=(src is None),
+        T=cond.get("T_K"), P=cond.get("P_Pa"), flow=cond.get("flow_mol_s"),
+        composition=dict(cond.get("composition", {}) or {}))
+
+
+def _topology_from_connections(
+    connections: list,
+    sem_units:   SemanticUnits,
+    reference:   Optional[dict] = None,
+) -> SemanticTopology:
+    """
+    Build SemanticTopology from a populated reference connections array, used
+    VERBATIM (no inference).  Handles the canonical DWSIM/schema format
+    [src, dst, src_port, dst_port] where each entry pairs a unit with a stream:
+        [unit, stream, …]  → that unit is the stream's SOURCE
+        [stream, unit, …]  → that unit is the stream's DEST
+    Entries are paired by stream tag to recover each unit→unit edge with its real
+    stream identity, and each stream's T/P/flow/composition is carried over from
+    reference["streams"].  A plain unit→unit entry (both tags are units) is also
+    honoured as a fallback.  Not exercised by the current references (all ship
+    empty connections); covered by a unit test against a synthetic populated ref.
+    """
+    unit_tags   = {u.tag for u in sem_units.units}
+    ref_streams = (reference or {}).get("streams", {}) or {}
+
+    stream_src:   dict[str, str]            = {}   # stream tag → source unit
+    stream_dst:   dict[str, str]            = {}   # stream tag → dest unit
+    direct_edges: list[tuple[str, str]]     = []   # unit → unit (fallback)
+    seen_streams: list[str]                 = []   # preserve first-seen order
+
+    for c in connections:
+        if not (isinstance(c, (list, tuple)) and len(c) >= 2):
+            continue
+        a, b = c[0], c[1]
+        a_is_unit, b_is_unit = a in unit_tags, b in unit_tags
+        if a_is_unit and not b_is_unit:           # unit → stream
+            if b not in stream_src and b not in seen_streams:
+                seen_streams.append(b)
+            stream_src[b] = a
+        elif b_is_unit and not a_is_unit:         # stream → unit
+            if a not in stream_dst and a not in seen_streams:
+                seen_streams.append(a)
+            stream_dst[a] = b
+        elif a_is_unit and b_is_unit:             # unit → unit (fallback)
+            direct_edges.append((a, b))
+        # stream→stream / unknown tags: skip
+
+    streams: list[SemanticStream] = []
+    for st in seen_streams:
+        streams.append(_sem_stream_from_ref(
+            st, stream_src.get(st), stream_dst.get(st), ref_streams.get(st, {})))
+    for i, (src, dst) in enumerate(direct_edges):
+        streams.append(SemanticStream(
+            tag=f"REF-D{i:02d}", src=src, dst=dst, is_feed=False))
+
+    return SemanticTopology(streams=streams)
+
+
+def _reference_unit_params(units_json: list[dict]) -> dict:
+    """Extract non-null per-unit params (T_out, P_out, dP, efficiency …)."""
+    out: dict[str, dict] = {}
+    for u in units_json:
+        params = {k: v for k, v in (u.get("params") or {}).items() if v is not None}
+        if params:
+            out[u["tag"]] = params
+    return out
+
+
+def _variant_b_mape(execution: Any, reference_data: Optional[dict]) -> Optional[dict]:
+    """MAPE (%) of converged stream T/P/vf vs the closest reference stream by
+    composition.  None unless the solve converged and the reference has streams."""
+    if execution is None or not getattr(execution, "solved", False):
+        return None
+    ref_streams = (reference_data or {}).get("streams", {})
+    if not ref_streams:
+        return None
+    errs: dict[str, list[float]] = {"T": [], "P": [], "vf": []}
+    for _tag, sr in getattr(execution, "stream_results", {}).items():
+        comp = getattr(sr, "composition", {}) or {}
+        best, _dist = _best_ref_stream_by_composition(comp, ref_streams)
+        if best is None:
+            continue
+        ref = ref_streams[best]
+        for key, got, refv in (("T",  getattr(sr, "T_K", None),          ref.get("T_K")),
+                               ("P",  getattr(sr, "P_Pa", None),         ref.get("P_Pa")),
+                               ("vf", getattr(sr, "vapor_fraction", None), ref.get("vapor_fraction"))):
+            if got is None or refv is None:
+                continue
+            denom = abs(refv) if abs(refv) > 1e-9 else 1.0
+            errs[key].append(abs(got - refv) / denom)
+    def _m(xs: list[float]) -> Optional[float]:
+        return round(100.0 * sum(xs) / len(xs), 2) if xs else None
+    return {"T": _m(errs["T"]), "P": _m(errs["P"]), "vf": _m(errs["vf"])}
+
+
+def compute_variant_b_ladder(state: PipelineState) -> dict:
+    """Build the per-case diagnostic ladder from final pipeline state."""
+    ir_graph  = state.get("ir_graph")
+    execution = state.get("execution")
+    outcome   = state.get("outcome")
+    ref       = state.get("reference_data") or {}
+
+    built_valid_ir = False
+    if ir_graph is not None:
+        try:
+            built_valid_ir = validate(ir_graph).valid
+        except Exception:  # noqa: BLE001
+            built_valid_ir = False
+    reached_dwsim = execution is not None
+    converged     = bool(getattr(execution, "solved", False))
+
+    if outcome == "PASS":
+        failure_stage = None
+    elif not built_valid_ir:
+        failure_stage = "ir_build"
+    elif not reached_dwsim:
+        failure_stage = "ir_build"
+    elif outcome == "MAX_ITER":
+        failure_stage = "max_iter"
+    elif not converged:
+        failure_stage = "dwsim_no_converge"
+    else:
+        failure_stage = "other"
+
+    mape = _variant_b_mape(execution, ref) if converged else None
+    return {
+        "case":                ref.get("case_id") or state.get("reference_file") or "?",
+        "topology_source":     state.get("topology_source"),
+        "inferred_feed":       state.get("variant_b_inferred_feed", False),
+        # Interim integrity gate: reactive case whose reference dropped its
+        # reactor → ground truth is incomplete, so converged/MAPE here are NOT
+        # meaningful.  None when trusted; auto-clears if the reference is fixed.
+        "untrusted_reference": _reference_trust(ref),
+        "built_valid_ir":      built_valid_ir,
+        "reached_dwsim":       reached_dwsim,
+        "converged":           converged,
+        "n_repair_iterations": state.get("iteration", 0),
+        "reference_mape_T":    (mape or {}).get("T"),
+        "reference_mape_P":    (mape or {}).get("P"),
+        "reference_mape_vf":   (mape or {}).get("vf"),
+        "failure_stage":       failure_stage,
+        "outcome":             outcome,
+    }
+
+
+def variant_b_summary(diags: list[dict]) -> str:
+    """Aggregate per-case ladders into a headline summary table.
+
+    Untrusted cases (reactive reference missing its reactor) are flagged with '*'
+    and their converged/MAPE values are NOT counted toward the headline numbers —
+    so an incomplete reference can't make a reactive convergence look meaningful.
+    """
+    if not diags:
+        return "[VARIANT_B] no cases."
+    cols = [("case", 9), ("topo_src", 13), ("trust", 11), ("valid_ir", 8),
+            ("dwsim", 6), ("converged", 10), ("iters", 5), ("MAPE_T", 7),
+            ("failure", 17)]
+    def _row(vals):
+        return "  ".join(str(v)[:w].ljust(w) for v, w in zip(vals, [c[1] for c in cols]))
+    lines = ["", "=" * 100, "VARIANT B — reference-assisted topology diagnostic",
+             "=" * 100, _row([c[0] for c in cols]), "-" * 100]
+    for d in diags:
+        ts  = "ref-inferred" if d["topology_source"] == "reference-inferred-connections" else "ref-exact"
+        unt = d.get("untrusted_reference")
+        trust   = f"UNTRUSTED*" if unt else "ok"
+        conv    = f"{d['converged']}*" if unt else str(d["converged"])
+        mape    = "*" if unt else (d["reference_mape_T"] if d["reference_mape_T"] is not None else "-")
+        lines.append(_row([
+            d["case"], ts, trust, d["built_valid_ir"], d["reached_dwsim"],
+            conv, d["n_repair_iterations"], mape, d["failure_stage"] or "—",
+        ]))
+    n          = len(diags)
+    trusted    = [d for d in diags if not d.get("untrusted_reference")]
+    untrusted  = [d for d in diags if d.get("untrusted_reference")]
+    m          = len(trusted)
+    _cnt  = lambda k: sum(1 for d in diags if d.get(k))             # noqa: E731
+    _cntT = lambda k: sum(1 for d in trusted if d.get(k))           # noqa: E731
+    lines += [
+        "-" * 100,
+        f"of {n} cases — built valid IR: {_cnt('built_valid_ir')}/{n}"
+        f" | reached DWSIM: {_cnt('reached_dwsim')}/{n}"
+        f" | converged (TRUSTED only): {_cntT('converged')}/{m}",
+        f"UNTRUSTED: {len(untrusted)}/{n} reactive reference(s) missing a reactor "
+        f"{sorted(d['case'] for d in untrusted)} — their converged/MAPE are NOT meaningful",
+        f"connectivity: {sum(1 for d in diags if d['topology_source']=='reference-inferred-connections')}/{n} INFERRED"
+        f" (reference connections were empty — diagnostic is contaminated by inference)",
+        "* untrusted reference: reactive case whose reference dropped its reactor; "
+        "convergence/MAPE are not valid ground truth (see project 'reference reactor bug').",
+        "=" * 100, "",
+    ]
+    return "\n".join(lines)
+
+
 # ── Pipeline class ────────────────────────────────────────────────────────────
 
 class GraphPipeline:
     """
     LangGraph-based flowsheet pipeline.  Identical results to OrchestratorV2;
     only the control flow is expressed as a StateGraph.
+
+    Variant B (VARIANT_B=1) adds a diagnostic entry path that injects reference
+    topology in place of the LLM basis+topology nodes; off by default.
     """
 
     def __init__(
@@ -544,16 +893,22 @@ class GraphPipeline:
     def _build_graph(self):
         g = StateGraph(PipelineState)
 
-        g.add_node("basis",           self._basis_node)
-        g.add_node("topology",        self._topology_node)
-        g.add_node("build",           self._build_node)
-        g.add_node("validate",        self._validate_node)
-        g.add_node("topology_repair", self._topology_repair_node)
-        g.add_node("thermo",          self._thermo_node)
-        g.add_node("execute",         self._execute_node)
-        g.add_node("repair",          self._repair_node)
+        g.add_node("basis",             self._basis_node)
+        g.add_node("topology",          self._topology_node)
+        g.add_node("reference_topology", self._reference_topology_node)  # Variant B
+        g.add_node("build",             self._build_node)
+        g.add_node("validate",          self._validate_node)
+        g.add_node("topology_repair",   self._topology_repair_node)
+        g.add_node("thermo",            self._thermo_node)
+        g.add_node("execute",           self._execute_node)
+        g.add_node("repair",            self._repair_node)
 
-        g.set_entry_point("basis")
+        # Conditional entry: Variant B enters at reference_topology, skipping the
+        # LLM basis+topology nodes entirely; otherwise the normal entry at basis.
+        g.set_conditional_entry_point(
+            _route_entry,
+            {"reference_topology": "reference_topology", "basis": "basis"})
+        g.add_edge("reference_topology", "build")
 
         g.add_conditional_edges("basis",    _route_basis,    {"topology": "topology", END: END})
         g.add_conditional_edges("topology", _route_stage1,   {"build": "build",       END: END})
@@ -580,12 +935,29 @@ class GraphPipeline:
         reference_file: Optional[str] = None,
         tier:           str = "standard",
     ) -> PipelineResult:
+        # ── Variant B activation (diagnostic; off by default) ─────────────────
+        variant_b_active = False
+        if _variant_b_enabled():
+            if reference_file:
+                variant_b_active = True
+                print(f"[VARIANT_B] ACTIVE — injecting reference topology from "
+                      f"{reference_file} (LLM basis/topology bypassed)",
+                      flush=True, file=sys.stderr)
+            else:
+                print("[VARIANT_B] requested but SKIPPED for this case — no "
+                      "reference_file; falling back to normal extraction",
+                      flush=True, file=sys.stderr)
+
         initial: PipelineState = {
             "description":    description,
             "tier":           tier,
             "reference_file": reference_file,
             "max_iterations": self._max_iter,
             "t_start":        time.time(),
+            "variant_b_active":        variant_b_active,
+            "topology_source":         None,
+            "reference_unit_params":   {},
+            "variant_b_inferred_feed": False,
             "basis_result":   None,
             "norm_desc":      "",
             "compounds":      [],
@@ -627,11 +999,82 @@ class GraphPipeline:
         result.final_flowsheet = state.get("dwsim_json")
         result.final_execution = state.get("execution")
         result.margin_snapshot = get_global_margin_model().snapshot()
+        # Variant B diagnostic ladder (attached only when the mode was active).
+        if state.get("variant_b_active"):
+            ladder = compute_variant_b_ladder(state)
+            result.variant_b_diag = ladder  # type: ignore[attr-defined]
+            print(f"[VARIANT_B] ladder: {ladder}", flush=True, file=sys.stderr)
         return result
 
     # ── Node implementations ──────────────────────────────────────────────────
 
+    def _reference_topology_node(self, state: PipelineState) -> dict:
+        """
+        Variant B — construct SemanticUnits + SemanticTopology from the reference
+        flowsheet, bypassing BasisAgent/UnitExtractor/StreamExtractor entirely.
+        Units, compounds and per-unit setpoints are taken EXACTLY from the
+        reference; connectivity is INFERRED (references ship empty connections)
+        and flagged loudly.  Everything from build_node onward runs unchanged.
+        """
+        ref = _load_reference_json(state["reference_file"])
+        if ref is None:
+            print("[VARIANT_B] reference load FAILED — cannot inject topology",
+                  flush=True, file=sys.stderr)
+            return {"outcome": "PLAN_FAILED",
+                    "warnings": ["[VARIANT_B] reference_file could not be loaded"]}
+
+        compounds  = list(ref.get("compounds", []))
+        units_json = ref.get("units", [])
+        sem_units  = SemanticUnits(units=[
+            SemanticUnit(tag=u["tag"], type=u["type"], role="reference")
+            for u in units_json])
+        ref_params = _reference_unit_params(units_json)
+
+        if ref.get("connections"):
+            # Populated connectivity present → use it VERBATIM (no inference).
+            # (Does not occur in the current refs, but honoured if a future
+            # reference is hand-annotated.)
+            topology_source = "reference-exact"
+            sem_topo = _topology_from_connections(
+                ref["connections"], sem_units, ref)
+            inferred_feed = False
+            print(f"[VARIANT_B] reference connections GIVEN ({len(ref['connections'])} "
+                  f"edges) for {ref.get('case_id','?')} — using topology VERBATIM "
+                  f"({len(sem_topo.streams)} streams, no inference)",
+                  flush=True, file=sys.stderr)
+        else:
+            topology_source = "reference-inferred-connections"
+            sem_topo, inferred_feed = _infer_sequential_topology(sem_units, compounds)
+            print(f"[VARIANT_B] *** CONNECTIONS INFERRED (not given) *** for "
+                  f"{ref.get('case_id','?')}: reference connections array is "
+                  f"empty — built a deterministic sequential backbone over "
+                  f"{len(sem_units.units)} units. This inference contaminates the "
+                  f"diagnostic; treat downstream results accordingly.",
+                  flush=True, file=sys.stderr)
+
+        print(f"[VARIANT_B] reference topology: case={ref.get('case_id','?')} "
+              f"units={[u.tag for u in sem_units.units]} compounds={compounds} "
+              f"topology_source={topology_source}", flush=True, file=sys.stderr)
+
+        return {
+            "compounds":               compounds,
+            "norm_desc":               state["description"],
+            "sem_units":               sem_units,
+            "sem_topo":                sem_topo,
+            "reference_data":          ref,
+            "reference_unit_params":   ref_params,
+            "topology_source":         topology_source,
+            "variant_b_inferred_feed": inferred_feed,
+            "warnings": [f"[VARIANT_B] topology_source={topology_source}"],
+        }
+
     def _basis_node(self, state: PipelineState) -> dict:
+        # Integrity guard: Variant B must NEVER reach the LLM basis node.  If it
+        # does, the diagnostic is invalid — fail loudly rather than silently run.
+        if state.get("variant_b_active"):
+            raise AssertionError(
+                "[VARIANT_B] integrity violation: BasisAgent (basis node) was "
+                "entered while Variant B is active — LLM extraction must not run.")
         print("[GP] step: basis.identify START", flush=True)
         basis = self._basis.identify(state["description"])
         print(f"[GP] step: basis.identify END  success={basis.success}", flush=True)
@@ -645,6 +1088,12 @@ class GraphPipeline:
         }
 
     def _topology_node(self, state: PipelineState) -> dict:
+        # Integrity guard: Variant B must NEVER reach the LLM topology node.
+        if state.get("variant_b_active"):
+            raise AssertionError(
+                "[VARIANT_B] integrity violation: UnitExtractor/StreamExtractor "
+                "(topology node) was entered while Variant B is active — LLM "
+                "extraction must not run.")
         desc      = state["norm_desc"]
         compounds = state["compounds"]
         tier      = state["tier"]
@@ -964,6 +1413,19 @@ class GraphPipeline:
         desc      = state["norm_desc"]
         compounds = state["compounds"]
         new_warns: list[str] = []
+
+        # Variant B only: seed each unit's reference setpoints (T_out/P_out/…)
+        # before ParamMapper runs.  ParamMapper preserves existing node.params
+        # (node.params take priority over its estimates), so the reference
+        # setpoints survive — letting thermo/execute run against correct targets.
+        # Guarded: reference_unit_params is empty on the normal path → no-op.
+        _ref_params = state.get("reference_unit_params") or {}
+        if _ref_params:
+            for _u in graph.units():
+                for _k, _v in _ref_params.get(_u.tag, {}).items():
+                    _u.params.setdefault(_k, _v)
+            print(f"[VARIANT_B] seeded reference setpoints for "
+                  f"{sorted(_ref_params)}", flush=True, file=sys.stderr)
 
         try:
             print("[GP] step: thermo.assign START", flush=True)
