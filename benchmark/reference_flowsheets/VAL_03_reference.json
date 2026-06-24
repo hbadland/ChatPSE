@@ -33,6 +33,16 @@
       }
     },
     {
+      "tag": "RX-01",
+      "type": "ConversionReactor",
+      "params": {
+        "temperature_K": 873.15,
+        "pressure_Pa": 2350000.0,
+        "conversion": 0.9002,
+        "reaction": "Toluene + Hydrogen -> Benzene + Methane"
+      }
+    },
+    {
       "tag": "V-01",
       "type": "Vessel",
       "params": {

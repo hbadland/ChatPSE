@@ -23,7 +23,10 @@
     {"tag": "V-02",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
     {"tag": "V-03",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
     {"tag": "V-04",  "type": "Vessel",     "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
-    {"tag": "SP-01", "type": "Splitter",   "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}}
+    {"tag": "SP-01", "type": "Splitter",   "params": {"T_out": null,    "P_out": null,       "dP": null, "efficiency": null}},
+    {"tag": "RX-01", "type": "ConversionReactor", "params": {"temperature_K": 1181.78, "pressure_Pa": 1600000.0, "conversion": 0.9624, "reaction": "Methane + Water -> Carbon monoxide + 3 Hydrogen"}},
+    {"tag": "RX-02", "type": "ConversionReactor", "params": {"temperature_K": 740.98, "pressure_Pa": 1575000.0, "conversion": 0.7502, "reaction": "Carbon monoxide + Water -> Carbon dioxide + Hydrogen"}},
+    {"tag": "RX-03", "type": "ConversionReactor", "params": {"temperature_K": 514.58, "pressure_Pa": 1570000.0, "conversion": 0.7498, "reaction": "Carbon monoxide + Water -> Carbon dioxide + Hydrogen"}}
   ],
   "connections": [],
   "streams": {

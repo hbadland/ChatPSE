@@ -23,7 +23,9 @@
     {"tag": "P-01",  "type": "Pump",     "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
     {"tag": "EX-01", "type": "Expander", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
     {"tag": "EX-02", "type": "Expander", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}}
+    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "RX-01", "type": "ConversionReactor", "params": {"temperature_K": 363.15, "pressure_Pa": 151988.0, "conversion": 1.0, "reaction": "Ethylene + Chlorine -> 1,2-dichloroethane"}},
+    {"tag": "RX-02", "type": "ConversionReactor", "params": {"temperature_K": 773.15, "pressure_Pa": 2634450.0, "conversion": 0.6, "reaction": "1,2-dichloroethane -> Vinyl chloride + Hydrogen chloride"}}
   ],
   "connections": [],
   "streams": {

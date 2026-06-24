@@ -2,6 +2,8 @@
   "case_id": "VAL_10",
   "case_name": "Syngas Production RLNG Steam Reforming Ammonia Plant",
   "source_file": "Syngas_production_RLNG_DWSIM.dwxmz",
+  "reference_validity": "excluded-invalid-reference",
+  "reference_validity_reason": "Carbon balance violated: C in feeds = 136.97 mol/s vs C out (SYNGAS) = 1.47 mol/s. SYNGAS product has CO=CO2=0 with residual O2, and the file contains only 3 feeds + 1 product (no intermediate reactor streams). The reference is physically invalid and cannot reproduce a reactor spec; reactors were NOT authored. Eval this case PHYSICS-ONLY (converged + physics checks); reference-MAPE excluded.",
   "compounds": [
     "Water", "Methane", "Carbon monoxide",
     "Hydrogen", "Carbon dioxide", "Oxygen", "Nitrogen"
