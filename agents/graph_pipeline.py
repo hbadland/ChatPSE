@@ -535,8 +535,12 @@ def _reference_has_reactor(reference: Optional[dict]) -> bool:
 
 
 def _reference_trust(reference: Optional[dict]) -> Optional[str]:
-    """Return an untrusted-reason string for a reactive case whose reference is
-    missing its reactor, else None (trusted)."""
+    """Return an untrusted-reason string for a reference that can't serve as
+    ground truth, else None (trusted).  Precedence: an explicit
+    excluded-invalid-reference marker (e.g. mass-balance violation) first, then
+    a reactive case whose reference is still missing its reactor."""
+    if "excluded-invalid-reference" in str((reference or {}).get("reference_validity", "")):
+        return "excluded-invalid-reference"
     case_id = (reference or {}).get("case_id")
     if case_id in _REACTIVE_CASES and not _reference_has_reactor(reference):
         return "missing reactor"

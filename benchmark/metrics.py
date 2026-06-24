@@ -105,6 +105,10 @@ class RunMetrics:
     reference_mape_P:      float = 0.0   # mean |ΔP/P_ref|×100 at ±5% threshold
     reference_mape_vf:     float = 0.0   # mean |ΔVF| at ±0.05 threshold
     reference_match_pass:  bool  = False  # all streams within T/P/VF thresholds
+    # Physics-only cases: reference marked excluded-invalid (e.g. mass-balance
+    # violation) — converged + physics still evaluated, reference-MAPE skipped.
+    reference_excluded:        bool = False
+    reference_excluded_reason: str  = ""
 
     # Physics checks — CRITICAL severity only
     # Only CRITICAL failures count against the critical_physics_pass_rate.

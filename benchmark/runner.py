@@ -224,7 +224,10 @@ class BenchmarkRunSet:
             match_str = f"{m.match_score:.2f}" if m.match_score > 0.0 else "—"
             vpass_str = ("✓" if m.validation_pass else "✗") if m.match_score > 0.0 else "—"
             mape_str  = f"{m.mape_T_pct:.1f}%" if m.mape_T_pct > 0.0 else "—"
-            if m.has_reference:
+            if getattr(m, "reference_excluded", False):
+                ref_pass_str = "phys-only"          # excluded-invalid reference
+                ref_t_str    = "excluded"
+            elif m.has_reference:
                 ref_pass_str = "✓" if m.reference_match_pass else "✗"
                 ref_t_str    = f"{m.reference_mape_T:.1f}%"
             else:
@@ -505,7 +508,23 @@ class BenchmarkRunner:
         ref_mape_T = ref_mape_P = ref_mape_vf = 0.0
         ref_match_pass = False
         has_reference  = bool(getattr(case, "reference_file", None))
+
+        # Physics-only exclusion: a reference flagged excluded-invalid-reference
+        # (e.g. VAL_10 carbon-balance violation) still runs converged + physics
+        # checks, but reference-MAPE is skipped — its data can't be ground truth.
+        ref_excluded = False
+        ref_excluded_reason = ""
         if has_reference:
+            from benchmark.comparison import load_reference
+            _refdata = load_reference(getattr(case, "reference_file", "")) or {}
+            if "excluded-invalid-reference" in str(_refdata.get("reference_validity", "")):
+                ref_excluded = True
+                ref_excluded_reason = _refdata.get("reference_validity_reason", "") \
+                    or _refdata.get("reference_validity", "")
+                print(f"[BENCH] {getattr(case,'id','?')}: reference excluded "
+                      f"(physics-only) — {ref_excluded_reason[:80]}", flush=True)
+
+        if has_reference and not ref_excluded:
             _ref_checks, ref_mape_T, ref_mape_P, ref_mape_vf = \
                 run_reference_comparison(case, pr)
             if _ref_checks:
@@ -537,11 +556,15 @@ class BenchmarkRunner:
         m.physics_check_details           = checks
         m.critical_physics_checks_run     = n_critical_run
         m.critical_physics_checks_passed  = n_critical_passed
-        m.has_reference                   = has_reference
+        # Excluded references are physics-only: drop has_reference so the MAPE
+        # aggregates skip them, but record the exclusion for the per-case report.
+        m.has_reference                   = has_reference and not ref_excluded
         m.reference_mape_T                = ref_mape_T
         m.reference_mape_P                = ref_mape_P
         m.reference_mape_vf               = ref_mape_vf
         m.reference_match_pass            = ref_match_pass
+        m.reference_excluded              = ref_excluded
+        m.reference_excluded_reason       = ref_excluded_reason
 
         # Extract trajectory log
         run_log  = extract_run_log(pr, case.id, config.mode, self._model)
