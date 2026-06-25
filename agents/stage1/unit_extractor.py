@@ -74,7 +74,8 @@ Schema:
     {
       "tag": "HT-01",
       "type": "<one of: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor>",
-      "role": "<one-line purpose, e.g. 'heat feed to flash temperature'>"
+      "role": "<one-line purpose, e.g. 'heat feed to flash temperature'>",
+      "reaction": "<ONLY for ConversionReactor: 'reactants -> products', else omit>"
     }
   ]
 }
@@ -89,10 +90,24 @@ Rules:
 - Include a Splitter only when the description explicitly mentions splitting a stream into two fractions
 - Use ConversionReactor for any unit described as: reactor, reformer, converter, shift reactor, methanator,
   or a furnace/burner used for chemical reaction (not purely for heating)
+- For a ConversionReactor ONLY, also add a "reaction" field giving the stoichiometry as
+  "reactants -> products" using the EXACT compound names from the Compounds list, with integer
+  coefficients where needed, e.g. "Methane + Water -> Carbon monoxide + 3 Hydrogen". Do NOT add a
+  "reaction" field to any other unit type. A reactor with no reaction is useless — always fill it.
 - IGNORE any preamble, commentary, or metadata about property packages, thermodynamic models,
   configuration validity, or simulation settings — extract only the physical unit operations
 
 Examples:
+
+Input: "Mix toluene and hydrogen, heat to reaction temperature, and dealkylate toluene to benzene and methane in a reactor"
+Compounds: Hydrogen, Toluene, Benzene, Methane
+Output:
+{"units": [
+  {"tag": "MX-01", "type": "Mixer",  "role": "mix toluene and hydrogen feeds"},
+  {"tag": "HT-01", "type": "Heater", "role": "heat feed to reaction temperature"},
+  {"tag": "RX-01", "type": "ConversionReactor", "role": "hydrodealkylate toluene to benzene",
+   "reaction": "Toluene + Hydrogen -> Benzene + Methane"}
+]}
 
 Input: "Heat a feed of ethanol and water to 80°C, then flash it to separate the vapour"
 Compounds: ethanol, water
@@ -212,6 +227,11 @@ class SemanticUnit:
     tag:  str
     type: str
     role: str
+    # Stoichiometry for a ConversionReactor, "reactants -> products" with exact
+    # compound names, e.g. "Methane + Water -> Carbon monoxide + 3 Hydrogen".
+    # Empty for all other unit types.  Without it, to_dwsim emits reaction="" and
+    # DWSIM performs no conversion (the reactor does nothing).
+    reaction: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -304,7 +324,8 @@ class UnitExtractor:
             try:
                 data = _parse_json(raw)
                 units = [
-                    SemanticUnit(tag=u["tag"], type=u["type"], role=u.get("role", ""))
+                    SemanticUnit(tag=u["tag"], type=u["type"], role=u.get("role", ""),
+                                 reaction=u.get("reaction", ""))
                     for u in data.get("units", [])
                 ]
                 result = SemanticUnits(units=units, raw_json=data)

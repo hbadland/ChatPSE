@@ -32,10 +32,17 @@ class GraphBuilder:
 
         # Add all unit nodes
         for sem_unit in units.units:
+            # Seed the reactor stoichiometry into params so it survives to
+            # to_dwsim (ParamMapper preserves existing params; its estimator only
+            # fills reaction="" when absent).  Without this the reactor reaches
+            # DWSIM with an empty reaction and converts nothing.
+            _params = {}
+            if sem_unit.type == "ConversionReactor" and getattr(sem_unit, "reaction", ""):
+                _params["reaction"] = sem_unit.reaction
             node = make_node(
                 unit_type = sem_unit.type,
                 tag       = sem_unit.tag,
-                params    = {},
+                params    = _params,
                 metadata  = {"role": sem_unit.role},
             )
             graph.add_unit(node)

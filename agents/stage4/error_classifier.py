@@ -104,6 +104,21 @@ class ErrorClassifier:
         if any(e.is_terminal for e in errors):
             return errors
 
+        # Reactor mis-specification takes precedence: a ConversionReactor with no
+        # reaction string converts nothing, so DWSIM stalls.  Surface this as a
+        # distinct error TARGETING the reactor's reaction — otherwise the loop
+        # below blames a downstream cooler's T_out and wastes every iteration on a
+        # parameter that cannot be the cause.
+        if not getattr(execution, "solved", True):
+            _rxn_errors = _reactor_missing_reaction(graph)
+            if _rxn_errors:
+                import sys as _sys
+                print(f"[CLASSIFIER] ConversionReactor missing reaction → "
+                      f"{[str(e.target) for e in _rxn_errors]} "
+                      f"(not a downstream-condition problem)",
+                      flush=True, file=_sys.stderr)
+                return _rxn_errors
+
         # When the only classification is a generic TOPOLOGY_FIX (solved=False with
         # no specific signal), swap it for CONDITION_FIX errors targeting each unit
         # that has adjustable operating conditions (T_out / P_out).
@@ -171,6 +186,31 @@ class ErrorClassifier:
             except (json.JSONDecodeError, KeyError, ValueError):
                 pass
         return []
+
+
+def _reactor_missing_reaction(graph) -> list[SimError]:
+    """A ConversionReactor with an empty/missing reaction string cannot convert
+    anything.  Return one CRITICAL INVALID_UNIT_CONFIG error per such reactor,
+    targeting <tag>.reaction, so the repair loop addresses the reactor rather than
+    a downstream unit's operating conditions."""
+    out: list[SimError] = []
+    if graph is None:
+        return out
+    for node in graph.units():
+        if getattr(node, "unit_type", "") != "ConversionReactor":
+            continue
+        rxn = str(getattr(node, "params", {}).get("reaction", "") or "").strip()
+        if not rxn:
+            out.append(SimError(
+                error_type      = ErrorType.INVALID_UNIT_CONFIG,
+                target          = ErrorTarget.unit(node.tag, "reaction"),
+                evidence        = (f"ConversionReactor {node.tag} has no reaction "
+                                   "definition (reaction string is empty); DWSIM "
+                                   "performs no conversion and cannot solve"),
+                repair_strategy = RepairStrategy.HUMAN,
+                severity        = ErrorSeverity.CRITICAL,
+            ))
+    return out
 
 
 def _deterministic_classify(execution) -> list[SimError]:
