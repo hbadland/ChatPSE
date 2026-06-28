@@ -581,9 +581,12 @@ def _post_execution_check(
                 f"{label}: P={s.P_Pa:.2e} Pa exceeds 1000 bar. "
                 "Check pressure units.")
 
-        # Composition sum
+        # Composition sum — only meaningful for streams that carry flow. A
+        # zero-flow stream (e.g. an empty phase outlet, or a reactor's unused
+        # second material outlet) has an indeterminate composition that sums to
+        # 0; that is reported via the zero-flow warning below, not as an error.
         comp_sum = s.composition_sum()
-        if abs(comp_sum - 1.0) > _COMP_TOL:
+        if s.flow_mol_s > 0.0 and abs(comp_sum - 1.0) > _COMP_TOL:
             errors.append(
                 f"{label}: composition sums to {comp_sum:.4f}. "
                 "Possible solver or phase-split error.")

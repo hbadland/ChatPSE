@@ -53,6 +53,14 @@ def to_dwsim(graph: FlowsheetGraph,
     dwsim["units"]       = [_unit_to_dict(u) for u in graph.units()]
     dwsim["connections"] = _build_connections(graph)
 
+    # DWSIM's ConversionReactor exposes two material outlet ports (vapour +
+    # liquid); both must carry a material stream or solve() fails. The IR models
+    # a reactor with one product outlet, so add a dead-end stream for any
+    # unconnected material outlet port.
+    _extra_s, _extra_c = _ensure_reactor_outlets(graph, dwsim["connections"])
+    dwsim["streams"].extend(_extra_s)
+    dwsim["connections"].extend(_extra_c)
+
     recycle_blocks = _build_recycle_blocks(graph)
     if recycle_blocks:
         dwsim["recycle_blocks"] = recycle_blocks
@@ -234,6 +242,34 @@ def _estimate_recycle_flow(edge: EdgeIR, graph: FlowsheetGraph) -> float:
         if s.flow is not None and not s.is_recycle:
             return float(s.flow)
     return 1.0
+
+
+# DWSIM Reactor_Conversion material outlet ports (port 2 is the energy stream).
+_REACTOR_MATERIAL_OUTLET_PORTS = (0, 1)
+
+
+def _ensure_reactor_outlets(graph: FlowsheetGraph,
+                            connections: list[list]) -> tuple[list[dict], list[list]]:
+    """Synthesize a dead-end product stream for each unconnected reactor material
+    outlet port.  Returns (extra_streams, extra_connections) to append.
+
+    DWSIM rejects a ConversionReactor at solve() unless BOTH material outlet
+    ports (0 and 1) have a stream attached, even when one phase carries zero
+    flow.  The IR only ever wires the single product outlet, so we fill the gap
+    here at the DWSIM boundary rather than polluting the IR with a phantom edge.
+    """
+    extra_streams: list[dict] = []
+    extra_conns:   list[list] = []
+    for node in graph.units():
+        if node.unit_type != "ConversionReactor":
+            continue
+        used_ports = {c[2] for c in connections if c[0] == node.tag}
+        for port in _REACTOR_MATERIAL_OUTLET_PORTS:
+            if port not in used_ports:
+                tag = f"{node.tag}-OUT{port}"
+                extra_streams.append({"tag": tag})
+                extra_conns.append([node.tag, tag, port, 0])
+    return extra_streams, extra_conns
 
 
 def _build_recycle_blocks(graph: FlowsheetGraph) -> list[dict]:
