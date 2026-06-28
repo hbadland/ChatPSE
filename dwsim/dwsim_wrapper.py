@@ -660,13 +660,26 @@ class DWSIMFlowsheet:
         import System
 
         # ── 1. Add the recycle block object ───────────────────────────────────
-        recycle_ot = None
-        for attr_name in dir(ObjectType):
-            if "recycle" in attr_name.lower():
-                candidate = getattr(ObjectType, attr_name, None)
-                if candidate is not None:
-                    recycle_ot = candidate
-                    break
+        # Must select the MATERIAL recycle (OT_Recycle), not OT_EnergyRecycle:
+        # an energy-recycle block only accepts energy streams, so connecting a
+        # material tear stream to it fails with "connection cannot be done".
+        # A bare dir() scan picks OT_EnergyRecycle first (alphabetical), so
+        # prefer OT_Recycle explicitly, then any 'recycle' name without 'energy'.
+        recycle_ot = getattr(ObjectType, "OT_Recycle", None)
+        if recycle_ot is None:
+            for attr_name in dir(ObjectType):
+                n = attr_name.lower()
+                if "recycle" in n and "energy" not in n:
+                    recycle_ot = getattr(ObjectType, attr_name, None)
+                    if recycle_ot is not None:
+                        break
+        if recycle_ot is None:
+            # Last resort: any recycle-like ObjectType (may be energy).
+            for attr_name in dir(ObjectType):
+                if "recycle" in attr_name.lower():
+                    recycle_ot = getattr(ObjectType, attr_name, None)
+                    if recycle_ot is not None:
+                        break
 
         if recycle_ot is not None:
             self._sim.AddObject(recycle_ot, 0, 0, tag)
