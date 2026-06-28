@@ -59,9 +59,11 @@ _UNIT_TYPE_MAP = {
     "Expander":          ObjectType.Expander,
     "Pump":              ObjectType.Pump,
     "MaterialStream":    ObjectType.MaterialStream,
-    # Discovered at add_unit time when None; see add_unit().
-    "ConversionReactor": getattr(ObjectType, "OT_React_Conversion",
-                          getattr(ObjectType, "React_Conversion", None)),
+    # Member name varies by DWSIM build (e.g. RCT_Conversion in current build);
+    # discovery loop in add_unit() is the runtime fallback when these are absent.
+    "ConversionReactor": getattr(ObjectType, "RCT_Conversion",
+                          getattr(ObjectType, "OT_React_Conversion",
+                          getattr(ObjectType, "React_Conversion", None))),
 }
 
 # .NET reflection property accessors (cached on first use)
@@ -297,7 +299,10 @@ class DWSIMFlowsheet:
         # ConversionReactor ObjectType varies by DWSIM build — discover at runtime.
         if ot is None and unit_type == "ConversionReactor":
             for attr_name in dir(ObjectType):
-                if "react" in attr_name.lower() and "conv" in attr_name.lower():
+                _n = attr_name.lower()
+                # Build-dependent name: match "conversion" reactor whether the
+                # prefix is "react" (React_Conversion) or "rct" (RCT_Conversion).
+                if "conv" in _n and ("react" in _n or "rct" in _n):
                     ot = getattr(ObjectType, attr_name, None)
                     if ot is not None:
                         _UNIT_TYPE_MAP["ConversionReactor"] = ot  # cache for next call
