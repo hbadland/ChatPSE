@@ -95,6 +95,46 @@ def test_connections_used_verbatim():
     check(validate(g).valid, "verbatim topology builds a VALID IR")
 
 
+def test_reference_recycle_annotation():
+    print("\n[Variant B] reference recycle annotation marks the edge")
+    sem_units = _units(("MX-01", "Mixer"), ("HT-01", "Heater"),
+                       ("RX-01", "ConversionReactor"), ("SP-01", "Splitter"))
+    ref = {
+        "compounds": ["Toluene", "Benzene", "Hydrogen", "Methane"],
+        "connections": [
+            ["FEED", "MX-01", 0, 0],
+            ["MX-01", "s1", 0, 0], ["s1", "HT-01", 0, 0],
+            ["HT-01", "s2", 0, 0], ["s2", "RX-01", 0, 0],
+            ["RX-01", "prod", 0, 0], ["prod", "SP-01", 0, 0],
+            ["SP-01", "PROD", 0, 0],                       # product draw
+            ["SP-01", "REC", 1, 0], ["REC", "MX-01", 0, 0],  # recycle back to mixer
+        ],
+        "streams": {
+            "FEED": {"T_K": 300.0, "P_Pa": 2.35e6, "flow_mol_s": 10.0,
+                     "composition": {"Toluene": 1.0}},
+            "REC":  {"T_K": 540.0, "P_Pa": 2.35e6, "flow_mol_s": 0.5,
+                     "composition": {"Toluene": 0.97, "Benzene": 0.03}},
+        },
+        "recycles": [{"stream": "REC", "target_unit": "MX-01"}],
+    }
+    topo = _topology_from_connections(ref["connections"], sem_units, ref)
+    by = {s.tag: s for s in topo.streams}
+    check(by["REC"].is_recycle is True and by["REC"].recycle_target == "MX-01",
+          "annotated stream REC marked is_recycle=True, recycle_target=MX-01")
+    check(by["REC"].dst == "MX-01", "recycle edge dst resolves to target unit")
+    check(by["s1"].is_recycle is False and by["FEED"].is_recycle is False,
+          "non-annotated streams stay is_recycle=False")
+
+    # A bad target_unit is ignored (not a unit tag) rather than crashing.
+    ref_bad = dict(ref, recycles=[{"stream": "s1", "target_unit": "NOPE"}])
+    topo_bad = _topology_from_connections(ref_bad["connections"], sem_units, ref_bad)
+    check({s.tag: s for s in topo_bad.streams}["s1"].is_recycle is False,
+          "recycle annotation with a non-unit target_unit is ignored")
+
+    g = normalise(GraphBuilder().build(sem_units, topo, ref["compounds"]))
+    check(validate(g).valid, "reference-seeded recycle topology builds a VALID IR")
+
+
 def test_empty_connections_infers():
     print("\n[Variant B] empty connections → inference (VB-* streams)")
     sem_units = _units(("HT-01", "Heater"), ("V-01", "Vessel"))
@@ -182,6 +222,7 @@ def test_summary_excludes_untrusted_convergence():
 
 def main():
     test_connections_used_verbatim()
+    test_reference_recycle_annotation()
     test_empty_connections_infers()
     test_node_branch_selects_verbatim_vs_infer()
     test_untrusted_reference_gating()

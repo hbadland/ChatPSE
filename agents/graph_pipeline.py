@@ -665,9 +665,28 @@ def _topology_from_connections(
     reference["streams"].  A plain unit→unit entry (both tags are units) is also
     honoured as a fallback.  Not exercised by the current references (all ship
     empty connections); covered by a unit test against a synthetic populated ref.
+
+    Recycle edges are declared via an optional reference["recycles"] array of
+    {"stream": <tag>, "target_unit": <unit tag>}; matching streams are marked
+    is_recycle=True with recycle_target set, so the downstream recycle machinery
+    (GraphBuilder, to_dwsim, the executor's recycle blocks) closes the loop the
+    same way it does for LLM-extracted recycles.  This is what lets a *complete*
+    reference seed a recycle topology — connectivity is taken verbatim, no
+    inference and no LLM.
     """
     unit_tags   = {u.tag for u in sem_units.units}
     ref_streams = (reference or {}).get("streams", {}) or {}
+
+    # Optional recycle annotations: stream tag → target (upstream) unit tag.
+    recycle_map: dict[str, str] = {}
+    for r in (reference or {}).get("recycles", []) or []:
+        st, tu = r.get("stream"), r.get("target_unit")
+        if st and tu in unit_tags:
+            recycle_map[st] = tu
+        elif st:
+            print(f"[VARIANT_B] WARNING: recycle annotation for stream '{st}' has "
+                  f"target_unit={tu!r} which is not a unit tag — ignored",
+                  flush=True, file=sys.stderr)
 
     stream_src:   dict[str, str]            = {}   # stream tag → source unit
     stream_dst:   dict[str, str]            = {}   # stream tag → dest unit
@@ -693,8 +712,19 @@ def _topology_from_connections(
 
     streams: list[SemanticStream] = []
     for st in seen_streams:
-        streams.append(_sem_stream_from_ref(
-            st, stream_src.get(st), stream_dst.get(st), ref_streams.get(st, {})))
+        sem = _sem_stream_from_ref(
+            st, stream_src.get(st), stream_dst.get(st), ref_streams.get(st, {}))
+        if st in recycle_map:
+            sem.is_recycle     = True
+            sem.recycle_target = recycle_map[st]
+            # A recycle edge feeds back to its target; honour the annotation even
+            # if the connections array only recorded the producing side.
+            if sem.dst is None:
+                sem.dst = recycle_map[st]
+            print(f"[VARIANT_B] recycle edge from reference: stream '{st}' "
+                  f"→ {recycle_map[st]} (is_recycle=True)",
+                  flush=True, file=sys.stderr)
+        streams.append(sem)
     for i, (src, dst) in enumerate(direct_edges):
         streams.append(SemanticStream(
             tag=f"REF-D{i:02d}", src=src, dst=dst, is_feed=False))
