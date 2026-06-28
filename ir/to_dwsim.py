@@ -296,6 +296,21 @@ def _build_connections(graph: FlowsheetGraph) -> list[list]:
     """
     connections: list[list] = []
 
+    # Per-destination-unit inlet-port allocator.  Multi-inlet units (only the
+    # Mixer, max_inlets > 1) need a distinct DWSIM inlet index for each incoming
+    # stream — DWSIM rejects two connections to the same inlet port.  Single-inlet
+    # units keep stream.dst_port (0), so serialization is unchanged for every
+    # non-mixer unit and for mixers that have only one inlet.
+    _inlet_next: dict[str, int] = {}
+
+    def _dst_port(dst_unit_tag: str, default_port: int) -> int:
+        node = graph.unit(dst_unit_tag)
+        if node is not None and node.max_inlets() > 1:
+            port = _inlet_next.get(dst_unit_tag, 0)
+            _inlet_next[dst_unit_tag] = port + 1
+            return port
+        return default_port
+
     for stream in graph.streams():
         src_unit = graph.stream_source(stream.tag)
         dst_unit = graph.stream_dest(stream.tag)
@@ -306,11 +321,13 @@ def _build_connections(graph: FlowsheetGraph) -> list[list]:
                 connections.append([src_unit, stream.tag, stream.src_port, 0])
             # Init stream: recycle block outlet → upstream unit
             if dst_unit:
-                connections.append([f"{stream.tag}-INIT", dst_unit, 0, stream.dst_port])
+                connections.append([f"{stream.tag}-INIT", dst_unit, 0,
+                                    _dst_port(dst_unit, stream.dst_port)])
         else:
             if src_unit:
                 connections.append([src_unit, stream.tag, stream.src_port, 0])
             if dst_unit:
-                connections.append([stream.tag, dst_unit, 0, stream.dst_port])
+                connections.append([stream.tag, dst_unit, 0,
+                                    _dst_port(dst_unit, stream.dst_port)])
 
     return connections
