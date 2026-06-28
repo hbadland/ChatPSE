@@ -121,25 +121,50 @@ def _parse_reaction_stoich(reaction_str: str) -> "tuple[dict, dict]":
     return _side(lhs), _side(rhs)
 
 
-def _add_stoich(stoich_type, comps_list, comp_name: str, coeff: float) -> None:
-    """Append a ReactionStoichiometry entry to comps_list via reflection."""
-    try:
-        stoich_obj = System.Activator.CreateInstance(stoich_type)
-        st = stoich_type
-        for fname, val in [
-            ("CompName",    System.String(comp_name)),
-            ("StoichCoeff", System.Double(coeff)),
-            ("IsReactant",  System.Boolean(coeff < 0)),
-        ]:
-            f = st.GetField(fname)
-            p = st.GetProperty(fname)
-            if f is not None:
-                f.SetValue(stoich_obj, val)
-            elif p is not None and p.CanWrite:
-                p.SetValue(stoich_obj, val)
-        comps_list.Add(stoich_obj)
-    except Exception:
-        pass
+def _find_clr_type(fullname: str):
+    """Return a loaded .NET type by full name, or None.
+
+    Uses Assembly.GetType(name) (no GetTypes() enumeration), which avoids the
+    ReflectionTypeLoadException that some DWSIM assemblies throw when fully
+    enumerated.
+    """
+    for asm in System.AppDomain.CurrentDomain.GetAssemblies():
+        try:
+            t = asm.GetType(fullname)
+        except Exception:
+            t = None
+        if t is not None:
+            return t
+    return None
+
+
+def _set_clr_prop(obj, name: str, value) -> bool:
+    """Set a writable .NET property by name; return True on success."""
+    p = obj.GetType().GetProperty(name)
+    if p is not None and p.CanWrite:
+        try:
+            p.SetValue(obj, value)
+            return True
+        except Exception:
+            return False
+    return False
+
+
+def _make_stoich(stoich_type, comp_name: str, coeff: float, is_base: bool):
+    """Construct a ReactionStoichBase via its parameterised constructor.
+
+    ctor signature: (name, stoichCoeff, isBaseReactant, directOrder, reverseOrder).
+    coeff < 0 for reactants, > 0 for products. Orders are unused by conversion
+    reactions but the ctor requires them, so pass |coeff|.
+    """
+    args = System.Array[System.Object]([
+        System.String(comp_name),
+        System.Double(float(coeff)),
+        System.Boolean(bool(is_base)),
+        System.Double(abs(float(coeff))),
+        System.Double(abs(float(coeff))),
+    ])
+    return System.Activator.CreateInstance(stoich_type, args)
 
 
 class DWSIMFlowsheet:
@@ -512,134 +537,103 @@ class DWSIMFlowsheet:
                 flush=True, file=sys.stderr)
             return
 
-        # Add reaction ID to reactor's Reactions list
-        for list_prop in ("Reactions", "ReactionsIDs", "ReactionsList"):
-            prop = t_type.GetProperty(list_prop)
-            if prop is not None:
-                rxn_list = prop.GetValue(obj)
-                if rxn_list is not None:
-                    try:
-                        rxn_list.Add(System.String(rxn_id))
-                        break
-                    except Exception:
-                        pass
-
-        # Set per-reaction conversion in ReactionConversions dict
-        for dict_prop in ("ReactionConversions", "Conversions", "ReactionConversionsDict"):
-            prop = t_type.GetProperty(dict_prop)
-            if prop is not None:
-                conv_dict = prop.GetValue(obj)
-                if conv_dict is not None:
-                    try:
-                        conv_dict[System.String(rxn_id)] = System.Double(float(conversion))
-                        print(
-                            f"  [DWSIM] ConversionReactor {tag}: "
-                            f"conversion={conversion:.3f} set for reaction {rxn_id[:8]}…",
-                            flush=True, file=sys.stderr)
-                        break
-                    except Exception:
-                        pass
+        # Point the reactor at the reaction set the reaction was registered in.
+        # _setup_conversion_reaction added it to "DefaultSet" and encoded the
+        # conversion in the reaction's Expression (percent); the reactor reads
+        # the active reactions from this set at solve time.
+        for set_prop in ("ReactionSetID", "ReactionSetName"):
+            prop = t_type.GetProperty(set_prop)
+            if prop is not None and prop.CanWrite:
+                try:
+                    prop.SetValue(obj, System.String("DefaultSet"))
+                except Exception:
+                    pass
+        print(
+            f"  [DWSIM] ConversionReactor {tag}: reaction {rxn_id[:8]}… registered "
+            f"in DefaultSet, conversion={conversion:.4f} (Expression in %)",
+            flush=True, file=sys.stderr)
 
     def _setup_conversion_reaction(self, reactor_tag: str,
                                    reaction_str: str,
                                    conversion: float) -> "Optional[str]":
-        """Create and register a conversion reaction in the flowsheet reaction manager.
+        """Create and register a conversion reaction, returning its GUID (or None).
 
-        Returns the reaction GUID string, or None if the DWSIM reaction API is
-        unavailable on this build (T/P will still be set correctly).
+        Matches the DWSIM 9.x reaction API in this build:
+          - Reaction class : DWSIM.Thermodynamics.BaseClasses.Reaction
+          - Stoichiometry  : DWSIM.Thermodynamics.BaseClasses.ReactionStoichBase
+                             (ctor: name, coeff, isBaseReactant, directOrder, reverseOrder;
+                              coeff < 0 for reactants, > 0 for products)
+          - Components     : Dictionary<String, IReactionStoichBase> keyed by compound
+          - Conversion     : reaction.Expression in PERCENT (e.g. 90.02 ⇒ 0.9002)
+          - Registration   : flowsheet.Reactions[id] = rxn, and a ReactionSetBase
+                             entry in ReactionSets["DefaultSet"].Reactions
         """
         try:
-            rxn_id = str(System.Guid.NewGuid())
-
-            # Locate the Reaction class by searching loaded assemblies
-            rxn_type = None
-            stoich_type = None
-            search = [
-                ("DWSIM.Thermodynamics.Reactions.Reaction",
-                 "DWSIM.Thermodynamics.Reactions.ReactionStoichiometry"),
-                ("DWSIM.SharedClasses.Reactions.Reaction",
-                 "DWSIM.SharedClasses.Reactions.ReactionStoichiometry"),
-                ("DWSIM.UnitOperations.Reactions.Reaction",
-                 "DWSIM.UnitOperations.Reactions.ReactionStoichiometry"),
-            ]
-            for rxn_name, stoich_name in search:
-                for asm in System.AppDomain.CurrentDomain.GetAssemblies():
-                    try:
-                        rt = asm.GetType(rxn_name)
-                        st = asm.GetType(stoich_name)
-                        if rt is not None:
-                            rxn_type   = rt
-                            stoich_type = st
-                            break
-                    except Exception:
-                        pass
-                if rxn_type is not None:
-                    break
-
-            if rxn_type is None:
+            reactants, products = _parse_reaction_stoich(reaction_str)
+            if not reactants or not products:
                 return None
 
+            rxn_type    = _find_clr_type("DWSIM.Thermodynamics.BaseClasses.Reaction")
+            stoich_type = _find_clr_type("DWSIM.Thermodynamics.BaseClasses.ReactionStoichBase")
+            rsb_type    = _find_clr_type("DWSIM.Thermodynamics.BaseClasses.ReactionSetBase")
+            if rxn_type is None or stoich_type is None or rsb_type is None:
+                return None
+
+            rxn_id  = str(System.Guid.NewGuid())
             rxn_obj = System.Activator.CreateInstance(rxn_type)
+            comp_lower = {c.lower(): c for c in self._compounds}
 
-            # Set ID and name
-            for pname, val in [("ID",   System.String(rxn_id)),
-                                ("Tag",  System.String(f"Rxn_{reactor_tag}")),
-                                ("Name", System.String(f"Rxn_{reactor_tag}"))]:
-                p = rxn_type.GetProperty(pname)
-                if p is not None and p.CanWrite:
-                    try:
-                        p.SetValue(rxn_obj, val)
-                    except Exception:
-                        pass
+            # Limiting/base reactant = first reactant in the equation.
+            base_name = comp_lower.get(next(iter(reactants)).lower(),
+                                       next(iter(reactants)))
 
-            # Set reaction type to Conversion
-            for pname in ("ReactionType", "RxnType", "Type"):
-                p = rxn_type.GetProperty(pname)
-                if p is not None and p.CanWrite:
-                    try:
-                        rtype = p.PropertyType
-                        for enum_name in ("Conversion", "ConversionReaction", "Kinetic"):
-                            try:
-                                p.SetValue(rxn_obj,
-                                           System.Enum.Parse(rtype, enum_name))
-                                break
-                            except Exception:
-                                pass
-                        break
-                    except Exception:
-                        pass
+            _set_clr_prop(rxn_obj, "ID",   System.String(rxn_id))
+            _set_clr_prop(rxn_obj, "Name", System.String(f"Rxn_{reactor_tag}"))
+            _set_clr_prop(rxn_obj, "BaseReactant", System.String(base_name))
+            _set_clr_prop(rxn_obj, "Equation",     System.String(reaction_str))
 
-            # Parse stoichiometry and add components
-            if reaction_str and stoich_type is not None:
-                reactants, products = _parse_reaction_stoich(reaction_str)
-                comp_lower = {c.lower(): c for c in self._compounds}
-                comps_prop = rxn_type.GetProperty("Components")
-                if comps_prop is not None:
-                    comps_list = comps_prop.GetValue(rxn_obj)
-                    for formula, coeff in reactants.items():
-                        name = comp_lower.get(formula.lower(), formula)
-                        _add_stoich(stoich_type, comps_list, name, -abs(coeff))
-                    for formula, coeff in products.items():
-                        name = comp_lower.get(formula.lower(), formula)
-                        _add_stoich(stoich_type, comps_list, name, abs(coeff))
+            # ReactionType = Conversion (enum on the property's own type).
+            rt_prop = rxn_type.GetProperty("ReactionType")
+            if rt_prop is not None and rt_prop.CanWrite:
+                try:
+                    rt_prop.SetValue(rxn_obj,
+                                     System.Enum.Parse(rt_prop.PropertyType, "Conversion"))
+                except Exception:
+                    pass
+            # ReactionPhase = Mixture (gas/liquid agnostic; reactor handles VLE).
+            rp_prop = rxn_type.GetProperty("ReactionPhase")
+            if rp_prop is not None and rp_prop.CanWrite:
+                try:
+                    rp_prop.SetValue(rxn_obj,
+                                     System.Enum.Parse(rp_prop.PropertyType, "Mixture"))
+                except Exception:
+                    pass
 
-            # Register reaction with the flowsheet
-            sim_type = self._sim.GetType()
-            for coll_name in ("Reactions", "AvailableReactions", "MasterReactionTable"):
-                prop = sim_type.GetProperty(coll_name)
-                if prop is not None:
-                    coll = prop.GetValue(self._sim)
-                    if coll is not None:
-                        try:
-                            coll.Add(rxn_obj)
-                            return rxn_id
-                        except Exception:
-                            try:
-                                coll[System.String(rxn_id)] = rxn_obj
-                                return rxn_id
-                            except Exception:
-                                pass
-            return None
+            # Components: Dictionary<String, IReactionStoichBase> keyed by compound.
+            comps = rxn_type.GetProperty("Components").GetValue(rxn_obj)
+            for formula, coeff in reactants.items():
+                name = comp_lower.get(formula.lower(), formula)
+                comps[System.String(name)] = _make_stoich(
+                    stoich_type, name, -abs(coeff), is_base=(name == base_name))
+            for formula, coeff in products.items():
+                name = comp_lower.get(formula.lower(), formula)
+                comps[System.String(name)] = _make_stoich(
+                    stoich_type, name, abs(coeff), is_base=False)
+
+            # Conversion expression — DWSIM evaluates this as a PERCENTAGE.
+            _set_clr_prop(rxn_obj, "Expression",
+                          System.String(repr(float(conversion) * 100.0)))
+
+            # Register the reaction with the flowsheet and the DefaultSet.
+            self._sim.Reactions[System.String(rxn_id)] = rxn_obj
+            default_set = self._sim.ReactionSets[System.String("DefaultSet")]
+            rsb = System.Activator.CreateInstance(rsb_type)
+            _set_clr_prop(rsb, "ReactionID", System.String(rxn_id))
+            _set_clr_prop(rsb, "IsActive",   System.Boolean(True))
+            _set_clr_prop(rsb, "Rank",       System.Int32(0))
+            default_set.Reactions[System.String(rxn_id)] = rsb
+
+            return rxn_id
 
         except Exception as exc:
             print(f"  [DWSIM] _setup_conversion_reaction for {reactor_tag}: {exc}",
