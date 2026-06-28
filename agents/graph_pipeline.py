@@ -72,6 +72,7 @@ from rag.retriever import Retriever
 from agents.orchestrator_v2 import (
     _RECYCLE_PHRASES,
     _SUMMARISER_SYSTEM_TIGHT,
+    _inject_reference_reactor_params,
     _no_critic_failures,
     _record_repairs_in_store,
     _reference_guided_refinement,
@@ -1526,6 +1527,13 @@ class GraphPipeline:
                 print(f"[GP] WARNING: reference_file '{reference_file}' not found",
                       flush=True, file=sys.stderr)
 
+        # Validation tier: seed ConversionReactor reaction + conversion from the
+        # reference before serialising (mirrors orchestrator_v2). ParamMapper
+        # inserts reaction="" when LLM extraction fails; this overrides it with
+        # the consistency-verified reference stoichiometry.
+        if state["tier"] == "validation" and reference_data is not None:
+            _inject_reference_reactor_params(graph, reference_data)
+
         print("[GP] step: to_dwsim(graph) START", flush=True)
         dwsim_json = to_dwsim(graph, reference_data=reference_data)
         print("[GP] step: to_dwsim(graph) END", flush=True)
@@ -1709,6 +1717,12 @@ class GraphPipeline:
 
             if graph.property_package not in tried_pkgs:
                 tried_pkgs = tried_pkgs + [graph.property_package]
+
+            # Validation tier: re-seed reactor reaction/conversion from the
+            # reference after repair, since the repair agent may have rebuilt
+            # or perturbed the reactor node's params.
+            if state["tier"] == "validation" and ref_data is not None:
+                _inject_reference_reactor_params(graph, ref_data)
 
             dwsim_json = to_dwsim(graph, reference_data=ref_data)
 

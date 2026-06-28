@@ -28,12 +28,9 @@ from agents.llm import DEFAULT_MODEL
 from agents.stage1 import UnitExtractor, StreamExtractor
 from agents.stage1.unit_extractor import SemanticUnits
 from agents.stage1.stream_extractor import SemanticTopology
-try:
-    from agents.stage1.topology_chain import TopologyChain as _TopologyChain
-    _TOPOLOGY_CHAIN_AVAILABLE = True
-except ImportError:
-    _TopologyChain = None
-    _TOPOLOGY_CHAIN_AVAILABLE = False
+# TopologyChain removed — langchain_core LanguageModelOutput import incompatibility
+# means it silently fell back to standard extractors on every run anyway.
+_TOPOLOGY_CHAIN_AVAILABLE = False
 from agents.stage2 import GraphBuilder
 from agents.stage3 import ThermoMapper, ParamMapper
 from agents.stage4 import ErrorClassifier, ClassifiedError, RepairAgent
@@ -345,18 +342,7 @@ class OrchestratorV2:
         self._stream_ext = StreamExtractor(model=model)
         self._builder    = GraphBuilder()
 
-        if _TOPOLOGY_CHAIN_AVAILABLE:
-            try:
-                self._topology_chain = _TopologyChain(model=model)
-            except Exception as _tc_err:
-                print(f"[ORCH] TopologyChain unavailable ({_tc_err}) — "
-                      "validation tier will fall back to standard extractors",
-                      flush=True)
-                self._topology_chain = None
-        else:
-            print("[ORCH] LangChain not installed — validation tier will use standard extractors",
-                  flush=True)
-            self._topology_chain = None
+        self._topology_chain = None
         self._thermo      = ThermoMapper(model=model, retriever=self._retriever)
         self._params      = ParamMapper(model=model, retriever=self._retriever)
         self._consistency = GlobalConsistencyPass()
@@ -732,6 +718,15 @@ class OrchestratorV2:
                     f"tried: {[str(p) for p in _ref_candidates]}",
                     flush=True, file=sys.stderr)
 
+        # Validation tier: seed ConversionReactor reaction + conversion directly
+        # from the reference file.  The LLM extraction path for these params is
+        # unreliable (topology_chain unavailable; keyword fallback returns no
+        # reaction string), but the reference already contains the correct,
+        # consistency-verified stoichiometry.  Same pattern as reference-seeded
+        # recycle INIT streams; keeps LLM extraction for non-validation tiers.
+        if tier == "validation" and _reference_data is not None:
+            _inject_reference_reactor_params(graph, _reference_data)
+
         print("[ORCH] step: to_dwsim(graph) START", flush=True)
         dwsim_json = to_dwsim(graph, reference_data=_reference_data)
         print("[ORCH] step: to_dwsim(graph) END", flush=True)
@@ -947,3 +942,30 @@ def _record_repairs_in_store(
             applied_value   = applied_val,
             compounds       = compounds,
         )
+
+
+def _inject_reference_reactor_params(graph, reference_data: dict) -> None:
+    """Seed ConversionReactor reaction + conversion from reference for validation tier.
+
+    Runs after ParamMapper so it overrides the empty reaction string that
+    ParamMapper's physical estimator inserts when LLM extraction fails.
+    Only injects params that the reference explicitly provides.
+    """
+    ref_units = {u["tag"]: u for u in reference_data.get("units", [])}
+    for node in graph.units():
+        if node.unit_type != "ConversionReactor":
+            continue
+        ref_unit = ref_units.get(node.tag)
+        if ref_unit is None:
+            continue
+        ref_params = ref_unit.get("params", {})
+        reaction   = ref_params.get("reaction")
+        conversion = ref_params.get("conversion")
+        if reaction is not None:
+            node.params["reaction"] = reaction
+            print(f"[ORCH] ref-seeded reaction  {node.tag}: {reaction!r}",
+                  flush=True, file=sys.stderr)
+        if conversion is not None:
+            node.params["conversion"] = conversion
+            print(f"[ORCH] ref-seeded conversion {node.tag}: {conversion}",
+                  flush=True, file=sys.stderr)
