@@ -9,9 +9,11 @@ convergence layer.  It is NOT a convergence or MAPE result.
 Per case: valid_ir, units extracted vs reference unit count, extraction-stage
 failure reason (if any).
 
-Run:  PYTHONPATH=. OLLAMA_BASE_URL=http://localhost:11434/v1 python3.9 stage1_diag.py
-Writes results/diagnostics/stage1_diag_results.json and prints a summary table.
+Run:  PYTHONPATH=. OLLAMA_BASE_URL=http://localhost:11434/v1 \
+          python3.9 stage1_diag.py --model qwen3:30b-a3b
+Writes <diag-dir>/stage1_diag_results.json and prints a summary table.
 """
+import argparse
 import json
 import os
 import time
@@ -21,9 +23,9 @@ from benchmark.case_schema import load_tier
 from agents.graph_pipeline import GraphPipeline
 from ir import validate
 
-MODEL = os.environ.get("STAGE1_MODEL", "qwen3:14b")
-OUT_DIR = "results/diagnostics"
-OUT_FILE = os.path.join(OUT_DIR, "stage1_diag_results.json")
+# Default model matches benchmark_runner.py (the canonical entry point).
+# STAGE1_MODEL env var overrides the default; an explicit --model wins over both.
+DEFAULT_MODEL = os.environ.get("STAGE1_MODEL", "qwen3:30b-a3b")
 
 
 def initial_state(description: str) -> dict:
@@ -114,10 +116,19 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
 
 
 def main():
-    os.makedirs(OUT_DIR, exist_ok=True)
+    parser = argparse.ArgumentParser(
+        description="Stage-1 topology-extraction diagnostic (extraction/IR-build only)")
+    parser.add_argument("--model", default=DEFAULT_MODEL,
+                        help=f"LLM model (default: {DEFAULT_MODEL})")
+    parser.add_argument("--diag-dir", default="results/diagnostics",
+                        help="output directory (default: results/diagnostics)")
+    args = parser.parse_args()
+
+    out_file = os.path.join(args.diag_dir, "stage1_diag_results.json")
+    os.makedirs(args.diag_dir, exist_ok=True)
     cases = load_tier("validation")
-    print(f"[diag] {len(cases)} validation cases; model={MODEL}", flush=True)
-    gp = GraphPipeline(model=MODEL, max_iterations=10)
+    print(f"[diag] {len(cases)} validation cases; model={args.model}", flush=True)
+    gp = GraphPipeline(model=args.model, max_iterations=10)
 
     results = []
     for case in cases:
@@ -126,12 +137,12 @@ def main():
         rec = run_stage1(gp, case)
         rec["elapsed_s"] = round(time.time() - t0, 1)
         results.append(rec)
-        json.dump(results, open(OUT_FILE, "w"), indent=2, default=str)  # checkpoint each case
+        json.dump(results, open(out_file, "w"), indent=2, default=str)  # checkpoint each case
         print(f"===== {case.id} DONE valid_ir={rec['valid_ir']} "
               f"ir_units={rec['ir_units']} ref={rec['ref_units']} "
               f"fail={rec['fail_stage']} ({rec['elapsed_s']}s) =====", flush=True)
 
-    print(f"\n[diag] wrote {OUT_FILE}", flush=True)
+    print(f"\n[diag] wrote {out_file}", flush=True)
 
     # Summary table
     print("\n" + "=" * 92)
