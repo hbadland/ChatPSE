@@ -32,9 +32,12 @@ import time
 
 # ── Retry / rate-limit handling ───────────────────────────────────────────────
 
-_RATE_LIMIT_MARKERS = (
+_TRANSIENT_MARKERS = (
     "rate limit", "429", "quota", "resource_exhausted",
     "too many requests", "overloaded", "503", "service unavailable",
+    # Hung / timed-out connections — the wall-clock guard below and HTTP client
+    # read timeouts both surface here; treat them as transient and retry.
+    "timeout", "timed out", "wall-clock",
 )
 
 def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
@@ -56,10 +59,11 @@ def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
             result = fn()
         except Exception as e:
             err = str(e).lower()
-            is_transient = any(m in err for m in _RATE_LIMIT_MARKERS)
+            is_transient = any(m in err for m in _TRANSIENT_MARKERS)
             if is_transient and attempt < max_retries - 1:
                 delay = min(base_delay * (2 ** attempt), 120.0)
-                print(f"  [llm] rate limit hit — waiting {delay:.0f}s (attempt {attempt + 1}/{max_retries})")
+                print(f"  [llm] transient error ({str(e)[:60]}) — waiting {delay:.0f}s "
+                      f"(attempt {attempt + 1}/{max_retries})")
                 time.sleep(delay)
                 continue
             raise
@@ -74,6 +78,36 @@ def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
             return result  # exhausted — let the caller handle the empty response
         return result
     raise RuntimeError("Max retries exceeded")
+
+
+def _call_with_timeout(fn, seconds: float):
+    """Run fn() under a hard wall-clock timeout; raise TimeoutError if exceeded.
+
+    The OpenAI/httpx read timeout resets on every byte received, so a model that
+    streams tokens very slowly — or gets stuck emitting filler — can block a call
+    far past the configured client timeout (the hour-long Ollama stalls we hit).
+    A wall-clock bound in a daemon worker thread guarantees the call returns or
+    raises within `seconds`.  The thread is a daemon, so an abandoned hung call
+    cannot keep the process alive.  The raised TimeoutError matches
+    _TRANSIENT_MARKERS, so _with_retry retries it like any transient failure.
+    """
+    import threading
+    box: dict = {}
+
+    def _run():
+        try:
+            box["value"] = fn()
+        except BaseException as exc:        # noqa: BLE001 — re-raised to caller
+            box["error"] = exc
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(seconds)
+    if t.is_alive():
+        raise TimeoutError(f"LLM call exceeded {seconds:.0f}s wall-clock timeout")
+    if "error" in box:
+        raise box["error"]
+    return box.get("value")
 
 
 # ── Thinking-token stripping ──────────────────────────────────────────────────
@@ -234,7 +268,10 @@ def _groq_chat(prompt: str, system: str, model: str, max_tokens: int,
     return _strip_thinking(raw)
 
 
-_OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "300"))
+# 120s default: long enough for a 14B model's longest structured generation,
+# short enough that a hung/slow-streaming call fails fast instead of stalling
+# the whole run.  Enforced as a hard wall-clock bound via _call_with_timeout.
+_OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "120"))
 
 
 def _ollama_chat(prompt: str, system: str, model: str, max_tokens: int,
@@ -250,12 +287,14 @@ def _ollama_chat(prompt: str, system: str, model: str, max_tokens: int,
     kwargs: dict = {}
     if temperature is not None:
         kwargs["temperature"] = temperature
-    raw = _with_retry(lambda: client.chat.completions.create(
-        model=model, max_tokens=max_tokens,
-        messages=messages,
-        extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
-        **kwargs).choices[0].message.content,
-        max_retries=3, base_delay=1.0)
+    def _create():
+        return client.chat.completions.create(
+            model=model, max_tokens=max_tokens,
+            messages=messages,
+            extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
+            **kwargs).choices[0].message.content
+    raw = _with_retry(lambda: _call_with_timeout(_create, _OLLAMA_TIMEOUT),
+                      max_retries=3, base_delay=1.0)
     return _strip_thinking(raw)
 
 
@@ -370,12 +409,14 @@ class LLMClient:
         kwargs: dict = {}
         if self._temperature is not None:
             kwargs["temperature"] = self._temperature
-        raw = _with_retry(lambda: client.chat.completions.create(
-            model=self._model, max_tokens=self._max_tokens,
-            messages=messages,
-            extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
-            **kwargs).choices[0].message.content,
-            max_retries=3, base_delay=1.0)
+        def _create():
+            return client.chat.completions.create(
+                model=self._model, max_tokens=self._max_tokens,
+                messages=messages,
+                extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
+                **kwargs).choices[0].message.content
+        raw = _with_retry(lambda: _call_with_timeout(_create, _OLLAMA_TIMEOUT),
+                          max_retries=3, base_delay=1.0)
         return _strip_thinking(raw)
 
 
