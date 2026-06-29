@@ -1285,8 +1285,11 @@ class GraphPipeline:
                         _s.is_recycle     = False
                         _s.recycle_target = None
 
-        except RuntimeError as exc:
-            print(f"[GP] Stage 1 EXCEPTION: {exc}", flush=True)
+        except (RuntimeError, ValueError) as exc:
+            # ValueError covers an exhausted empty/whitespace-only LLM response
+            # (e.g. StreamExtractor's parser): degrade this one case to
+            # PLAN_FAILED with a real diagnostic instead of crashing the graph.
+            print(f"[GP] Stage 1 EXCEPTION: {type(exc).__name__}: {exc}", flush=True)
             return {"outcome": "PLAN_FAILED", "warnings": [f"Stage 1 failed: {exc}"]}
 
         return {

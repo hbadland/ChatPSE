@@ -38,15 +38,22 @@ _RATE_LIMIT_MARKERS = (
 )
 
 def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
-    """Call fn(), retrying with exponential backoff on rate-limit errors.
+    """Call fn(), retrying with backoff on rate-limit errors AND empty responses.
 
     base_delay=15s because Gemini's RESOURCE_EXHAUSTED is a per-minute RPM
     limit — short delays don't recover.  6 retries gives up to ~7 minutes of
     wait before failing, which covers sustained bursts without hanging forever.
+
+    An empty/whitespace-only response is also treated as transient: Ollama
+    intermittently returns "" on an otherwise-healthy call, and a plain retry
+    usually recovers it.  These use a brief fixed backoff (not the long
+    rate-limit schedule).  On exhaustion the empty result is returned unchanged
+    so the caller's existing empty-response handling (parse → ValueError) still
+    applies — callers degrade the case gracefully rather than retry forever here.
     """
     for attempt in range(max_retries):
         try:
-            return fn()
+            result = fn()
         except Exception as e:
             err = str(e).lower()
             is_transient = any(m in err for m in _RATE_LIMIT_MARKERS)
@@ -56,6 +63,16 @@ def _with_retry(fn, max_retries: int = 6, base_delay: float = 15.0):
                 time.sleep(delay)
                 continue
             raise
+
+        if result is None or (isinstance(result, str) and not result.strip()):
+            if attempt < max_retries - 1:
+                delay = min(2.0 * (2 ** attempt), 10.0)
+                print(f"  [llm] empty response — retrying in {delay:.0f}s "
+                      f"(attempt {attempt + 1}/{max_retries})")
+                time.sleep(delay)
+                continue
+            return result  # exhausted — let the caller handle the empty response
+        return result
     raise RuntimeError("Max retries exceeded")
 
 
