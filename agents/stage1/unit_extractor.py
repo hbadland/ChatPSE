@@ -54,7 +54,12 @@ Schema:
 Rules:
 - Tags: type abbreviation + 2-digit index (HT-01, V-01, MX-01, SP-01, PM-01, CP-01, EX-01, CL-01, RX-01)
 - List units in process flow order (feed to product)
-- Include only units explicitly needed — do not add units not implied by the description
+- Extract every unit operation the process description implies. Each distinct physical step
+  (heat, cool, pump, compress, react, separate) is its own unit, and standard equipment expands
+  (a distillation column = condenser + reboiler + column vessel). Do not omit implied steps.
+  Do NOT invent units the description does not imply.
+- Standard equipment expands into component units: a distillation column = condenser (Cooler)
+  + reboiler (Heater) + column vessel (Vessel); a decanter = a Vessel performing liquid-liquid splitting
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
 - Include a Mixer only when combining two or more feed streams is described
 - Include a Splitter only when splitting a stream into two fractions is described
@@ -84,7 +89,12 @@ Rules:
 - Tags: use type abbreviation + 2-digit index (HT-01, V-01, MX-01, etc.)
   Abbreviations: Heater=HT, Cooler=CL, Vessel=V, Mixer=MX, Splitter=SP, Pump=PM, Compressor=CP, Expander=EX, ConversionReactor=RX
 - List units in process flow order (feed to product)
-- Include only units explicitly needed — do not add units not implied by the description
+- Extract every unit operation the process description implies. Each distinct physical step
+  (heat, cool, pump, compress, react, separate) is its own unit, and standard equipment expands
+  (a distillation column = condenser + reboiler + column vessel). Do not omit implied steps.
+  Do NOT invent units the description does not imply.
+- Standard equipment expands into component units: a distillation column = condenser (Cooler)
+  + reboiler (Heater) + column vessel (Vessel); a decanter = a Vessel performing liquid-liquid splitting
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
 - Include a Mixer only when the description explicitly mentions combining or mixing two feed streams
 - Include a Splitter only when the description explicitly mentions splitting a stream into two fractions
@@ -376,7 +386,8 @@ def _build_prompt(description: str, compounds: list[str]) -> str:
     return (
         f"Process description: {description}\n"
         f"Compounds present: {', '.join(compounds)}\n\n"
-        "List the unit operations needed for this process in flow order."
+        "List all unit operations implied by the process, expanding standard equipment, "
+        "without merging or skipping steps."
     )
 
 
