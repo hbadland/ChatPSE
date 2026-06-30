@@ -1,0 +1,166 @@
+[
+  {
+    "id": "VAL_05",
+    "name": "Vinyl Chloride Production EDC Chlorination Pyrolysis",
+    "tier": "val_15plus",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Ethylene and chlorine feeds are mixed and reacted in a direct chlorination reactor to produce ethylene dichloride, which is purified and fed to a pyrolysis furnace where it is cracked at high temperature to yield vinyl chloride and hydrogen chloride. The furnace effluent is quenched and condensed before entering an HCl distillation column that recovers pure hydrogen chloride overhead, while the bottoms are sent to a vinyl chloride column that separates high-purity vinyl chloride as distillate and recycles the unconverted ethylene dichloride bottoms back to the pyrolysis feed.",
+    "compounds": [
+      "Ethylene",
+      "Chlorine",
+      "1,2-dichloroethane",
+      "Hydrogen chloride",
+      "Vinyl chloride"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_05_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 14,
+      "n_units_max": 16,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Expander"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "P-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "mixed"
+        }
+      ]
+    },
+    "prompt": "Produce vinyl chloride monomer and hydrogen chloride from ethylene and chlorine via the balanced process route. Ethylene and chlorine react to form 1,2-dichloroethane (EDC), which is thermally cracked to yield vinyl chloride and hydrogen chloride; the two products are separated into pure streams and unconverted EDC is recycled back to the cracking stage.",
+    "notes": "Ground-truth reference: VAL_05_reference.json. Source DWSIM file: Vinyl_Chloride_Production.dwxmz. Property package not stated \u2014 Peng-Robinson inferred as standard for halogenated hydrocarbon system at moderate pressure. Unit tags inferred from flowsheet: Mix-1/Mix-2 \u2192 MX-01/MX-02; Direct Chlorination Reactor/Pyrolysis Furnace/HCL Column/VC Column \u2192 V-01 through V-04; E-100/E-101/E-103 \u2192 HT-01/HT-02/HT-03 (heaters/evaporators); Quench/Condenser coolers \u2192 CO-01/CO-02; Reactor Pump P-100 \u2192 P-01; two pressure-reducing valves \u2192 EX-01/EX-02; REC-042 \u2192 SP-01. Flows converted from lbmol/h \u00d7 0.126006 mol/s. Pressures converted from atm \u00d7 101325 Pa. Stream S-10 and S-07 compositions identical (post-quench condensation preserves composition). Sub-1E-20 molar fractions rounded to 0.000000 throughout."
+  },
+  {
+    "id": "VAL_04",
+    "name": "Hydrogen Production Biogas Reforming WGS PSA",
+    "tier": "val_15plus",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Biogas (methane and carbon dioxide) is compressed and mixed with steam before being fed to a steam methane reformer operating at high temperature, where methane is converted to syngas (carbon monoxide and hydrogen). The syngas is cooled and passed through a water-gas shift reactor that converts carbon monoxide and steam to additional hydrogen and carbon dioxide. The shifted gas is further cooled to condense water, which is knocked out in separators, before the dry hydrogen-rich gas is purified in a pressure swing adsorption unit to yield high-purity hydrogen product while a tail gas containing carbon dioxide and residual methane is rejected.",
+    "compounds": [
+      "Methane",
+      "Carbon dioxide",
+      "Carbon monoxide",
+      "Hydrogen",
+      "Water"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_04_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 17,
+      "n_units_max": 19,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "K-"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "P-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "V-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "mixed"
+        }
+      ]
+    },
+    "prompt": "Produce pure hydrogen from a biogas feed of methane and carbon dioxide by steam methane reforming followed by water-gas shift reaction. Steam is mixed with the compressed biogas before the reformer; the shift reactor converts carbon monoxide and steam to hydrogen and carbon dioxide; water and carbon dioxide are then removed to yield a high-purity hydrogen product.",
+    "notes": "Ground-truth reference: VAL_04_reference.json. Source DWSIM file: Hydrogen_production_from_biogas.dwxmz. Property package: Peng-Robinson (EOS appropriate for H2/CO/CH4/CO2/H2O at high pressure reforming conditions). 18 units: K-01 (biogas compressor), P-01 (water pump), MX-01/02 (feed mixers), HT-01 through HT-07 (heaters including reformer and WGS), CO-01/02 (coolers), V-01 through V-04 (separators/knock-out drums), SP-01 (splitter for PSA tail gas split). 17 streams: WATER, BIOGAS, S-01 through S-09, S-011, S-012, S-014 through S-017, H2. Composition normalisation applied to S-05: Water adjusted 0.641687 -> 0.642547 (sum was 0.99914, deficit 0.00086 added to dominant component Water)."
+  }
+]

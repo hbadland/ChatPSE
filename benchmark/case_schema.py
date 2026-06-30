@@ -24,9 +24,18 @@ TIERS = [
     "sanity", "easy", "medium", "hard", "perturbation", "generalisation",
     # Extended hard-benchmark tiers — each maps to a separate file via _TIER_FILENAMES
     "multi_unit", "missing_bip", "ambiguous", "adversarial",
-    # Ground-truth validation tier — cases derived from real DWSIM flowsheets
-    "validation",
+    # Ground-truth validation tiers — real DWSIM/FOSSEE flowsheets, split by the
+    # CORRECTED material-unit count into complexity bins (replaces the flat
+    # "validation" tier).  Default "<tier>.json" filename pattern applies.
+    "val_3_5", "val_6_9", "val_10_14", "val_15plus",
 ]
+
+# The validation family — real-sourced reference cases that need the large
+# extraction token budget, the no-summarisation path, and reference-MAPE scoring.
+# Behaviour keys on this predicate, NOT a literal tier string, so all complexity
+# bins (and the legacy "validation" string) are treated identically.
+def is_validation_tier(tier: str) -> bool:
+    return tier == "validation" or tier.startswith("val_")
 
 # Tiers whose filename differs from the default "<tier>.json" pattern.
 _TIER_FILENAMES: dict[str, str] = {

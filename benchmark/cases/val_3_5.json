@@ -1,0 +1,56 @@
+[
+  {
+    "id": "FOS_01",
+    "name": "Organic Rankine Cycle R245fa (FOSSEE #109)",
+    "tier": "val_3_5",
+    "difficulty": "easy",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "power_cycle",
+    "description": "An organic Rankine cycle using R245fa as working fluid. The working fluid is pumped to raise its pressure, then passed to a heater where it converts from liquid to saturated vapour. The high-pressure vapour enters a turbine to generate power. The low-pressure vapour enters a condenser where it converts back to liquid, and the liquid is recycled back to the pump to start the cycle again.",
+    "compounds": [
+      "R245fa"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/FOS_01_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 4,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Expander"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        }
+      ]
+    },
+    "prompt": "An organic Rankine cycle with R245fa: pump the working fluid to high pressure, heat it to saturated vapour, expand it through a turbine to produce power, condense it back to liquid, and recycle the liquid to the pump.",
+    "notes": "FOSSEE DWSIM-Flowsheets #109 Organic Rankine Cycle. Real-sourced, DWSIM-converged ground truth. Working fluid R245fa; single package (Peng-Robinson). 4 material units (Pump, Heater, Expander/Turbine, Cooler/Condenser); closed cycle with recycle stream S-04 (CO-01 -> PM-01). Reference duties: Pump 0.608 kW, Heater 250 kW, Turbine work 21.54 kW, Condenser 229.06 kW (energy balance closes: 250.608 kW in vs 250.6 kW out). Stream molar flow not reported in the FOSSEE source -> null. Belongs to the 3-5 unit complexity bin."
+  }
+]

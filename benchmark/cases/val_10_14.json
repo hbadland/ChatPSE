@@ -1,0 +1,380 @@
+[
+  {
+    "id": "VAL_02",
+    "name": "Heterogeneous Azeotropic Separation Pyridine Water Toluene",
+    "tier": "val_10_14",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "A pyridine-water mixture, which forms a homogeneous azeotrope, is fed into a two-column heterogeneous azeotropic distillation system with toluene added as an entrainer. The entrainer exploits a heterogeneous toluene-water azeotrope to drive liquid-liquid phase splitting in a decanter, allowing the organic and aqueous layers to be routed separately. High-purity pyridine is recovered as the bottoms of the first column, while high-purity water is recovered as the bottoms of the second column, and the toluene-rich overhead is recycled back to the first column.",
+    "compounds": [
+      "Toluene",
+      "Water",
+      "Pyridine"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_02_reference.json",
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 9,
+      "n_units_max": 11,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "V-"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "prompt": "Separate pyridine and water from their azeotropic mixture using toluene as an entrainer in a heterogeneous azeotropic distillation process. The toluene entrainer exploits a liquid-liquid phase split to break the azeotrope, recovering high-purity pyridine and high-purity water as separate products with toluene recycled.",
+    "notes": "Ground-truth reference: VAL_02_reference.json. Source DWSIM file: Heterogeneous_Azeotropic_Separation_of_Pyridine_and_Water.dwxmz. Property package not explicitly stated \u2014 NRTL inferred from heterogeneous azeotropic distillation context. Unit tags inferred from flowsheet diagram: DC-01/DC-02 -> V-01/V-02; Decanter -> V-03; COOL-01 -> CO-01; E-01/E-02 -> HT-01/HT-02; MIX-01/MIX-02 -> MX-01/MX-02; REC-01/REC-02 -> SP-01/SP-02. Toluene mole fraction in S-13 rounded from 5.13222E-19 to 0.000000."
+  },
+  {
+    "id": "VAL_03",
+    "name": "Hydrodealkylation Toluene to Benzene SRK Recycle",
+    "tier": "val_10_14",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Toluene and hydrogen feeds are mixed and heated to reaction temperature before entering a conversion reactor where toluene is dealkylated to produce benzene and methane. The hot reactor effluent is cooled and passed to a vapour-liquid separator, where the hydrogen- and methane-rich vapour is recycled back to the reactor feed while the liquid fraction is reheated and sent to a distillation column. The distillation column recovers high-purity benzene as distillate while toluene-rich bottoms are pumped and recycled to the reactor feed mixer.",
+    "compounds": [
+      "Hydrogen",
+      "Toluene",
+      "Benzene",
+      "Methane",
+      "Biphenyl"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_03_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 9,
+      "n_units_max": 11,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "P-"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "V-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "hydrocarbon"
+        }
+      ]
+    },
+    "prompt": "Simulate the hydrodealkylation (HDA) of toluene to benzene using a hydrogen feed at high temperature. The reactor effluent contains benzene, unreacted toluene, hydrogen, methane, and biphenyl byproduct; after cooling and separation, the hydrogen and methane-rich vapour and the unconverted toluene liquid are both recycled to the reactor feed.",
+    "notes": "Ground-truth reference: VAL_03_reference.json. Source DWSIM file: Hydroalkylation_of_Toluene_to_Benzene.dwxmz. Unit tags mapped from abstract: MIX-012->MX-01; HEAT-004->HT-01; RC-007->V-01 (conversion reactor modelled as Vessel); COOL-011->CO-01; SEP-014->V-02; HEAT-019->HT-02; DC-028->V-03; PUMP-030->P-01; REC-017/REC-029->SP-01/SP-02. Composition normalisations applied: Recycled_Toluene Toluene adjusted 0.967->0.968 (sum was 0.999); MSTR-020 Benzene adjusted 0.947->0.9467 (sum was 1.00026); Heavy_1 Toluene adjusted 0.967->0.9675 (sum was 0.9995). Toluene feed pressure given as 2E+5 Pa = 200000 Pa = 2.0 bar. All other streams at 2.35E+06 Pa."
+  },
+  {
+    "id": "VAL_06",
+    "name": "Natural Gas Dehydration TEG Absorption Regeneration",
+    "tier": "val_10_14",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Wet natural gas containing water, acid gases, and light hydrocarbons is contacted with lean triethylene glycol in an absorber column where TEG selectively absorbs water from the gas stream, producing dry sales gas overhead and a water-rich TEG bottoms. The rich TEG is flashed, heated, and fed to a regenerator column where water and light hydrocarbons are stripped overhead as sour gas while high-purity lean TEG is recovered as bottoms. The regenerated TEG is cooled and pumped back to absorber pressure before being recycled to the top of the absorber.",
+    "compounds": [
+      "Nitrogen",
+      "Hydrogen sulfide",
+      "Carbon dioxide",
+      "Methane",
+      "Ethane",
+      "Propane",
+      "Isobutane",
+      "N-butane",
+      "Isopentane",
+      "N-pentane",
+      "Water",
+      "Triethylene glycol"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_06_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 9,
+      "n_units_max": 12,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Expander"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "P-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "mixed"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        }
+      ]
+    },
+    "prompt": "Dehydrate a high-pressure natural gas stream containing methane, ethane, propane, isobutane, n-butane, isopentane, n-pentane, nitrogen, hydrogen sulfide, carbon dioxide, and water using triethylene glycol (TEG) absorption. The wet gas contacts lean TEG in an absorber to produce dry sales gas; the water-rich TEG is regenerated by heating and stripping, and the lean TEG is cooled, repressurised, and recycled to the absorber.",
+    "notes": "Ground-truth reference: VAL_06_reference.json. Source DWSIM file: Drying_of_Natural_Gas_using_TEG.dwxmz. Property package not stated \u2014 Peng-Robinson inferred as standard for natural gas + glycol dehydration at high pressure. Note: some simulators use a modified PR or PR+activity coefficient model for TEG systems; bip_injected check included as precaution. Unit tags inferred from flowsheet: Absorber/Regenerator/distillation column \u2192 V-01/V-02/V-03; HX-027/HX-012 \u2192 HT-01/HT-02 (cross heat exchangers); COOL-028/cooler \u2192 CO-01/CO-02; Pump \u2192 P-01; VALV-032 \u2192 EX-01; REC-028 \u2192 SP-01. Pressures converted from atm \u00d7 101325 Pa. Compositions normalised: TEG Recycle TEG adjusted to 0.999283 (sum 0.999978); Sour gas Methane adjusted to 0.476905 (sum 1.000001); Sales Gas Methane adjusted to 0.919882 (sum 0.999998); Rich TEG TEG adjusted to 0.616900 (sum 1.000003). Sub-1E-7 molar fractions rounded to 0.000000."
+  },
+  {
+    "id": "VAL_08",
+    "name": "Extractive Distillation Acetonitrile Isopropanol Water Ethylene Glycol",
+    "tier": "val_10_14",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "A ternary feed of acetonitrile, isopropanol and water, which forms multiple binary and ternary azeotropes, is separated using a two-stage extractive distillation system with ethylene glycol as the entrainer. The first column recovers high-purity acetonitrile as distillate at sub-atmospheric pressure, while the second column recovers isopropanol-rich distillate at atmospheric pressure. The combined bottoms from both extractive columns are sent to an entrainer recovery column where water leaves overhead and high-purity ethylene glycol is recovered as bottoms and recycled.",
+    "compounds": [
+      "Acetonitrile",
+      "Isopropanol",
+      "Water",
+      "Ethylene glycol"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_08_reference.json",
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 11,
+      "n_units_max": 13,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "bip_injected",
+          "model": "NRTL"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "prompt": "Separate a ternary feed of acetonitrile, isopropanol, and water \u2014 a system with multiple binary azeotropes \u2014 using a two-stage extractive distillation process with ethylene glycol as the solvent. Recover high-purity acetonitrile and high-purity isopropanol as separate overhead products, with water removed and the ethylene glycol solvent recovered and recycled.",
+    "notes": "Ground-truth reference: VAL_08_reference.json. Source DWSIM file: Extractive_Distillation_Acetonitrile_Water_Isopropanol_EG.dwxmz. NRTL stated explicitly for material streams and column K-value calculations. Unit tags inferred from flowsheet: EDC-01/EDC-02/ERC \u2192 V-01/V-02/V-03; MX-01/MX-02 \u2192 MX-01/MX-02; HX-01 through HX-04 \u2192 HT-01 through HT-04 (feed preheaters and inter-column heaters); E-01/E-03 shown as coolers in diagram \u2192 CO-01/CO-02 (entrainer coolers at 45\u00b0C and 75\u00b0C recycle targets); SP-01 \u2192 SP-01 (entrainer splitter). S-10 Water normalised 0.983\u21920.983884 (sum was 0.999116). S-04 Water and Ethylene glycol rounded from sub-1E-12 to 0.000000. S-08 Ethylene glycol rounded from 6.66E-10 to 0.000000. S-11 first three compounds rounded from sub-1E-10 to 0.000000. CO-01 T_out = 45\u00b0C = 318.15K; CO-02 T_out = 75\u00b0C = 348.15K (entrainer recycle temperatures stated in abstract)."
+  },
+  {
+    "id": "VAL_10",
+    "name": "Syngas Production RLNG Steam Reforming Ammonia Plant",
+    "tier": "val_10_14",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Re-gasified liquefied natural gas and steam are fed to a primary reformer where methane is converted to syngas via steam reforming reactions, followed by a secondary reformer where air injection provides nitrogen and additional combustion heat. The syngas then passes through high-temperature and low-temperature shift converters to maximise hydrogen yield by converting carbon monoxide, followed by a carbon dioxide absorber to remove CO2, and finally a methanator to eliminate trace carbon oxides, yielding a purified hydrogen and nitrogen rich syngas suitable for ammonia synthesis.",
+    "compounds": [
+      "Water",
+      "Methane",
+      "Carbon monoxide",
+      "Hydrogen",
+      "Carbon dioxide",
+      "Oxygen",
+      "Nitrogen"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_10_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 13,
+      "n_units_max": 16,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "mixed"
+        }
+      ]
+    },
+    "prompt": "Produce a hydrogen and nitrogen-rich syngas for ammonia synthesis from regasified LNG (methane) and steam. Primary steam reforming converts methane to hydrogen and carbon monoxide; secondary reforming with an air feed introduces nitrogen and drives further conversion; high and low temperature shift reactors then convert carbon monoxide to additional hydrogen; carbon dioxide is absorbed and removed, and trace carbon oxides are eliminated by methanation.",
+    "notes": "Ground-truth reference: VAL_10_reference.json. Source DWSIM file: Syngas_production_RLNG_DWSIM.dwxmz. Property package not explicitly stated \u2014 Peng-Robinson inferred as standard for high-T/P reforming with H2/CO/CO2/CH4/N2/O2/H2O. Unit tags inferred from flowsheet: MIXER-1/MIXER-2 \u2192 MX-01/MX-02; HEAT-003/Heater2 \u2192 HT-01/HT-02; Primary Reformer/Secondary Reformer/HYSHIFT/LYSHIFT/CO2 Absorber/Methanator \u2192 V-01 through V-06; Cooler1/Cooler2/Cooler3 \u2192 CO-01/CO-02/CO-03; SP-01 inferred from process gas splitting visible in diagram. Only 4 streams reported in abstract (SYNGAS, STEAM, R-LNG, AIR) \u2014 all intermediate streams absent. Comparable to VAL_04 structure: feed and final product streams are present, core transformation is bounded. SYNGAS Nitrogen normalised from 0.494827 to 0.494832 (sum was 0.999995). R-LNG Carbon dioxide taken as 0.000800 from 0.00080016. Molar flows taken from Vapor Phase Molar Flow column in kmol/h \u00f7 3.6."
+  }
+]

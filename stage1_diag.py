@@ -19,6 +19,7 @@ import os
 import sys
 import time
 import traceback
+from collections import Counter
 
 from benchmark.case_schema import load_tier
 from agents.graph_pipeline import GraphPipeline
@@ -62,6 +63,13 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
     rec = {
         "case": case.id, "valid_ir": False,
         "units_extracted": None, "ir_units": None, "unit_types": None,
+        # Raw UnitExtractor output (LLM call #2) BEFORE normalise auto-inserts
+        # mixers/splitters — tags + multiplicity preserved, so "three stages"
+        # producing one vs three units is visible.  extracted_type_counts is the
+        # per-type multiplicity; graph_type_counts is the post-normalise count, so
+        # (graph_type_counts - extracted_type_counts) = deterministic padding.
+        "extracted_units": None, "extracted_type_counts": None,
+        "graph_type_counts": None,
         "ref_units": ref_unit_count(getattr(case, "reference_file", "") or ""),
         "fail_stage": None, "fail_reason": None,
     }
@@ -96,6 +104,15 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
             return rec
         sem_units = st.get("sem_units")
         rec["units_extracted"] = len(sem_units.units) if sem_units else 0
+        # Capture the raw extraction VERBATIM (call #2 output, pre-normalise):
+        # tags + types + reaction, in extraction order, with multiplicity intact.
+        if sem_units:
+            rec["extracted_units"] = [
+                {"tag": u.tag, "type": u.type, "reaction": u.reaction or None}
+                for u in sem_units.units
+            ]
+            rec["extracted_type_counts"] = dict(
+                Counter(u.type for u in sem_units.units))
 
         # 3. build IR
         st.update(gp._build_node(st))
@@ -118,6 +135,9 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
             # SemanticUnit attribute and does NOT exist on the built graph nodes —
             # using it crashed every successfully-built case with an AttributeError.
             rec["unit_types"] = sorted({u.unit_type for u in units})
+            # Post-normalise per-type multiplicity; diff against
+            # extracted_type_counts to isolate deterministic mixer/splitter padding.
+            rec["graph_type_counts"] = dict(Counter(u.unit_type for u in units))
             rep = validate(graph)
             rec["valid_ir"] = bool(rep.valid)
             if not rep.valid:
@@ -150,7 +170,8 @@ def main():
 
     out_file = os.path.join(args.diag_dir, "stage1_diag_results.json")
     os.makedirs(args.diag_dir, exist_ok=True)
-    cases = load_tier("validation")
+    cases = [c for t in ("val_3_5", "val_6_9", "val_10_14", "val_15plus")
+             for c in load_tier(t)]
     print(f"[diag] {len(cases)} validation cases; model={args.model}", flush=True)
     gp = GraphPipeline(model=args.model, max_iterations=10)
 

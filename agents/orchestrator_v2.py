@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import sys
 import time
+from benchmark.case_schema import is_validation_tier
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -393,7 +394,7 @@ class OrchestratorV2:
         # Validation-tier cases skip summarisation entirely — they are complex
         # by design and summarisation loses units.  max_tokens=16384 covers them.
         _n_desc_words = len(desc.split())
-        if _n_desc_words > 200 and tier != "validation":
+        if _n_desc_words > 200 and not is_validation_tier(tier):
             print(
                 f"[ORCH] description length={_n_desc_words} words — "
                 "summarising for UnitExtractor",
@@ -449,7 +450,7 @@ class OrchestratorV2:
                     flush=True, file=sys.stderr)
                 desc_for_units = desc
         else:
-            if tier == "validation" and _n_desc_words > 200:
+            if is_validation_tier(tier) and _n_desc_words > 200:
                 print(
                     f"[ORCH] validation tier: skipping summarisation "
                     f"({_n_desc_words} words) — passing full description "
@@ -461,7 +462,7 @@ class OrchestratorV2:
         # validation tier + LangChain available → TopologyChain (4 sequential calls)
         # all other tiers, or LangChain absent    → UnitExtractor + StreamExtractor
         try:
-            if tier == "validation" and self._topology_chain is not None:
+            if is_validation_tier(tier) and self._topology_chain is not None:
                 print("[ORCH] step: topology_chain.extract START (validation tier)", flush=True)
                 _tc_units, _tc_streams = self._topology_chain.extract(desc, compounds)
                 sem_units = SemanticUnits(units=_tc_units)
@@ -724,7 +725,7 @@ class OrchestratorV2:
         # reaction string), but the reference already contains the correct,
         # consistency-verified stoichiometry.  Same pattern as reference-seeded
         # recycle INIT streams; keeps LLM extraction for non-validation tiers.
-        if tier == "validation" and _reference_data is not None:
+        if is_validation_tier(tier) and _reference_data is not None:
             _inject_reference_reactor_params(graph, _reference_data)
 
         print("[ORCH] step: to_dwsim(graph) START", flush=True)

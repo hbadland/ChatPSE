@@ -1,0 +1,206 @@
+[
+  {
+    "id": "VAL_09",
+    "name": "Extractive Distillation Benzene Ethanol P-Xylene Solvent",
+    "tier": "val_6_9",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "azeotrope",
+    "description": "A benzene-ethanol azeotropic feed is separated using a two-column extractive distillation system with p-xylene as the entrainer. In the first column the entrainer raises the relative volatility of benzene relative to ethanol, allowing high-purity ethanol to be recovered as distillate while benzene and p-xylene leave as bottoms. The bottoms are fed to a second column where nearly pure benzene is recovered as distillate and the p-xylene-rich bottoms are cooled and recycled back to the first column with a make-up stream to compensate for solvent losses.",
+    "compounds": [
+      "Ethanol",
+      "Benzene",
+      "P-Xylene"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_09_reference.json",
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 6,
+      "n_units_max": 10,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "bip_injected",
+          "model": "UNIQUAC"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "azeotrope"
+        }
+      ]
+    },
+    "prompt": "Separate an equimolar benzene\u2013ethanol azeotropic feed using extractive distillation with p-xylene as the solvent. Recover high-purity ethanol as the first column overhead and high-purity benzene as the second column overhead, with p-xylene recycled from the solvent recovery step and a make-up stream added to compensate for losses.",
+    "notes": "Ground-truth reference: VAL_09_reference.json. Source DWSIM file: Extractive_Distillation_Benzene_Ethanol_PXylene.dwxmz. UNIQUAC stated explicitly. Unit count is 6 named objects from flowsheet diagram (Mixer, C-01, D-03, C-02, D-02 distillation columns \u2192 V-01/V-02; COOL-01/B-02 COOL \u2192 CO-01/CO-02; REC-016 \u2192 SP-01); n_units_min set to 7 to accommodate any additional auxiliary units in the actual .dwxmz file not visible in the diagram. Molar flow units inferred as kmol/h from mass balance check (feed MW\u224862 g/mol, 6209.01 kg/h \u00f7 62 \u2248 100 kmol/h). All pressures 101325 Pa. Composition normalisations: Solvent P-Xylene 0.9929\u21920.992914; D-01 Ethanol 0.96818\u21920.968190; B-01 P-Xylene 0.802942\u21920.802960; D-02 Benzene 0.970237\u21920.970240. Temperatures given in K directly in abstract table."
+  },
+  {
+    "id": "VAL_01",
+    "name": "Methane Liquefaction Linde Cycle Three Stage",
+    "tier": "val_6_9",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Pure methane vapour is compressed in three sequential stages with intercooling between each stage to bring the gas to high pressure. The high-pressure stream is then cooled to a cryogenic temperature before passing through an expander that reduces pressure and temperature further. The resulting two-phase stream is separated into vapour and liquid fractions in a gas-liquid separator, yielding liquid methane as product while the vapour fraction is recycled back to the compressor inlet.",
+    "compounds": [
+      "Methane"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_01_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 15,
+      "n_units_max": 17,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Expander"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "K-"
+        },
+        {
+          "type": "pressure_decreases_across",
+          "unit_tag_pattern": "EX-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "V-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "hydrocarbon"
+        }
+      ]
+    },
+    "prompt": "Simulate a Linde cycle to liquefy methane gas. The gas is compressed and cooled in multiple stages, then expanded to produce a two-phase stream from which liquid methane is separated as product and the vapour fraction is recycled to the compressor inlet.",
+    "notes": "Ground-truth reference: VAL_01_reference.json. Source DWSIM file: Methane_Liquefaction_Cycle.dwxmz. Property package corrected to Peng-Robinson (EOS appropriate for pure methane at high pressure; original DWSIM file used NRTL which is thermodynamically incorrect for a single-component hydrocarbon system). Unit tags inferred from flowsheet diagram: COMP-01/02/03 -> K-01/02/03; COOL-01/02/03 -> CO-01/02/03; EXP-01 -> EX-01; SEP-01 -> V-01; E-01 through E-08 -> HT-01 through HT-08 (heat exchangers acting as regenerative coolers/heaters in the cycle). T_out for K-01 taken from S-02 (127.43C = 400.58K); T_out for K-03 taken from S-06 (116.08C = 389.24K); T_out for CO-01/CO-02 from downstream stream values (6.85C = 279.95K); T_out for CO-03 from S-07 (-63.15C = 210.00K). S-08 vapor_fraction null (post-expander two-phase state not explicitly stated). S-09 vapor_fraction = 1.0 (vapour product); S-10 vapor_fraction = 0.0 (liquid product)."
+  },
+  {
+    "id": "VAL_07",
+    "name": "Extractive Distillation CO2 Ethane EOR NGL Separation",
+    "tier": "val_6_9",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "A high-pressure gas feed containing carbon dioxide and ethane as the primary components, along with heavier hydrocarbons from propane to pentane, is separated using a two-column extractive distillation system with n-pentane as the entrainer. The first column removes the carbon dioxide-ethane azeotrope overhead while the heavier NGL components and entrainer leave as bottoms. The second column separates high-purity ethane as its overhead product while the entrainer-rich bottoms stream is recycled back to the first column.",
+    "compounds": [
+      "Ethane",
+      "Propane",
+      "Isobutane",
+      "N-butane",
+      "Isopentane",
+      "N-pentane",
+      "Carbon Dioxide"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_07_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 8,
+      "n_units_max": 11,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "convergence"
+        },
+        {
+          "type": "mass_balance"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Splitter"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT-"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "CO-"
+        },
+        {
+          "type": "separation_achieved",
+          "unit_tag_pattern": "V-",
+          "min_relative_diff": 0.1,
+          "domain": "hydrocarbon"
+        }
+      ]
+    },
+    "prompt": "Separate ethane from carbon dioxide in a high-pressure enhanced oil recovery (EOR) gas that also contains propane, isobutane, n-butane, isopentane, and n-pentane, using extractive distillation with n-pentane as the solvent. Recover a high-purity ethane overhead product and an NGL-rich liquid product, with the n-pentane solvent recycled.",
+    "notes": "Ground-truth reference: VAL_07_reference.json. Source DWSIM file: Extractive_Distillation_CO2_Ethane_EOR.dwxmz. Property package stated as Peng-Robinson 78 \u2014 mapped to Peng-Robinson as closest supported string. N-pentane is the named entrainer but does not appear as a separate column in the stream results table; its fraction is likely consolidated into the NGL components or present at trace levels in reported streams \u2014 n-pentane IS included in the compounds list as it must be present in the simulation. Stream S-03 composition normalised: Ethane adjusted 0.3464\u21920.3468 (sum was 0.9996). Stream S-08 Carbon Dioxide rounded from 3.71542E-13 to 0.000000. Stream S-05 Isobutane through N-pentane rounded from sub-1E-10 values to 0.000000. Feed compositions sum exactly to 1.0000. Molar flows converted from kmol/h \u00f7 3.6."
+  }
+]

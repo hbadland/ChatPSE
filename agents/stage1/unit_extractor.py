@@ -299,7 +299,8 @@ class UnitExtractor:
                 current_system = _SYSTEM
             n_words     = len(description.split())
             n_compounds = len(compounds)
-            if tier == "validation":
+            # validation family (real-sourced cases): large budget, no summarisation
+            if tier == "validation" or tier.startswith("val_"):
                 max_tokens = 16384
             elif n_compounds > 10:
                 max_tokens = 12288

@@ -61,6 +61,7 @@ except ImportError:
 from agents.stage2 import GraphBuilder
 from agents.compound_normalize import (
     canonicalize_compound, canonicalize_list, canonicalize_reaction)
+from benchmark.case_schema import is_validation_tier
 from agents.stage3 import ThermoMapper, ParamMapper
 # Reuse ParamMapper's description parsers so the topology_repair phase guard reads
 # the SAME temperature/pressure signal ParamMapper will later use for T_out — the
@@ -1173,7 +1174,7 @@ class GraphPipeline:
 
         # ── Optional summarisation (mirrors orchestrator_v2 exactly) ─────────
         _n_words = len(desc.split())
-        if _n_words > 200 and tier != "validation":
+        if _n_words > 200 and not is_validation_tier(tier):
             print(f"[GP] description length={_n_words} words — summarising for UnitExtractor",
                   flush=True, file=sys.stderr)
             try:
@@ -1213,7 +1214,7 @@ class GraphPipeline:
                       flush=True, file=sys.stderr)
                 desc_for_units = desc
         else:
-            if tier == "validation" and _n_words > 200:
+            if is_validation_tier(tier) and _n_words > 200:
                 print(f"[GP] validation tier: skipping summarisation ({_n_words} words)",
                       flush=True, file=sys.stderr)
             desc_for_units = desc
@@ -1594,7 +1595,7 @@ class GraphPipeline:
         # reference before serialising (mirrors orchestrator_v2). ParamMapper
         # inserts reaction="" when LLM extraction fails; this overrides it with
         # the consistency-verified reference stoichiometry.
-        if state["tier"] == "validation" and reference_data is not None:
+        if is_validation_tier(state["tier"]) and reference_data is not None:
             _inject_reference_reactor_params(graph, reference_data)
 
         print("[GP] step: to_dwsim(graph) START", flush=True)
@@ -1784,7 +1785,7 @@ class GraphPipeline:
             # Validation tier: re-seed reactor reaction/conversion from the
             # reference after repair, since the repair agent may have rebuilt
             # or perturbed the reactor node's params.
-            if state["tier"] == "validation" and ref_data is not None:
+            if is_validation_tier(state["tier"]) and ref_data is not None:
                 _inject_reference_reactor_params(graph, ref_data)
 
             dwsim_json = to_dwsim(graph, reference_data=ref_data)

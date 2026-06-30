@@ -50,7 +50,7 @@ def main() -> None:
                                  "perturbation", "generalisation",
                                  "multi_unit", "missing_bip",
                                  "ambiguous", "adversarial",
-                                 "validation"],
+                                 "val_3_5", "val_6_9", "val_10_14", "val_15plus"],
                         help="Tiers to run (default: all). The four extended hard-benchmark "
                              "tiers (multi_unit, missing_bip, ambiguous, adversarial) map "
                              "to hard_benchmark_{short}.json files automatically.")

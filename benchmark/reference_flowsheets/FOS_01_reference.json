@@ -1,0 +1,55 @@
+{
+  "case_id": "FOS_01",
+  "case_name": "Organic Rankine Cycle R245fa",
+  "source_file": "FOSSEE_DWSIM-Flowsheets_#109_Organic_Rankine_Cycle",
+  "compounds": [
+    "R245fa"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {"tag": "PM-01", "type": "Pump",     "params": {"T_out": null,    "P_out": 800000.0, "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": 381.171, "P_out": null,     "dP": 0.0,  "efficiency": null}},
+    {"tag": "EX-01", "type": "Expander", "params": {"T_out": null,    "P_out": 200000.0, "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": 306.461, "P_out": null,     "dP": 0.0,  "efficiency": null}}
+  ],
+  "connections": [
+    ["PM-01", "S-01", 0, 0], ["S-01", "HT-01", 0, 0],
+    ["HT-01", "S-02", 0, 0], ["S-02", "EX-01", 0, 0],
+    ["EX-01", "S-03", 0, 0], ["S-03", "CO-01", 0, 0],
+    ["CO-01", "S-04", 0, 0], ["S-04", "PM-01", 0, 0]
+  ],
+  "recycles": [
+    {"stream": "S-04", "target_unit": "PM-01"}
+  ],
+  "streams": {
+    "S-01": {
+      "T_K": 306.461, "T_C": 33.311,
+      "P_Pa": 800000.00, "P_bar": 8.00,
+      "flow_mol_s": null,
+      "vapor_fraction": 0.0,
+      "composition": {"R245fa": 1.0}
+    },
+    "S-02": {
+      "T_K": 381.171, "T_C": 108.021,
+      "P_Pa": 800000.00, "P_bar": 8.00,
+      "flow_mol_s": null,
+      "vapor_fraction": 1.0,
+      "composition": {"R245fa": 1.0}
+    },
+    "S-03": {
+      "T_K": 351.131, "T_C": 77.981,
+      "P_Pa": 200000.00, "P_bar": 2.00,
+      "flow_mol_s": null,
+      "vapor_fraction": 1.0,
+      "composition": {"R245fa": 1.0}
+    },
+    "S-04": {
+      "T_K": 306.461, "T_C": 33.311,
+      "P_Pa": 200000.00, "P_bar": 2.00,
+      "flow_mol_s": null,
+      "vapor_fraction": 0.0,
+      "composition": {"R245fa": 1.0}
+    }
+  }
+}
