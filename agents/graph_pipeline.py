@@ -28,10 +28,20 @@ import networkx as nx
 try:
     from langgraph.graph import StateGraph, END
     from typing import TypedDict
+    try:
+        from langgraph.errors import GraphRecursionError
+    except ImportError:                       # older langgraph layout
+        try:
+            from langgraph.pregel import GraphRecursionError  # type: ignore
+        except ImportError:
+            class GraphRecursionError(Exception):  # type: ignore
+                pass
     LANGGRAPH_AVAILABLE = True
 except ImportError:
     LANGGRAPH_AVAILABLE = False
     from typing import TypedDict  # still available in stdlib
+    class GraphRecursionError(Exception):  # placeholder so except clauses parse
+        pass
 
 # ── Agent imports ─────────────────────────────────────────────────────────────
 from agents.basis import BasisAgent
@@ -884,6 +894,7 @@ class GraphPipeline:
         model:          str = DEFAULT_MODEL,
         max_iterations: int = 10,
         rule_store:     Optional[FailureRuleStore] = None,
+        recursion_limit: int = 100,
     ):
         if not LANGGRAPH_AVAILABLE:
             raise ImportError(
@@ -891,6 +902,12 @@ class GraphPipeline:
 
         self._model    = model
         self._max_iter = max_iterations
+        # LangGraph counts every node visit (super-step) against recursion_limit.
+        # The repair loop self-terminates via _execute_node's MAX_ITER guard at
+        # eff_max_iter (≤15) ⇒ ~36 super-steps incl. setup; the LangGraph default
+        # of 25 crashes BEFORE that with GraphRecursionError.  Raise it well clear
+        # of the loop bound so the pipeline's own MAX_ITER termination fires.
+        self._recursion_limit = recursion_limit
 
         retriever = Retriever()
 
@@ -1017,7 +1034,24 @@ class GraphPipeline:
             "iterations_log": [],
             "outcome":        "MAX_ITER",
         }
-        final = self._app.invoke(initial)
+        try:
+            final = self._app.invoke(
+                initial, config={"recursion_limit": self._recursion_limit})
+        except GraphRecursionError as exc:
+            # Backstop: the repair loop should hit its own MAX_ITER termination
+            # long before this.  If it somehow still reaches the LangGraph ceiling,
+            # exit CLEANLY as MAX_ITER with a recorded outcome — a recursion crash
+            # and a max-iter exit are diagnostically different, and the crash
+            # corrupts the result (no outcome/state returned).
+            print(f"[GP] GraphRecursionError at recursion_limit="
+                  f"{self._recursion_limit} — terminating as MAX_ITER: {exc}",
+                  flush=True, file=sys.stderr)
+            final = dict(initial)
+            final["outcome"]  = "MAX_ITER"
+            final["warnings"] = list(initial.get("warnings", [])) + [
+                f"[recursion] LangGraph recursion_limit={self._recursion_limit} "
+                "reached before convergence — terminated as MAX_ITER "
+                "(prevented GraphRecursionError crash)"]
         return self._to_result(final)
 
     def _to_result(self, state: PipelineState) -> PipelineResult:
