@@ -278,7 +278,14 @@ class StreamExtractor:
                 if not errors:
                     return result
                 last_error = "; ".join(errors)
-            except (json.JSONDecodeError, KeyError, TypeError) as e:
+            except (ValueError, KeyError, TypeError) as e:
+                # ValueError covers _parse_json's empty-response / markdown-only
+                # raises AND json.JSONDecodeError (a ValueError subclass).  These
+                # MUST be caught here so the loop retries and, on the final
+                # attempt, switches to the minimal-prompt fallback for empty
+                # responses (the `use_minimal` branch keys off last_error).
+                # Catching only JSONDecodeError previously let a bare empty
+                # ValueError escape on attempt 0, bypassing all retries/fallback.
                 last_error = str(e)
 
         raise RuntimeError(

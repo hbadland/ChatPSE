@@ -16,11 +16,13 @@ Writes <diag-dir>/stage1_diag_results.json and prints a summary table.
 import argparse
 import json
 import os
+import sys
 import time
 import traceback
 
 from benchmark.case_schema import load_tier
 from agents.graph_pipeline import GraphPipeline
+from agents.stage1.stream_extractor import _EMPTY_ERRORS
 from ir import validate
 
 # Default model matches benchmark_runner.py (the canonical entry point).
@@ -75,8 +77,22 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
         # 2. topology (unit + stream extraction)
         st.update(gp._topology_node(st))
         if st["outcome"] == "PLAN_FAILED":
-            rec["fail_stage"] = "topology"
-            rec["fail_reason"] = "PLAN_FAILED (extraction yielded no usable topology)"
+            # _topology_node degrades an exhausted/empty Stage-1 LLM extraction to
+            # PLAN_FAILED, stashing the real exception text in warnings.  An empty
+            # stream-extractor response (ValueError "empty response" / "only
+            # markdown" / a "line 1 column 1" JSON-decode of "") is an EXTRACTION
+            # failure, NOT a topology failure — relabel it so the diagnostic does
+            # not mask empty-response failures inside a generic "topology" bucket.
+            detail = next((w for w in (st.get("warnings") or [])
+                           if "Stage 1 failed" in w), "")
+            if any(m in detail for m in _EMPTY_ERRORS):
+                rec["fail_stage"] = "empty_response"
+                rec["fail_reason"] = (
+                    detail or "Stage 1 stream extractor returned an empty response")
+            else:
+                rec["fail_stage"] = "topology"
+                rec["fail_reason"] = (
+                    detail or "PLAN_FAILED (extraction yielded no usable topology)")
             return rec
         sem_units = st.get("sem_units")
         rec["units_extracted"] = len(sem_units.units) if sem_units else 0
@@ -98,7 +114,10 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
         if graph is not None:
             units = graph.units()
             rec["ir_units"] = len(units)
-            rec["unit_types"] = sorted({u.type for u in units})
+            # NodeIR exposes .unit_type (the canonical type string); .type is the
+            # SemanticUnit attribute and does NOT exist on the built graph nodes —
+            # using it crashed every successfully-built case with an AttributeError.
+            rec["unit_types"] = sorted({u.unit_type for u in units})
             rep = validate(graph)
             rec["valid_ir"] = bool(rep.valid)
             if not rep.valid:
@@ -111,7 +130,12 @@ def run_stage1(gp: GraphPipeline, case) -> dict:
     except Exception as e:  # noqa: BLE001
         rec["fail_stage"] = rec["fail_stage"] or "exception"
         rec["fail_reason"] = f"{type(e).__name__}: {e}"
-        rec["_traceback"] = traceback.format_exc()
+        tb = traceback.format_exc()
+        rec["_traceback"] = tb
+        # Surface the full traceback immediately — a swallowed exception is
+        # undiagnosable.  Print to stderr so it lands in the run log.
+        print(f"[diag] {rec['case']} FAILED ({rec['fail_stage']}): {rec['fail_reason']}\n{tb}",
+              flush=True, file=sys.stderr)
     return rec
 
 
