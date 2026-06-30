@@ -171,8 +171,9 @@ class CoupledSettler:
         if node is None:
             return graph, changes
 
-        # ── Case 1: P_out changed → BP changes → settle upstream T conditioning
-        if fixed_param == "P_out" and isinstance(node, (PumpNode, CompressorNode)):
+        # ── Case 1: P_out changed → BP changes → settle coupled T conditioning
+        if fixed_param == "P_out" and isinstance(
+                node, (PumpNode, CompressorNode, ExpanderNode)):
             new_p = node.params.get("P_out")
             if new_p is None:
                 return graph, changes
@@ -236,6 +237,65 @@ class CoupledSettler:
                                         f"{old:.1f}→{target:.1f} K "
                                         f"(P_out@{fixed_tag} changed → "
                                         f"BP={new_bp:.1f} K, need T>BP+{margin:.0f})"
+                                    )
+                                    changed_this_pass = True
+
+                # ── Downstream conditioning (Rules 4/5): a Compressor/Expander
+                # P_out change shifts the phase-change window of the DOWNSTREAM
+                # Cooler/Heater — the coupled unit in compress→cool→flash trains.
+                # The upstream loop above only covers Pump.P_out→upstream-Cooler,
+                # so without this the downstream cooler is never settled and the
+                # beam adjusts P_out and the cooler T_out INDEPENDENTLY (the
+                # coupling-inert failure). Settle them jointly here.
+                if isinstance(node, (CompressorNode, ExpanderNode)):
+                    for outp in graph.outlet_streams(fixed_tag):
+                        dst_tag = graph.stream_dest(outp.tag)
+                        if dst_tag is None or dst_tag == fixed_tag:
+                            continue
+                        dst = g.unit(dst_tag)
+
+                        if isinstance(dst, CoolerNode):
+                            t_out = dst.params.get("T_out")
+                            margin = margin_model.get_margin(
+                                node.unit_type, "Cooler", compound_classes,
+                                "T_out", default=15.0)
+                            target = max(new_bp - margin, 273.15)
+                            # Retarget in EITHER direction (the cooler must track
+                            # the new BP); 5 K deadband avoids thrashing.
+                            if t_out is None or abs(float(t_out) - target) > 5.0:
+                                old = dst.params.get("T_out")
+                                dst.params["T_out"] = round(target, 2)
+                                changes.append(
+                                    f"COUPLED_SETTLE: {dst_tag}.T_out "
+                                    f"{('%.1f' % old) if old is not None else 'None'}"
+                                    f"→{target:.1f} K (downstream of {fixed_tag}.P_out "
+                                    f"→ BP={new_bp:.1f} K, need T<BP-{margin:.0f})"
+                                )
+                                changed_this_pass = True
+
+                        elif isinstance(dst, HeaterNode):
+                            heater_downstream = {
+                                graph.stream_dest(o.tag)
+                                for o in graph.outlet_streams(dst_tag)
+                            }
+                            feeds_vessel = any(
+                                isinstance(graph.unit(d), SeparatorNode)
+                                for d in heater_downstream if d
+                            )
+                            if feeds_vessel:
+                                t_out = dst.params.get("T_out")
+                                margin = margin_model.get_margin(
+                                    node.unit_type, "Vessel", compound_classes,
+                                    "T_out", default=20.0)
+                                target = new_bp + margin
+                                if t_out is None or abs(float(t_out) - target) > 5.0:
+                                    old = dst.params.get("T_out")
+                                    dst.params["T_out"] = round(target, 2)
+                                    changes.append(
+                                        f"COUPLED_SETTLE: {dst_tag}.T_out "
+                                        f"{('%.1f' % old) if old is not None else 'None'}"
+                                        f"→{target:.1f} K (downstream of {fixed_tag}"
+                                        f".P_out → BP={new_bp:.1f} K, need T>BP+{margin:.0f})"
                                     )
                                     changed_this_pass = True
 
