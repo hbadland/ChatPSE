@@ -59,6 +59,8 @@ except ImportError:
     _TopologyChain = None  # type: ignore[assignment,misc]
     _TC_AVAILABLE = False
 from agents.stage2 import GraphBuilder
+from agents.compound_normalize import (
+    canonicalize_compound, canonicalize_list, canonicalize_reaction)
 from agents.stage3 import ThermoMapper, ParamMapper
 # Reuse ParamMapper's description parsers so the topology_repair phase guard reads
 # the SAME temperature/pressure signal ParamMapper will later use for T_out — the
@@ -1343,6 +1345,29 @@ class GraphPipeline:
         print("[GP] step: builder.build START", flush=True)
         graph = self._builder.build(sem_units, sem_topo, compounds)
         print("[GP] step: builder.build END", flush=True)
+
+        # ── Deterministic compound-name normalisation → exact DWSIM keys ──────
+        # LLM casing/synonym variants (e.g. 'Carbon Monoxide', 'Isobutylene',
+        # '1,2-Dichloroethane') cause hard DWSIM "could not add compound" / "key
+        # not present in the dictionary" failures and run-to-run flakiness.
+        # Canonicalise the compound list, every stream composition key, AND the
+        # reactor stoichiometry so they all reference the SAME exact DWSIM key,
+        # regardless of LLM output.  Runs before reconciliation/back-fill below.
+        graph.compounds, _cn_warns = canonicalize_list(graph.compounds)
+        new_warns += _cn_warns
+        for _stream in graph.streams():
+            if _stream.composition:
+                _merged: dict = {}
+                for _k, _v in _stream.composition.items():
+                    _ck, _w = canonicalize_compound(_k)
+                    if _w:
+                        new_warns.append(_w)
+                    _merged[_ck] = _merged.get(_ck, 0.0) + _v   # merge any dup keys
+                _stream.composition = _merged
+        for _u in graph.units():
+            if _u.unit_type == "ConversionReactor" and _u.params.get("reaction"):
+                _u.params["reaction"], _rw = canonicalize_reaction(_u.params["reaction"])
+                new_warns += _rw
 
         # Compound reconciliation: augment graph.compounds with any found in
         # stream compositions that BasisAgent missed.

@@ -55,6 +55,7 @@ from string import Template
 _CAS_RE = re.compile(r'^\d{1,7}-\d{2}-\d$')
 
 from agents.llm import chat, DEFAULT_MODEL, retry_temperature
+from agents.compound_normalize import canonicalize_list
 from context import COMPOUND_DATABASE
 
 # ── Full DWSIM compound list (for fuzzy validation of LLM-proposed names) ─────
@@ -648,9 +649,11 @@ class BasisAgent:
         normalised = parsed.get("normalised_description") or _substitute(
             description, compound_map)
 
+        _dwsim, _canon_warns = canonicalize_list(_flatten(compound_map))
+        warnings += _canon_warns
         return BasisResult(
             compound_map=compound_map,
-            dwsim_compounds=_flatten(compound_map),
+            dwsim_compounds=_dwsim,
             normalised_description=normalised,
             suggested_compositions=suggested_comps,
             concentration_hints=concentration_hints,
@@ -688,9 +691,11 @@ class BasisAgent:
                     f"'{dwsim}' (from '{orig}') is unverified in "
                     "compound_database.md — confirm DWSIM accepts this name."
                 )
+        _dwsim, _canon_warns = canonicalize_list(_flatten(anchors))
+        warnings += _canon_warns
         return BasisResult(
             compound_map=anchors,
-            dwsim_compounds=_flatten(anchors),
+            dwsim_compounds=_dwsim,
             normalised_description=_substitute(description, anchors),
             suggested_compositions=suggested_comps,
             warnings=warnings,
