@@ -26,6 +26,7 @@ ABLATION_MODES = [
     "no_rule_store",
     "greedy",
     "no_coupling",
+    "completeness",   # full_ccs + completeness-verification loop around extraction
 ]
 
 
@@ -36,6 +37,7 @@ class AblationConfig:
     disable_physics: bool = False
     disable_rules:  bool  = False
     disable_coupling: bool = False
+    completeness_loop: bool = False   # extract-verify-augment loop (default OFF)
 
     def label(self) -> str:
         return self.mode
@@ -55,6 +57,9 @@ CONFIGS: dict[str, AblationConfig] = {
     "no_rule_store": AblationConfig("no_rule_store", beam_width=3, disable_physics=False, disable_rules=True, disable_coupling=False),
     "greedy":      AblationConfig("greedy",      beam_width=1,  disable_physics=False, disable_rules=False,  disable_coupling=False),
     "no_coupling": AblationConfig("no_coupling", beam_width=3,  disable_physics=False, disable_rules=False,  disable_coupling=True),
+    # full system + the completeness-verification loop around unit extraction.
+    # Run this vs "full_ccs" to isolate the loop's effect on capture ratio.
+    "completeness": AblationConfig("completeness", beam_width=3, disable_physics=False, disable_rules=False, disable_coupling=False, completeness_loop=True),
 }
 
 
@@ -254,6 +259,17 @@ def apply_ablation(config: AblationConfig) -> Iterator[None]:
                 print(f"[ABLATION]   no_coupling VERIFY error: {_ve}", flush=True)
         except (ImportError, AttributeError) as _e:
             print(f"[ABLATION]   no_coupling: patch failed: {_e}", flush=True)
+
+    # ── Completeness loop: flip the module-level toggle read by _topology_node ─
+    if getattr(config, "completeness_loop", False):
+        try:
+            import agents.stage1.completeness as _comp
+            patches.append((_comp, "LOOP_ENABLED", _comp.LOOP_ENABLED))
+            _comp.LOOP_ENABLED = True
+            print(f"[ABLATION]   completeness: LOOP_ENABLED=True "
+                  f"(extract-verify-augment loop active)", flush=True)
+        except ImportError as _e:
+            print(f"[ABLATION]   completeness: import failed: {_e}", flush=True)
 
     try:
         yield

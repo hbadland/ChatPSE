@@ -50,6 +50,7 @@ from agents.llm import DEFAULT_MODEL
 from agents.stage1 import UnitExtractor, StreamExtractor
 from agents.stage1.unit_extractor import SemanticUnits, SemanticUnit
 from agents.stage1.stream_extractor import SemanticTopology, SemanticStream
+from agents.stage1 import completeness as _completeness
 # TopologyChain is NOT used in Phase 1 — imported only so GraphPipeline.__init__
 # can log its availability, matching OrchestratorV2's startup message.
 try:
@@ -124,6 +125,7 @@ class PipelineState(TypedDict):
     # recycle guards mutate the SemanticStreams.  Used by topology_repair (Fix 2)
     # to repropagate a recycle flag that a guard dropped.
     recycle_origin: dict            # tag → {is_recycle, recycle_target, dropped_by}
+    completeness_log: Any           # completeness-loop diagnostic (None unless run)
 
     # ── Stage 2 ───────────────────────────────────────────────────────────────
     ir_graph:       Optional[Any]   # FlowsheetGraph
@@ -1019,6 +1021,7 @@ class GraphPipeline:
             "sem_units":      None,
             "sem_topo":       None,
             "recycle_origin": {},
+            "completeness_log": None,
             "ir_graph":       None,
             "ir_report":      None,
             "missing_units":  [],
@@ -1071,6 +1074,7 @@ class GraphPipeline:
         result.final_flowsheet = state.get("dwsim_json")
         result.final_execution = state.get("execution")
         result.margin_snapshot = get_global_margin_model().snapshot()
+        result.completeness    = state.get("completeness_log")   # None unless loop ran
         # Variant B diagnostic ladder (attached only when the mode was active).
         if state.get("variant_b_active"):
             ladder = compute_variant_b_ladder(state)
@@ -1171,6 +1175,7 @@ class GraphPipeline:
         tier      = state["tier"]
         basis     = state["basis_result"]
         new_warns: list[str] = []
+        completeness_log = None   # populated only when the completeness loop runs
 
         # ── Optional summarisation (mirrors orchestrator_v2 exactly) ─────────
         _n_words = len(desc.split())
@@ -1227,6 +1232,19 @@ class GraphPipeline:
             sem_units = self._unit_ext.extract(desc_for_units, compounds, tier=tier)
             print(f"[GP] step: unit_ext.extract END  "
                   f"units={[u.tag for u in sem_units.units]}", flush=True)
+
+            # ── Completeness-verification loop (ablation-gated) ───────────────
+            # Recover text-described units the single-pass extractor dropped.
+            # OFF unless the 'completeness' ablation mode / COMPLETENESS_LOOP env
+            # is set — the baseline extraction above is unchanged.  Each added
+            # unit is grounded by a description span (no domain hallucination).
+            if _completeness.enabled():
+                sem_units, completeness_log = _completeness.run_completeness_loop(
+                    desc, sem_units, self._model)
+                print(f"[GP] step: completeness loop "
+                      f"{completeness_log['pre_loop_n_units']}→"
+                      f"{completeness_log['post_loop_n_units']} units "
+                      f"units={[u.tag for u in sem_units.units]}", flush=True)
 
             print("[GP] step: stream_ext.extract START", flush=True)
             sem_topo = self._stream_ext.extract(
@@ -1331,10 +1349,11 @@ class GraphPipeline:
             return {"outcome": "PLAN_FAILED", "warnings": [f"Stage 1 failed: {exc}"]}
 
         return {
-            "sem_units":      sem_units,
-            "sem_topo":       sem_topo,
-            "recycle_origin": recycle_origin,
-            "warnings":       new_warns,
+            "sem_units":       sem_units,
+            "sem_topo":        sem_topo,
+            "recycle_origin":  recycle_origin,
+            "completeness_log": completeness_log,
+            "warnings":        new_warns,
         }
 
     def _build_node(self, state: PipelineState) -> dict:

@@ -60,6 +60,10 @@ class RunLog:
     ir_report_json: Optional[dict]     = None
     final_graph_summary: Optional[dict] = None
     warnings:       list[str]          = field(default_factory=list)
+    # Completeness-verification loop diagnostic (None unless the loop ran):
+    # {pre_loop_n_units, post_loop_n_units, iterations:[{claimed, accepted,
+    #  rejected(+reason), n_before, n_after}]} — claimed-missing units + spans.
+    completeness_critic: Optional[dict] = None
 
     @property
     def score_curve(self) -> list[int]:
@@ -192,6 +196,9 @@ def extract_run_log(
             stage_after_local_opt_errors = stage_after_local,
         ))
 
+    # Completeness-loop diagnostic (None unless the loop ran)
+    completeness = getattr(pr, "completeness", None)
+
     # Graph summary
     graph = getattr(pr, "final_graph", None)
     graph_summary: Optional[dict] = None
@@ -204,6 +211,10 @@ def extract_run_log(
                 "unit_types": [getattr(u, "unit_type", str(u)) for u in units],
                 "n_binary_params": len(getattr(graph, "binary_parameters", [])),
             }
+            # Pre-loop unit count (before completeness augmentation), when available.
+            if isinstance(completeness, dict):
+                graph_summary["n_units_pre_loop"] = completeness.get("pre_loop_n_units")
+                graph_summary["n_units_post_loop"] = completeness.get("post_loop_n_units")
         except Exception:
             pass
 
@@ -232,6 +243,7 @@ def extract_run_log(
         ir_report_json   = ir_json,
         final_graph_summary = graph_summary,
         warnings         = warnings[:20],
+        completeness_critic = completeness if isinstance(completeness, dict) else None,
     )
 
 
