@@ -36,7 +36,7 @@ from benchmark.case_schema import (
 from benchmark.metrics import (
     RunMetrics, extract_metrics, aggregate, AggregateMetrics
 )
-from benchmark.logger import RunLog, extract_run_log
+from benchmark.logger import RunLog, extract_run_log, extract_system_streams
 from benchmark.physics_eval import run_physics_checks, run_reference_comparison, CheckSeverity
 from benchmark.ablation import AblationConfig, CONFIGS, apply_ablation, make_orchestrator
 
@@ -507,6 +507,7 @@ class BenchmarkRunner:
         # ±10 K tolerances for archival reporting and runs after all cases complete.
         ref_mape_T = ref_mape_P = ref_mape_vf = 0.0
         ref_match_pass = False
+        _ref_checks: list = []
         has_reference  = bool(getattr(case, "reference_file", None))
 
         # Physics-only exclusion: a reference flagged excluded-invalid-reference
@@ -568,6 +569,31 @@ class BenchmarkRunner:
 
         # Extract trajectory log
         run_log  = extract_run_log(pr, case.id, config.mode, self._model)
+
+        # ── Additive evidence (logging only — does NOT affect PASS gating) ─────
+        # Converged system stream table + the already-computed reference
+        # comparison, persisted per-run so the produced values are inspectable
+        # independent of the PASS decision.
+        run_log.system_streams = extract_system_streams(pr)
+        if has_reference:
+            run_log.reference_comparison = {
+                "reference_match_pass":      ref_match_pass,
+                "reference_mape_T":          ref_mape_T,
+                "reference_mape_P":          ref_mape_P,
+                "reference_mape_vf":         ref_mape_vf,
+                "reference_excluded":        ref_excluded,
+                "reference_excluded_reason": ref_excluded_reason,
+                "checks": [
+                    {"check":    c.get("check"),
+                     "passed":   c.get("passed"),
+                     "severity": getattr(c.get("severity"), "value",
+                                         str(c.get("severity"))),
+                     "source":   c.get("source"),
+                     "detail":   c.get("detail")}
+                    for c in _ref_checks
+                ],
+            }
+
         log_path = ""
         if self._save_logs:
             log_path = run_log.save(os.path.join(_RESULTS_DIR, "per_run"))

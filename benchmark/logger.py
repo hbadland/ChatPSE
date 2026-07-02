@@ -64,6 +64,14 @@ class RunLog:
     # {pre_loop_n_units, post_loop_n_units, iterations:[{claimed, accepted,
     #  rejected(+reason), n_before, n_after}]} — claimed-missing units + spans.
     completeness_critic: Optional[dict] = None
+    # Converged stream conditions from the system's SOLVED flowsheet — evidence of
+    # what the system produced, independent of the PASS decision.  Matches the
+    # reference_flowsheets/*.json stream format for direct comparison.  None when
+    # DWSIM produced no stream results.
+    system_streams: Optional[dict] = None
+    # Reference-comparison results (also in the aggregate metrics; persisted here
+    # per-run too): match pass + MAPEs + per-check detail.  None when no reference.
+    reference_comparison: Optional[dict] = None
 
     @property
     def score_curve(self) -> list[int]:
@@ -95,6 +103,36 @@ class RunLog:
 
 
 # ── Extractor ──────────────────────────────────────────────────────────────────
+
+def extract_system_streams(pipeline_result) -> Optional[dict]:
+    """
+    Converged material-stream table from the system's SOLVED flowsheet, in the
+    reference_flowsheets/*.json stream format (T_K/T_C/P_Pa/P_bar/flow_mol_s/
+    vapor_fraction/composition) so it is directly comparable to the reference.
+
+    Reads pipeline_result.final_execution.stream_results (dict[tag → StreamResult]).
+    Returns None when DWSIM produced no converged stream results.  Pure logging.
+    """
+    execution = getattr(pipeline_result, "final_execution", None)
+    sr = getattr(execution, "stream_results", None) if execution is not None else None
+    if not sr:
+        return None
+    out: dict = {}
+    for tag, s in sr.items():
+        T = getattr(s, "T_K", None)
+        P = getattr(s, "P_Pa", None)
+        out[str(tag)] = {
+            "T_K":            (round(float(T), 3) if T is not None else None),
+            "T_C":            (round(float(T) - 273.15, 3) if T is not None else None),
+            "P_Pa":           (round(float(P), 2) if P is not None else None),
+            "P_bar":          (round(float(P) / 1e5, 5) if P is not None else None),
+            "flow_mol_s":     getattr(s, "flow_mol_s", None),
+            "vapor_fraction": getattr(s, "vapor_fraction", None),
+            "composition":    dict(getattr(s, "composition", {}) or {}),
+            "is_feed":        getattr(s, "is_feed", None),
+        }
+    return out
+
 
 def extract_run_log(
     pipeline_result,
