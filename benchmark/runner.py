@@ -583,13 +583,13 @@ class BenchmarkRunner:
                 "reference_mape_vf":         ref_mape_vf,
                 "reference_excluded":        ref_excluded,
                 "reference_excluded_reason": ref_excluded_reason,
+                # Preserve ALL keys per check (severity serialised) so the
+                # 'reference_stream_matching' check's matches/unmatched detail
+                # is persisted, not just check/passed/severity/source/detail.
                 "checks": [
-                    {"check":    c.get("check"),
-                     "passed":   c.get("passed"),
+                    {**{k: v for k, v in c.items() if k != "severity"},
                      "severity": getattr(c.get("severity"), "value",
-                                         str(c.get("severity"))),
-                     "source":   c.get("source"),
-                     "detail":   c.get("detail")}
+                                         str(c.get("severity")))}
                     for c in _ref_checks
                 ],
             }

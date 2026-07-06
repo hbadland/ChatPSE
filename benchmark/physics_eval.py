@@ -1383,11 +1383,15 @@ def _do_reference_comparison(
     reference_file: str, pipeline_result
 ) -> "tuple[list[dict], float, float, float]":
     """
-    Core comparison logic: match system streams to reference streams and compute
-    per-stream T, P, VF errors against the stricter thresholds.
+    Match system streams to reference streams by CONTENT (composition/T/P/vf, not
+    tag) via benchmark.stream_matcher, then compute reference-MAPE over the
+    CONFIDENT matched pairs only.  Also emits a 'reference_stream_matching' detail
+    check carrying every matched pair (ref<->sys, confidence, dT/dP/dvf) plus the
+    unmatched counts, so the matching is fully inspectable in the per-run JSON.
     """
     try:
-        from benchmark.comparison import load_reference, _best_composition_match
+        from benchmark.comparison import load_reference
+        from benchmark.stream_matcher import match_streams
     except ImportError:
         return [], 0.0, 0.0, 0.0
 
@@ -1402,122 +1406,120 @@ def _do_reference_comparison(
     if not sys_sr:
         return _skipped_ref_checks("no stream results from DWSIM"), 0.0, 0.0, 0.0
 
-    # Convert StreamResult objects → dicts that _best_composition_match expects
+    # System streams (P in Pa; carry is_feed for feed anchoring).
     sys_streams: dict = {}
     for tag, s in sys_sr.items():
-        sys_streams[tag] = {
-            "T_K":            float(getattr(s, "T_K",            0.0) or 0.0),
-            "P_bar":          float(getattr(s, "P_Pa",           0.0) or 0.0) / 1e5,
-            "vapor_fraction": float(getattr(s, "vapor_fraction", 0.0) or 0.0),
-            "composition":    dict( getattr(s, "composition",    {}) or {}),
+        T = getattr(s, "T_K", None); P = getattr(s, "P_Pa", None)
+        vf = getattr(s, "vapor_fraction", None)
+        sys_streams[str(tag)] = {
+            "T_K":            (float(T)  if T  is not None else None),
+            "P_Pa":           (float(P)  if P  is not None else None),
+            "vapor_fraction": (float(vf) if vf is not None else None),
+            "composition":    dict(getattr(s, "composition", {}) or {}),
+            "is_feed":        bool(getattr(s, "is_feed", False)),
         }
 
-    ref_streams = ref.get("streams", {})
-    if not ref_streams:
+    ref_raw = ref.get("streams", {})
+    if not ref_raw:
         return _skipped_ref_checks("reference file has no streams"), 0.0, 0.0, 0.0
 
-    matched_sys: set = set()
-    t_apes:   list = []
-    p_apes:   list = []
-    vf_errs:  list = []
-    t_fails:  list = []
-    p_fails:  list = []
-    vf_fails: list = []
-    n_matched = 0
+    # Reference streams normalised to the same fields (P in Pa; accept P_Pa or P_bar).
+    ref_streams: dict = {}
+    for rt, rs in ref_raw.items():
+        P_Pa = rs.get("P_Pa")
+        if P_Pa is None and rs.get("P_bar") is not None:
+            P_Pa = float(rs["P_bar"]) * 1e5
+        ref_streams[str(rt)] = {
+            "T_K":            rs.get("T_K"),
+            "P_Pa":           P_Pa,
+            "vapor_fraction": rs.get("vapor_fraction"),
+            "composition":    rs.get("composition", {}) or {},
+            "is_feed":        rs.get("is_feed"),
+        }
 
-    for ref_tag, ref_s in ref_streams.items():
-        sys_tag = _match_ref_stream(ref_tag, ref_s, sys_streams, matched_sys,
-                                    _best_composition_match)
-        if sys_tag is None:
-            continue
-        matched_sys.add(sys_tag)
-        sys_s = sys_streams[sys_tag]
-        n_matched += 1
+    match = match_streams(sys_streams, ref_streams)
+    pairs = match["pairs"]
 
-        # Temperature
-        ref_T = float(ref_s.get("T_K", 0.0) or 0.0)
-        sys_T = sys_s["T_K"]
-        if ref_T > 1e-9:
-            abs_err_T = abs(sys_T - ref_T)
-            t_apes.append(abs_err_T / ref_T * 100.0)
-            if abs_err_T > _REF_TOL_T_K:
-                t_fails.append(
-                    f"{ref_tag}→{sys_tag}: |ΔT|={abs_err_T:.1f}K "
-                    f"(sys={sys_T:.1f} ref={ref_T:.1f})")
+    t_apes: list = []; p_apes: list = []; vf_errs: list = []
+    t_fails: list = []; p_fails: list = []; vf_fails: list = []
+    for pr_ in pairs:
+        rt, st = pr_["ref_tag"], pr_["sys_tag"]
+        ref_s, sys_s = ref_streams[rt], sys_streams[st]
+        ref_T, sys_T = ref_s["T_K"], sys_s["T_K"]
+        if ref_T and sys_T is not None and float(ref_T) > 1e-9:
+            ae = abs(float(sys_T) - float(ref_T))
+            t_apes.append(ae / float(ref_T) * 100.0)
+            if ae > _REF_TOL_T_K:
+                t_fails.append(f"{rt}->{st}: |dT|={ae:.1f}K "
+                               f"(sys={float(sys_T):.1f} ref={float(ref_T):.1f})")
+        ref_P, sys_P = ref_s["P_Pa"], sys_s["P_Pa"]
+        if ref_P and sys_P is not None and float(ref_P) > 1e-9:
+            rel = abs(float(sys_P) - float(ref_P)) / float(ref_P)
+            p_apes.append(rel * 100.0)
+            if rel > _REF_TOL_P_REL:
+                p_fails.append(f"{rt}->{st}: |dP/P|={rel:.1%}")
+        ref_vf, sys_vf = ref_s["vapor_fraction"], sys_s["vapor_fraction"]
+        if ref_vf is not None and sys_vf is not None:
+            ae = abs(float(sys_vf) - float(ref_vf))
+            vf_errs.append(ae)
+            if ae > _REF_TOL_VF:
+                vf_fails.append(f"{rt}->{st}: |dvf|={ae:.3f}")
 
-        # Pressure
-        ref_P = float(ref_s.get("P_bar", 0.0) or 0.0)
-        sys_P = sys_s["P_bar"]
-        if ref_P > 1e-9:
-            rel_err_P = abs(sys_P - ref_P) / ref_P
-            p_apes.append(rel_err_P * 100.0)
-            if rel_err_P > _REF_TOL_P_REL:
-                p_fails.append(
-                    f"{ref_tag}→{sys_tag}: |ΔP/P|={rel_err_P:.1%} "
-                    f"(sys={sys_P:.3f} ref={ref_P:.3f}bar)")
-
-        # Vapour fraction — skip null reference values (unknown/mixed phase)
-        ref_vf_raw = ref_s.get("vapor_fraction")
-        if ref_vf_raw is not None:
-            ref_vf = float(ref_vf_raw)
-            sys_vf = sys_s["vapor_fraction"]
-            abs_err_vf = abs(sys_vf - ref_vf)
-            vf_errs.append(abs_err_vf)
-            if abs_err_vf > _REF_TOL_VF:
-                vf_fails.append(
-                    f"{ref_tag}→{sys_tag}: |ΔVF|={abs_err_vf:.3f} "
-                    f"(sys={sys_vf:.3f} ref={ref_vf:.3f})")
-
+    n_matched = match["n_matched"]
     if n_matched == 0:
-        return _skipped_ref_checks("no reference streams matched system streams"), 0.0, 0.0, 0.0
+        checks = _skipped_ref_checks(
+            f"no streams matched above confidence threshold {match['threshold']:.2f}")
+        checks.append(_matching_detail_check(match))
+        return checks, 0.0, 0.0, 0.0
 
     mape_T  = round(sum(t_apes)  / len(t_apes),  2) if t_apes  else 0.0
     mape_P  = round(sum(p_apes)  / len(p_apes),  2) if p_apes  else 0.0
     mape_vf = round(sum(vf_errs) / len(vf_errs), 4) if vf_errs else 0.0
-
-    n_T_pass  = n_matched - len(t_fails)
-    n_P_pass  = n_matched - len(p_fails)
-    n_vf_cmp  = len(vf_errs)
-    n_vf_pass = n_vf_cmp  - len(vf_fails)
+    n_vf_cmp = len(vf_errs)
 
     checks = [
-        {
-            "check":    "reference_match_T",
-            "passed":   not t_fails,
-            "severity": CheckSeverity.CRITICAL,
-            "detail":   (
-                f"{n_T_pass}/{n_matched} streams within ±{_REF_TOL_T_K:.0f} K. "
-                f"MAPE={mape_T:.2f}%."
-                + (f" Failures: {'; '.join(t_fails)}" if t_fails else "")
-            ),
-            "source":   "execution",
-        },
-        {
-            "check":    "reference_match_P",
-            "passed":   not p_fails,
-            "severity": CheckSeverity.CRITICAL,
-            "detail":   (
-                f"{n_P_pass}/{n_matched} streams within ±{_REF_TOL_P_REL:.0%}. "
-                f"MAPE={mape_P:.2f}%."
-                + (f" Failures: {'; '.join(p_fails)}" if p_fails else "")
-            ),
-            "source":   "execution",
-        },
-        {
-            "check":    "reference_match_vf",
-            "passed":   not vf_fails,
-            "severity": CheckSeverity.WARNING,
-            "detail":   (
-                (f"{n_vf_pass}/{n_vf_cmp} streams within ±{_REF_TOL_VF}. "
-                 f"MAE={mape_vf:.4f}.")
-                if n_vf_cmp > 0
-                else "no comparable vapour-fraction data in reference"
-            ) + (f" Failures: {'; '.join(vf_fails)}" if vf_fails else ""),
-            "source":   "execution" if n_vf_cmp > 0 else "none",
-        },
+        {"check": "reference_match_T", "passed": not t_fails,
+         "severity": CheckSeverity.CRITICAL,
+         "detail": (f"{n_matched - len(t_fails)}/{n_matched} matched streams within "
+                    f"+/-{_REF_TOL_T_K:.0f} K. MAPE={mape_T:.2f}%."
+                    + (f" Failures: {'; '.join(t_fails)}" if t_fails else "")),
+         "source": "execution"},
+        {"check": "reference_match_P", "passed": not p_fails,
+         "severity": CheckSeverity.CRITICAL,
+         "detail": (f"{n_matched - len(p_fails)}/{n_matched} matched streams within "
+                    f"+/-{_REF_TOL_P_REL:.0%}. MAPE={mape_P:.2f}%."
+                    + (f" Failures: {'; '.join(p_fails)}" if p_fails else "")),
+         "source": "execution"},
+        {"check": "reference_match_vf", "passed": not vf_fails,
+         "severity": CheckSeverity.WARNING,
+         "detail": ((f"{n_vf_cmp - len(vf_fails)}/{n_vf_cmp} matched streams within "
+                     f"+/-{_REF_TOL_VF}. MAE={mape_vf:.4f}.")
+                    if n_vf_cmp > 0 else "no comparable vapour-fraction data")
+                   + (f" Failures: {'; '.join(vf_fails)}" if vf_fails else ""),
+         "source": "execution" if n_vf_cmp > 0 else "none"},
+        _matching_detail_check(match),
     ]
-
     return checks, mape_T, mape_P, mape_vf
+
+
+def _matching_detail_check(match: dict) -> dict:
+    """INFO check carrying the full stream-matching detail for the per-run JSON."""
+    return {
+        "check":    "reference_stream_matching",
+        "passed":   True,
+        "severity": CheckSeverity.INFO,
+        "source":   "execution",
+        "detail":   (f"{match['n_matched']} matched (confidence >= "
+                     f"{match['threshold']:.2f}); {match['n_system_unmatched']} system "
+                     f"+ {match['n_reference_unmatched']} reference unmatched"),
+        "n_matched":             match["n_matched"],
+        "n_system_unmatched":    match["n_system_unmatched"],
+        "n_reference_unmatched": match["n_reference_unmatched"],
+        "matches":               match["pairs"],
+        "system_unmatched":      match["system_unmatched"],
+        "reference_unmatched":   match["reference_unmatched"],
+    }
+
 
 
 def _match_ref_stream(
