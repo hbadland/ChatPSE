@@ -18,7 +18,7 @@ from typing import Optional
 
 from ir.graph import FlowsheetGraph, NodeIR
 from ir.thermo_estimation import bubble_point_K
-from ir.reaction_conditions import default_reactor_temperature
+from ir.reaction_conditions import template_temperature
 from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from rag.retriever import Retriever
 
@@ -313,6 +313,7 @@ def _parse_params_from_description(
         # Temperature: highest extracted T (reactors run hot)
         if desc_temps:
             params["temperature_K"] = round(max(desc_temps), 2)
+            params["_temperature_source"] = "extracted"  # specified in description
         # Pressure: highest extracted P (reactors often run elevated)
         if desc_pressures:
             params["pressure_Pa"] = round(max(desc_pressures), 0)
@@ -379,13 +380,22 @@ def _estimate_params(
     elif node.unit_type == "ConversionReactor":
         _reaction = node.params.get("reaction", "") or params.get("reaction", "")
         if "temperature_K" not in params:
-            # Domain-informed default keyed on reaction type (SMR ~800 °C, WGS
-            # ~350 °C, …) — NOT the old feed_T+300 K, which is wrong for hot
-            # catalytic reactions and let DWSIM solve them adiabatically.
-            T_default, basis = default_reactor_temperature(
-                _reaction, node.metadata.get("role", ""))
-            est["temperature_K"] = T_default
-            est["_reactor_T_basis"] = basis            # provenance (inspectable)
+            _preset_T = node.params.get("temperature_K")
+            if _preset_T is not None:
+                # Already set on the unit (e.g. Variant-B reference injection) —
+                # preserve it; a specified value is NEVER overridden.
+                est["temperature_K"]       = _preset_T
+                est["_temperature_source"] = "extracted"
+            else:
+                # Gap-fill only: description/extraction did NOT specify a temperature,
+                # so use the reaction-type template (Stage 3b classifier + 3c table:
+                # SMR ~800 C, WGS-HTS ~350 C, …).  Records provenance for the per-run
+                # JSON so the source is auditable.
+                tmpl = template_temperature(_reaction, node.metadata.get("role", ""))
+                est["temperature_K"]       = tmpl["temperature_K"]
+                est["_reactor_T_basis"]    = tmpl["basis"]
+                est["_reaction_type"]      = tmpl["reaction_type"]
+                est["_temperature_source"] = "template"
         if "pressure_Pa" not in params:
             est["pressure_Pa"] = round(feed_P or 101_325.0, 0)
         if "conversion" not in params:

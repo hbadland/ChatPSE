@@ -87,6 +87,55 @@ def _parse_reaction_sets(reaction: str) -> tuple[frozenset, frozenset]:
     return side(lhs), side(rhs)
 
 
+# ── Stage 3c: reaction_type → target outlet temperature (approved table) ──────
+# (target_temperature_K, plausible_range, cited_source)
+TARGET_TEMPERATURE_BY_TYPE: dict[str, tuple[float, str, str]] = {
+    "steam_methane_reforming": (1073.15, "750-900 C",
+        "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"),
+    "dry_methane_reforming":   (1123.15, "800-950 C",
+        "Pakhare & Spivey, Chem. Soc. Rev. 43 (2014) 7813"),
+    "water_gas_shift":         (623.15, "310-450 C (HTS, Fe-Cr)",
+        "Newsome, Catal. Rev.-Sci. Eng. 21 (1980) 275 (HTS default)"),
+    "water_gas_shift_lts":     (473.15, "190-250 C (LTS, Cu-Zn)",
+        "Ratnasamy & Wagner, Catal. Rev. 51 (2009) 325"),
+    "reverse_water_gas_shift": (873.15, "500-700 C",
+        "Daza & Kuhn, RSC Adv. 6 (2016) 49675"),
+    "co_methanation":          (573.15, "250-400 C (Ni)",
+        "Kopyscinski et al., Fuel 89 (2010) 1763"),
+    "co2_methanation":         (573.15, "250-400 C (Ni, Sabatier)",
+        "Ronsch et al., Fuel 166 (2016) 276"),
+    "ammonia_synthesis":       (723.15, "400-500 C (Fe)",
+        "Appl, 'Ammonia', Ullmann's Encyclopedia of Industrial Chemistry"),
+    "hydrodealkylation":       (923.15, "600-750 C",
+        "thermal toluene HDA (Perry's Chemical Engineers' Handbook)"),
+    "chlorination":            (363.15, "50-90 C (liquid phase)",
+        "direct chlorination of ethylene (Ullmann's, Chlorinated Hydrocarbons)"),
+    "combustion":              (1273.15, ">=1000 C",
+        "Perry's Chemical Engineers' Handbook (combustion/partial oxidation)"),
+    "generic":                 (623.15, "moderate catalytic default",
+        "unresolved reaction type - conservative moderate default"),
+}
+
+# WGS is HTS by default; select the LTS entry only on an explicit low-T marker.
+_LTS_MARKERS = ("low-temperature", "low temperature", "lts", "cu-zn", "copper-zinc")
+
+
+def template_temperature(reaction: str = "", role: str = "") -> dict:
+    """
+    Target outlet temperature for a reactor whose temperature is unspecified.
+    Returns {temperature_K, reaction_type, range, basis}.  Uses the Stage-3b
+    stoichiometry classifier; water_gas_shift defaults to HTS (623 K) unless the
+    reaction/role text explicitly indicates low-temperature shift.
+    """
+    rtype = classify_reaction(reaction, role)["reaction_type"]
+    if rtype == "water_gas_shift" and any(
+            m in f" {reaction} {role} ".lower() for m in _LTS_MARKERS):
+        rtype = "water_gas_shift_lts"
+    T_K, rng, src = TARGET_TEMPERATURE_BY_TYPE.get(
+        rtype, TARGET_TEMPERATURE_BY_TYPE["generic"])
+    return {"temperature_K": T_K, "reaction_type": rtype, "range": rng, "basis": src}
+
+
 def classify_reaction(reaction: str = "", role: str = "") -> dict:
     """
     Classify a reactor's reaction. Returns:
