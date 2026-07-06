@@ -35,6 +35,17 @@ SYNONYM_MAP: dict[str, str] = {
     "n-propanol":         "1-propanol",
     "propan-1-ol":        "1-propanol",
     "ethylene dichloride": "1,2-dichloroethane",
+    "edc":                "1,2-dichloroethane",
+    # chemical-formula variants: extraction sometimes emits the formula instead of
+    # the name, which the DWSIM-name fallback cannot resolve. Without these, the
+    # chlorination/EDC-pyrolysis stoichiometry signatures silently miss and the
+    # reactor falls to the generic 623 K template.
+    "cl2":                "Chlorine",
+    "hcl":                "Hydrogen chloride",
+    "hydrogen chloride":  "Hydrogen chloride",
+    "vinyl chloride":     "Vinyl chloride",
+    "vcm":                "Vinyl chloride",
+    "ethene":             "Ethylene",
     # xylene isomers (DWSIM has no bare 'Xylene' key — only o/m/p)
     "o-xylene":           "o-Xylene",
     "ortho-xylene":       "o-Xylene",
