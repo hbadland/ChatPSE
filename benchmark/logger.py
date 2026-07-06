@@ -254,21 +254,26 @@ def extract_run_log(
                 graph_summary["n_units_pre_loop"] = completeness.get("pre_loop_n_units")
                 graph_summary["n_units_post_loop"] = completeness.get("post_loop_n_units")
 
-            # Per-reactor temperature provenance (extracted / template / inherited)
-            # so each reactor's operating temperature is auditable.
-            reactor_conditions = []
+            # Per-unit temperature provenance so every unit's operating condition
+            # is auditable: temperature_source ∈ {specified, extracted, template,
+            # computed, inherited, default_fallback, unknown}.  Reactors also carry
+            # reaction_type + basis.
+            unit_conditions = []
             for u in units:
-                if getattr(u, "unit_type", "") == "ConversionReactor":
-                    p = getattr(u, "params", {}) or {}
-                    reactor_conditions.append({
-                        "tag":                getattr(u, "tag", ""),
-                        "temperature_K":      p.get("temperature_K"),
-                        "reaction_type":      p.get("_reaction_type"),
-                        "temperature_source": p.get("_temperature_source", "unknown"),
-                        "basis":              p.get("_reactor_T_basis"),
-                    })
-            if reactor_conditions:
-                graph_summary["reactor_conditions"] = reactor_conditions
+                p = getattr(u, "params", {}) or {}
+                ut = getattr(u, "unit_type", "")
+                entry = {
+                    "tag":                getattr(u, "tag", ""),
+                    "type":               ut,
+                    "T_K":                p.get("temperature_K", p.get("T_out")),
+                    "temperature_source": p.get("_temperature_source", "unknown"),
+                }
+                if ut == "ConversionReactor":
+                    entry["reaction_type"] = p.get("_reaction_type")
+                    entry["basis"]         = p.get("_reactor_T_basis")
+                unit_conditions.append(entry)
+            if unit_conditions:
+                graph_summary["unit_conditions"] = unit_conditions
         except Exception:
             pass
 

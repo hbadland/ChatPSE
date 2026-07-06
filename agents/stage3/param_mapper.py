@@ -89,6 +89,17 @@ class ParamMapper:
                 node, description, feed_T, feed_P,
                 desc_temps, desc_pressures, bp, max_retries,
                 feeds_vessel=feeds_vessel, feeds_pump=feeds_pump)
+            # Provenance for units that set no explicit temperature param — DWSIM
+            # determines their outlet T: pressure-changers COMPUTE it from adiabatic
+            # thermodynamics, mixers/splitters from the mixing energy balance, and a
+            # Vessel/flash INHERITS its feed conditions.  These must NOT get template
+            # defaults — overriding a correct computed/inherited value would regress.
+            if "_temperature_source" not in params:
+                if node.unit_type in ("Pump", "Compressor", "Expander",
+                                      "Mixer", "Splitter"):
+                    params["_temperature_source"] = "computed"
+                elif node.unit_type == "Vessel":
+                    params["_temperature_source"] = "inherited"
             node.params = params
 
         return g
@@ -290,12 +301,14 @@ def _parse_params_from_description(
             if candidates:
                 params["T_out"] = round(min(candidates), 2)
                 params["_desc_T_out"] = True  # sentinel: T_out came from description
+                params["_temperature_source"] = "specified"
         else:
             candidates = [t for t in desc_temps
                           if feed_T is None or t < feed_T - 1.0]
             if candidates:
                 params["T_out"] = round(max(candidates), 2)
                 params["_desc_T_out"] = True
+                params["_temperature_source"] = "specified"
 
     elif unit_type in ("Pump", "Compressor"):
         candidates = [p for p in desc_pressures
@@ -355,19 +368,25 @@ def _estimate_params(
         margin = 25.0 if feeds_vessel else 15.0
         if bp is not None:
             est["T_out"] = round(bp + margin, 2)
+            est["_temperature_source"] = "computed"          # from bubble point
         elif feed_T is not None:
             est["T_out"] = round(feed_T + (margin + 25.0), 2)
+            est["_temperature_source"] = "computed"          # from feed T
         else:
             est["T_out"] = 373.15
+            est["_temperature_source"] = "default_fallback"  # no bp/feed anchor
 
     elif node.unit_type == "Cooler" and "T_out" not in params:
         if feeds_pump and bp is not None:
             # Must deliver liquid to the pump
             est["T_out"] = max(round(bp - 20.0, 2), 273.15)
+            est["_temperature_source"] = "computed"          # from bubble point
         elif feed_T is not None:
             est["T_out"] = max(round(feed_T - 30.0, 2), 273.15)
+            est["_temperature_source"] = "computed"          # from feed T
         else:
             est["T_out"] = 298.15
+            est["_temperature_source"] = "default_fallback"  # no bp/feed anchor
 
     elif node.unit_type in ("Pump", "Compressor") and "P_out" not in params:
         base = feed_P or 101_325.0
