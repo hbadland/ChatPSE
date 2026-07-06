@@ -18,6 +18,7 @@ from typing import Optional
 
 from ir.graph import FlowsheetGraph, NodeIR
 from ir.thermo_estimation import bubble_point_K
+from ir.reaction_conditions import default_reactor_temperature
 from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from rag.retriever import Retriever
 
@@ -376,15 +377,23 @@ def _estimate_params(
         est["P_out"] = max(round(base / 3.0, 0), 101_325.0)
 
     elif node.unit_type == "ConversionReactor":
+        _reaction = node.params.get("reaction", "") or params.get("reaction", "")
         if "temperature_K" not in params:
-            # Default to feed T + 300 K (reactions are endothermic/high-T)
-            est["temperature_K"] = round((feed_T or 298.15) + 300.0, 2)
+            # Domain-informed default keyed on reaction type (SMR ~800 °C, WGS
+            # ~350 °C, …) — NOT the old feed_T+300 K, which is wrong for hot
+            # catalytic reactions and let DWSIM solve them adiabatically.
+            T_default, basis = default_reactor_temperature(
+                _reaction, node.metadata.get("role", ""))
+            est["temperature_K"] = T_default
+            est["_reactor_T_basis"] = basis            # provenance (inspectable)
         if "pressure_Pa" not in params:
             est["pressure_Pa"] = round(feed_P or 101_325.0, 0)
         if "conversion" not in params:
             est["conversion"] = 0.90  # conservative default
         if "reaction" not in params:
-            est["reaction"] = ""
+            # Preserve the extracted stoichiometry (a reactor with reaction="" is
+            # inert); only leave empty if genuinely absent.
+            est["reaction"] = _reaction
 
     return est
 

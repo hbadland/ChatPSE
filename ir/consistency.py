@@ -18,7 +18,7 @@ import networkx as nx
 from ir.graph import (
     FlowsheetGraph, NodeIR,
     HeaterNode, CoolerNode, SeparatorNode,
-    PumpNode, CompressorNode, ExpanderNode,
+    PumpNode, CompressorNode, ExpanderNode, ConversionReactorNode,
 )
 from ir.thermo_estimation import bubble_point_K  # noqa: F401 — re-exported for callers
 from ir.constraint_solver import (
@@ -80,6 +80,24 @@ class GlobalConsistencyPass:
         # Final coupling check (catches anything the backward pass missed)
         self._check_coupling(g, conds, changes)
 
+        # ── Write propagated T/P back onto streams that have none ──────────────
+        # Re-propagate with the now-corrected unit params, then fill ONLY missing
+        # stream conditions (never override an extracted/specified value) so a
+        # downstream Vessel inherits its true feed T (the reactor outlet) instead
+        # of being flagged "no feed T" and solved from a stale default.
+        final = self._propagate(g)
+        for stream in g.streams():
+            c = final.get(stream.tag)
+            if c is None:
+                continue
+            if stream.T is None and c.T is not None:
+                stream.T = round(float(c.T), 2)
+                changes.append(
+                    f"CONSISTENCY[fill_stream_T]: {stream.tag} T={stream.T} K "
+                    f"(propagated from upstream unit outlet)")
+            if stream.P is None and c.P is not None:
+                stream.P = round(float(c.P), 2)
+
         return g, changes
 
     # ── 1. Topological forward propagation ───────────────────────────────────
@@ -135,6 +153,15 @@ class GlobalConsistencyPass:
         if isinstance(node, (PumpNode, CompressorNode, ExpanderNode)):
             p_out = node.params.get("P_out")
             return in_T, (float(p_out) if p_out is not None else None)
+
+        if isinstance(node, ConversionReactorNode):
+            # A reactor SETS its outlet temperature (temperature_K); without this
+            # the reactor's operating T never propagates and every downstream unit
+            # inherits the reactor INLET T (the "no feed T" flood).
+            t = node.params.get("temperature_K")
+            p = node.params.get("pressure_Pa")
+            return (float(t) if t is not None else in_T,
+                    float(p) if p is not None else in_P)
 
         return in_T, in_P  # Mixer, Splitter: pass-through
 
