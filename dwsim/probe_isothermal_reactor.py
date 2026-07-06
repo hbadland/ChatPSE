@@ -26,7 +26,10 @@ P_PA  = 2_000_000.0
 def _build():
     sim = DWSIMFlowsheet()
     sim.add_compounds(["Methane", "Water", "Carbon monoxide", "Hydrogen"])
-    sim.set_property_package("Peng-Robinson")
+    # Package is incidental to what this probe tests (the reactor operation-mode
+    # API); use a confirmed-valid DWSIM key. "Peng-Robinson" is not in this build's
+    # dictionary (KeyNotFoundException); "Raoult's Law" is the wrapper default.
+    sim.set_property_package("Raoult's Law")
     sim.add_stream("FEED"); sim.add_stream("OUT0"); sim.add_stream("OUT1")
     sim.add_unit("RX-01", "ConversionReactor")
     sim.connect("FEED", "RX-01", 0, 0)     # feed
