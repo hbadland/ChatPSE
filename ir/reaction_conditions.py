@@ -52,6 +52,18 @@ REACTION_SIGNATURES: list[tuple[str, frozenset, frozenset]] = [
     ("ammonia_synthesis",
      frozenset({_canon("Nitrogen"), _canon("Hydrogen")}),
      frozenset({_canon("Ammonia")})),
+    # Chlorination and EDC pyrolysis have distinct reactant sets, so classifying
+    # them by stoichiometry (not the shared text 'dichloroethane') keeps the
+    # pyrolysis reactor from being mislabelled as chlorination.
+    ("chlorination",
+     frozenset({_canon("Ethylene"), _canon("Chlorine")}),
+     frozenset({_canon("1,2-dichloroethane")})),
+    ("edc_pyrolysis",
+     frozenset({_canon("1,2-dichloroethane")}),
+     frozenset({_canon("Vinyl chloride"), _canon("Hydrogen chloride")})),
+    ("hydrodealkylation",
+     frozenset({_canon("Toluene"), _canon("Hydrogen")}),
+     frozenset({_canon("Benzene"), _canon("Methane")})),
 ]
 
 # Secondary signal — role/reaction text keywords → reaction_type (fallback only).
@@ -62,7 +74,11 @@ _ROLE_KEYWORDS: list[tuple[str, tuple[str, ...]]] = [
     ("co_methanation",          ("methanation", "methanate", "sabatier")),
     ("ammonia_synthesis",       ("ammonia synthesis", "haber")),
     ("hydrodealkylation",       ("hydrodealkylation", "dealkylation")),
-    ("chlorination",            ("chlorination", "dichloroethane")),
+    # EDC pyrolysis before chlorination; 'dichloroethane' dropped from chlorination
+    # because it appears in BOTH reactions' strings (product vs reactant).
+    ("edc_pyrolysis",           ("edc pyrolysis", "pyrolysis of edc", "vinyl chloride",
+                                 "cracking of edc")),
+    ("chlorination",            ("chlorination", "direct chlorination")),
     ("combustion",              ("combustion", "oxidation", "furnace", "burner")),
 ]
 
@@ -109,7 +125,10 @@ TARGET_TEMPERATURE_BY_TYPE: dict[str, tuple[float, str, str]] = {
     "hydrodealkylation":       (923.15, "600-750 C",
         "thermal toluene HDA (Perry's Chemical Engineers' Handbook)"),
     "chlorination":            (363.15, "50-90 C (liquid phase)",
-        "direct chlorination of ethylene (Ullmann's, Chlorinated Hydrocarbons)"),
+        "direct chlorination of ethylene to EDC (Ullmann's, Chlorinated Hydrocarbons)"),
+    "edc_pyrolysis":           (773.15, "480-550 C",
+        "EDC (1,2-dichloroethane) pyrolysis to vinyl chloride ~500 C "
+        "(Ullmann's, Vinyl Chloride)"),
     "combustion":              (1273.15, ">=1000 C",
         "Perry's Chemical Engineers' Handbook (combustion/partial oxidation)"),
     "generic":                 (623.15, "moderate catalytic default",
