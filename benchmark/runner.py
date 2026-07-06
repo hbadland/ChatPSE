@@ -183,6 +183,7 @@ class BenchmarkRunSet:
             if agg.ref_match_rate > 0.0 or agg.mean_ref_mape_T > 0.0:
                 lines += [
                     f"| **Ref match rate** | **{agg.ref_match_rate:.1%}** |",
+                    f"| Ref MAPE cases (sufficient/total) | {agg.n_mape_sufficient}/{agg.n_ref_cases} (mean n_matched {agg.mean_n_matched}) |",
                     f"| Ref MAPE T (±5 K) | {agg.mean_ref_mape_T:.2f}% |",
                     f"| Ref MAPE P (±5%) | {agg.mean_ref_mape_P:.2f}% |",
                     f"| Ref VF MAE (±0.05) | {agg.mean_ref_mape_vf:.4f} |",
@@ -229,7 +230,11 @@ class BenchmarkRunSet:
                 ref_t_str    = "excluded"
             elif m.has_reference:
                 ref_pass_str = "✓" if m.reference_match_pass else "✗"
-                ref_t_str    = f"{m.reference_mape_T:.1f}%"
+                # Never a bare MAPE — always with its match count; insufficient
+                # matches are marked, not shown as a (misleading) number.
+                ref_t_str = (f"{m.reference_mape_T:.1f}% (n={m.reference_n_matched})"
+                             if m.reference_mape_sufficient
+                             else f"insuf(n={m.reference_n_matched})")
             else:
                 ref_pass_str = ref_t_str = "—"
             graph     = getattr(r, "final_graph", None)
@@ -508,6 +513,8 @@ class BenchmarkRunner:
         ref_mape_T = ref_mape_P = ref_mape_vf = 0.0
         ref_match_pass = False
         _ref_checks: list = []
+        _ref_n_matched  = 0
+        _ref_sufficient = False   # >= _MIN_MATCH_FOR_MAPE streams matched
         has_reference  = bool(getattr(case, "reference_file", None))
 
         # Physics-only exclusion: a reference flagged excluded-invalid-reference
@@ -528,6 +535,12 @@ class BenchmarkRunner:
         if has_reference and not ref_excluded:
             _ref_checks, ref_mape_T, ref_mape_P, ref_mape_vf = \
                 run_reference_comparison(case, pr)
+            # n_matched from the stream-matching detail; MAPE is None when the
+            # match count is below _MIN_MATCH_FOR_MAPE (insufficient_match).
+            _match_detail = next((c for c in _ref_checks
+                                  if c.get("check") == "reference_stream_matching"), {})
+            _ref_n_matched  = _match_detail.get("n_matched", 0)
+            _ref_sufficient = ref_mape_T is not None
             if _ref_checks:
                 checks.extend(_ref_checks)
                 pr._physics_checks = checks
@@ -538,7 +551,8 @@ class BenchmarkRunner:
                 n_critical_run    += len(_crit)
                 n_critical_passed += sum(1 for c in _crit if c.get("passed", False))
                 _active_crit = [c for c in _crit if c.get("source") != "none"]
-                ref_match_pass = (bool(_active_crit)
+                # Gate on BOTH a sufficient match count AND the MAPE thresholds.
+                ref_match_pass = (_ref_sufficient and bool(_active_crit)
                                   and all(c["passed"] for c in _active_crit))
 
         # Derive compatible attributes for metrics extractor
@@ -560,10 +574,15 @@ class BenchmarkRunner:
         # Excluded references are physics-only: drop has_reference so the MAPE
         # aggregates skip them, but record the exclusion for the per-case report.
         m.has_reference                   = has_reference and not ref_excluded
-        m.reference_mape_T                = ref_mape_T
-        m.reference_mape_P                = ref_mape_P
-        m.reference_mape_vf               = ref_mape_vf
+        # MAPE is None when insufficient_match — store 0.0 as an internal
+        # placeholder and rely on reference_mape_sufficient to EXCLUDE it from
+        # aggregates (never averaged/reported as a real value).
+        m.reference_mape_T                = ref_mape_T if _ref_sufficient else 0.0
+        m.reference_mape_P                = ref_mape_P if _ref_sufficient else 0.0
+        m.reference_mape_vf               = ref_mape_vf if _ref_sufficient else 0.0
         m.reference_match_pass            = ref_match_pass
+        m.reference_n_matched             = _ref_n_matched
+        m.reference_mape_sufficient       = _ref_sufficient
         m.reference_excluded              = ref_excluded
         m.reference_excluded_reason       = ref_excluded_reason
 
@@ -576,11 +595,17 @@ class BenchmarkRunner:
         # independent of the PASS decision.
         run_log.system_streams = extract_system_streams(pr)
         if has_reference:
+            from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE
+            _ins = "insufficient_match"      # never a bare MAPE without its count
             run_log.reference_comparison = {
+                # n_matched is reported prominently and ALWAYS alongside the MAPE.
+                "n_matched":                 _ref_n_matched,
+                "min_match_threshold":       _MIN_MATCH_FOR_MAPE,
+                "mape_status":               "computed" if _ref_sufficient else _ins,
                 "reference_match_pass":      ref_match_pass,
-                "reference_mape_T":          ref_mape_T,
-                "reference_mape_P":          ref_mape_P,
-                "reference_mape_vf":         ref_mape_vf,
+                "reference_mape_T":          ref_mape_T  if _ref_sufficient else _ins,
+                "reference_mape_P":          ref_mape_P  if _ref_sufficient else _ins,
+                "reference_mape_vf":         ref_mape_vf if _ref_sufficient else _ins,
                 "reference_excluded":        ref_excluded,
                 "reference_excluded_reason": ref_excluded_reason,
                 # Preserve ALL keys per check (severity serialised) so the

@@ -105,6 +105,8 @@ class RunMetrics:
     reference_mape_P:      float = 0.0   # mean |ΔP/P_ref|×100 at ±5% threshold
     reference_mape_vf:     float = 0.0   # mean |ΔVF| at ±0.05 threshold
     reference_match_pass:  bool  = False  # all streams within T/P/VF thresholds
+    reference_n_matched:   int   = 0     # matched streams (reported WITH every MAPE)
+    reference_mape_sufficient: bool = False  # n_matched >= _MIN_MATCH_FOR_MAPE
     # Physics-only cases: reference marked excluded-invalid (e.g. mass-balance
     # violation) — converged + physics still evaluated, reference-MAPE skipped.
     reference_excluded:        bool = False
@@ -466,6 +468,9 @@ class AggregateMetrics:
     ref_match_rate:   float = 0.0   # fraction of reference cases passing all T+P checks
     mean_ref_mape_T:  float = 0.0   # mean temperature MAPE at strict threshold
     mean_ref_mape_P:  float = 0.0   # mean pressure MAPE at strict threshold
+    n_mape_sufficient: int  = 0     # ref cases with a sufficient stream match (MAPE real)
+    n_ref_cases:       int  = 0     # ref cases total (MAPE averaged over sufficient only)
+    mean_n_matched:    float = 0.0  # mean matched-stream count across ref cases
     mean_ref_mape_vf: float = 0.0   # mean vapour-fraction MAE at strict threshold
 
     # CCS-specific
@@ -536,20 +541,32 @@ def _ref_match_aggregate(metrics: list[RunMetrics]) -> dict:
             "mean_ref_mape_T":  0.0,
             "mean_ref_mape_P":  0.0,
             "mean_ref_mape_vf": 0.0,
+            "n_mape_sufficient": 0,
+            "n_ref_cases":       0,
+            "mean_n_matched":    0.0,
         }
 
     def _mean(vals):
         return statistics.mean(vals) if vals else 0.0
 
-    t_vals  = [m.reference_mape_T  for m in ref_cases if m.reference_mape_T  > 0.0]
-    p_vals  = [m.reference_mape_P  for m in ref_cases if m.reference_mape_P  > 0.0]
-    vf_vals = [m.reference_mape_vf for m in ref_cases]
+    # MAPE means are computed ONLY over cases with a sufficient stream match
+    # (reference_mape_sufficient) — a MAPE from < _MIN_MATCH_FOR_MAPE streams is an
+    # artifact and must never enter the average.  n_matched is reported alongside.
+    suff = [m for m in ref_cases if m.reference_mape_sufficient]
+    t_vals  = [m.reference_mape_T  for m in suff]
+    p_vals  = [m.reference_mape_P  for m in suff]
+    vf_vals = [m.reference_mape_vf for m in suff]
 
     return {
         "ref_match_rate":   sum(m.reference_match_pass for m in ref_cases) / len(ref_cases),
         "mean_ref_mape_T":  round(_mean(t_vals),  2),
         "mean_ref_mape_P":  round(_mean(p_vals),  2),
         "mean_ref_mape_vf": round(_mean(vf_vals), 4),
+        # Always report the MAPE together with how many cases (and how many
+        # streams) it was actually computed over — never a bare MAPE.
+        "n_mape_sufficient": len(suff),
+        "n_ref_cases":       len(ref_cases),
+        "mean_n_matched":    round(_mean([m.reference_n_matched for m in ref_cases]), 1),
     }
 
 

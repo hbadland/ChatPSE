@@ -95,6 +95,11 @@ _REF_TOL_T_K   = 5.0    # K absolute  — used for reference_match_T check
 _REF_TOL_P_REL = 0.05   # fractional  — used for reference_match_P check
 _REF_TOL_VF    = 0.05   # absolute    — used for reference_match_vf check (WARNING)
 
+# Minimum matched streams before a reference-MAPE is trustworthy.  Below this the
+# MAPE is a misleading artifact (e.g. 1 perfectly-matched stream reads 0.0% and
+# passes spuriously), so it is reported as "insufficient_match", NOT a number.
+_MIN_MATCH_FOR_MAPE = 3
+
 
 def _pkg_class(pkg: str) -> str:
     for cls, pkgs in _PACKAGE_CLASSES.items():
@@ -1466,11 +1471,20 @@ def _do_reference_comparison(
                 vf_fails.append(f"{rt}->{st}: |dvf|={ae:.3f}")
 
     n_matched = match["n_matched"]
-    if n_matched == 0:
-        checks = _skipped_ref_checks(
-            f"no streams matched above confidence threshold {match['threshold']:.2f}")
+    if n_matched < _MIN_MATCH_FOR_MAPE:
+        # Too few matched streams to compute a trustworthy MAPE.  Emit the T/P/vf
+        # checks as INFO/none (so they do NOT count as passing critical checks —
+        # reference_match_pass will be False) and return None for every MAPE so
+        # the caller reports "insufficient_match", never a bare 0.0.
+        _reason = (f"insufficient_match: {n_matched} matched stream(s) < "
+                   f"{_MIN_MATCH_FOR_MAPE} required — MAPE not computed")
+        checks = [
+            {"check": c, "passed": True, "severity": CheckSeverity.INFO,
+             "source": "none", "detail": _reason}
+            for c in ("reference_match_T", "reference_match_P", "reference_match_vf")
+        ]
         checks.append(_matching_detail_check(match))
-        return checks, 0.0, 0.0, 0.0
+        return checks, None, None, None
 
     mape_T  = round(sum(t_apes)  / len(t_apes),  2) if t_apes  else 0.0
     mape_P  = round(sum(p_apes)  / len(p_apes),  2) if p_apes  else 0.0
