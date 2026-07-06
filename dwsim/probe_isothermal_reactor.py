@@ -48,15 +48,19 @@ def _report_outlets(r):
         print(f"    {tg}: T={s['T_K'] if s else None} K  comp={comp}")
 
 
-# ── PHASE 1: baseline (current wrapper behaviour) ─────────────────────────────
-print("### PHASE 1 — baseline (reaction + OutletTemperature property, no mode/energy) ###")
+# ── PHASE 1: REAL CODE PATH — set_conversion_reactor as committed (Stage 3a) ──
+# After the Stage-3a fix, set_conversion_reactor ITSELF sets ReactorOperationMode
+# =OutletTemperature and wires the energy stream, so this phase now confirms the
+# committed code path (not the standalone probe logic).
+print("### PHASE 1 — REAL CODE PATH: committed set_conversion_reactor ###")
 sim = _build()
 sim.set_conversion_reactor("RX-01", temperature_K=SET_T, pressure_Pa=P_PA,
                            conversion=0.9, reaction=RXN)
 r = sim.solve()
 print("solved:", r.get("solved"), "| errors:", str(r.get("errors"))[:200])
 _report_outlets(r)
-print(f">> EXPECT: outlet T well below {SET_T:.0f} K (adiabatic collapse) — reproduces the bug.\n")
+print(f">> STAGE-3a PASS if: solved=True, an outlet T ~= {SET_T:.0f} K (enforced, "
+      f"NOT adiabatic), and CO + Hydrogen present (conversion preserved).\n")
 
 # ── PHASE 2: introspect the operation-mode API ────────────────────────────────
 print("### PHASE 2 — reactor operation-mode API discovery ###")
@@ -78,8 +82,10 @@ except Exception as e:
     print("  probe error:", e)
 print()
 
-# ── PHASE 3: enforce outlet T via operation mode + wired energy stream ────────
-print("### PHASE 3 — enforce outlet T (operation mode + energy stream) ###")
+# ── PHASE 3: MANUAL cross-check (redundant once Phase 1 passes) ───────────────
+# Kept as an independent reproduction of the mechanism the committed code now does
+# internally; Phase 1 is the authoritative committed-code-path check.
+print("### PHASE 3 — manual mechanism cross-check (independent of set_conversion_reactor) ###")
 sim3 = _build()
 sim3.set_conversion_reactor("RX-01", temperature_K=SET_T, pressure_Pa=P_PA,
                             conversion=0.9, reaction=RXN)
@@ -128,8 +134,8 @@ print("  solved:", r.get("solved"), "| errors:", str(r.get("errors"))[:200])
 _report_outlets(r)
 
 print(f"""
->> SUCCESS CRITERIA for Stage 3a:
-   Phase 3 solved == True, an outlet stream T ~= {SET_T:.0f} K (enforced, not adiabatic),
-   AND Carbon monoxide + Hydrogen present in the outlet (conversion still applied).
-   Paste this whole output back; it tells us the exact mode enum + energy-stream
-   wiring to bake into set_conversion_reactor.""")
+>> STAGE-3a CONFIRMATION: PHASE 1 (committed set_conversion_reactor) must show
+   solved == True, an outlet stream T ~= {SET_T:.0f} K (enforced, not adiabatic),
+   AND Carbon monoxide + Hydrogen present (conversion preserved).
+   Phase 3 (manual) should match Phase 1 — if Phase 1 already passes, the real
+   code path is confirmed.""")

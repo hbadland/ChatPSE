@@ -517,6 +517,55 @@ class DWSIMFlowsheet:
             print(f"  [DWSIM] ConversionReactor {tag}: could not set OutletTemperature",
                   flush=True, file=sys.stderr)
 
+        # ── Enforce the outlet temperature (Stage 3a — probe-validated) ───────
+        # DWSIM's ConversionReactor defaults to Adiabatic, so the OutletTemperature
+        # set above is INERT and an endothermic reaction (e.g. SMR) collapses the
+        # whole train to a non-physical temperature.  Switch ReactorOperationMode
+        # to OutletTemperature AND wire an energy stream to the reactor's energy
+        # port (port 2) to carry the reaction duty — DWSIM requires both for the
+        # mode to solve.  GUARD: only when a valid target temperature exists; with
+        # none, leave the reactor in its default (adiabatic) mode.
+        if temperature_K is not None and 50.0 < float(temperature_K) < 3000.0:
+            mode_set = False
+            for mode_prop in ("ReactorOperationMode", "OperationMode"):
+                mp = t_type.GetProperty(mode_prop)
+                if mp is None or not mp.CanWrite:
+                    continue
+                try:
+                    mp.SetValue(obj, System.Enum.Parse(mp.PropertyType, "OutletTemperature"))
+                    mode_set = True
+                    break
+                except Exception:
+                    pass
+
+            energy_wired = False
+            en_tag = f"{tag}-EN"
+            for es_name in ("EnergyStream", "OT_EnergyStream"):
+                es_ot = getattr(ObjectType, es_name, None)
+                if es_ot is None:
+                    continue
+                try:
+                    self._sim.AddObject(es_ot, 0, 0, en_tag)
+                    self._sim.ConnectObjects(
+                        self._get_graphic_object(tag),
+                        self._get_graphic_object(en_tag), 2, 0)   # reactor port 2 → energy
+                    energy_wired = True
+                    break
+                except Exception:
+                    pass
+
+            print(f"  [DWSIM] ConversionReactor {tag}: OutletTemperature mode="
+                  f"{mode_set}, energy stream {en_tag} wired={energy_wired}, "
+                  f"T_out={float(temperature_K):.1f} K", flush=True, file=sys.stderr)
+            if not (mode_set and energy_wired):
+                print(f"  [DWSIM] WARNING: {tag} could not fully enforce outlet T "
+                      f"(mode={mode_set}, energy={energy_wired}) — reactor may fall "
+                      f"back to adiabatic", flush=True, file=sys.stderr)
+        else:
+            print(f"  [DWSIM] ConversionReactor {tag}: no valid target temperature "
+                  f"({temperature_K}) — left in default (adiabatic) mode",
+                  flush=True, file=sys.stderr)
+
         # ── Pressure drop → 0 (preserves feed pressure) ───────────────────────
         for prop_name in ("PressureDrop", "DeltaP"):
             prop = t_type.GetProperty(prop_name)
