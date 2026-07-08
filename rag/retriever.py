@@ -243,6 +243,32 @@ class ThermoRetriever:
         has_azeo = self._has_azeotrope(compounds)
         is_polar = bool(classes & {"ALCOHOLS","KETONES","ESTERS","ETHERS",
                                    "POLAR_OTHER","WATER"})
+
+        # Steam vs liquid water. Water flags the system polar, but when water is
+        # the ONLY polar species, is mixed with light gases, and the context is a
+        # hot gas-phase process (high T, or a steam/reforming/combustion
+        # description), the water is STEAM — part of the gas phase — and must not
+        # force an activity/ideal-liquid path. Route such systems to an EOS.
+        # Liquid aqueous mixtures with another polar species (ethanol/water,
+        # acetone/water, H2S acid-gas, …) are left unchanged.
+        cc = self._COMPOUND_CLASSES
+        _other_polar = (cc["ALCOHOLS"] | cc["KETONES"] | cc["ESTERS"]
+                        | cc["ETHERS"] | (cc["POLAR_OTHER"] - {"water"}))
+        _comps_l = {c.strip().lower() for c in compounds}
+        _other_polar_present = bool(_comps_l & _other_polar)
+        _desc_l = (description or "").lower()
+        _steam_kw = ("steam", "reform", "syngas", "combust", "flue gas", "gasif",
+                     "high temperature", "high-temperature", "furnace",
+                     "cracker", "cracking", "pyrolysis")
+        water_is_steam = (
+            "WATER" in classes and "LIGHT_GASES" in classes
+            and not _other_polar_present
+            and (temperature_k >= 400.0 or any(k in _desc_l for k in _steam_kw))
+        )
+        if water_is_steam:
+            is_polar = False      # steam is gas-phase → EOS, not activity/ideal
+            has_azeo = False
+
         is_light_gas  = "LIGHT_GASES" in classes and not is_polar
         is_cryogenic  = temperature_k < 200.0
         is_high_press = pressure_pa > 3e5
