@@ -594,6 +594,18 @@ class BenchmarkRunner:
         # comparison, persisted per-run so the produced values are inspectable
         # independent of the PASS decision.
         run_log.system_streams = extract_system_streams(pr)
+
+        # Property-package family selection scored against the case's expected
+        # family label — persisted so family-selection accuracy is measurable
+        # from the ACTIVE pipeline's per-run JSONs (not only the offline harness).
+        _exp_cls = getattr(case.expected, "property_package_class", None)
+        if _exp_cls:
+            from benchmark.package_family import score_family
+            _fgs = run_log.final_graph_summary or {}
+            run_log.package_family = score_family(
+                _fgs.get("property_package"), _exp_cls,
+                _fgs.get("n_binary_params"))
+
         if has_reference:
             from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE
             _ins = "insufficient_match"      # never a bare MAPE without its count

@@ -72,6 +72,9 @@ class RunLog:
     # Reference-comparison results (also in the aggregate metrics; persisted here
     # per-run too): match pass + MAPEs + per-check detail.  None when no reference.
     reference_comparison: Optional[dict] = None
+    # Property-package family selection scored against the case's expected family
+    # label (expected.property_package_class).  None when the case has no label.
+    package_family: Optional[dict] = None
 
     @property
     def score_curve(self) -> list[int]:
