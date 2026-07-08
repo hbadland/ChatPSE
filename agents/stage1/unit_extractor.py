@@ -16,7 +16,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
-from agents.llm import chat, DEFAULT_MODEL, retry_temperature
+from agents.llm import chat, DEFAULT_MODEL, retry_temperature, retry_seed
 
 SUPPORTED_UNIT_TYPES = [
     "Heater", "Cooler", "Vessel", "Mixer",
@@ -330,6 +330,7 @@ class UnitExtractor:
                 system=current_system,
                 model=self._model,
                 temperature=retry_temperature(attempt),
+                seed=retry_seed(attempt, description),
                 max_tokens=max_tokens,
             )
             try:

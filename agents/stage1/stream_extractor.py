@@ -23,7 +23,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
-from agents.llm import chat, DEFAULT_MODEL, retry_temperature
+from agents.llm import chat, DEFAULT_MODEL, retry_temperature, retry_seed
 
 _EMPTY_ERRORS = ("empty response", "line 1 column 1", "only markdown")
 
@@ -266,6 +266,7 @@ class StreamExtractor:
                 system=current_system,
                 model=self._model,
                 temperature=retry_temperature(attempt),
+                seed=retry_seed(attempt, description),
                 max_tokens=8192,
             )
             try:

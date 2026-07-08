@@ -26,6 +26,7 @@ Required environment variables (only for providers you use):
     OLLAMA_BASE_URL  (optional — defaults to http://localhost:11434/v1)
 """
 from __future__ import annotations
+import hashlib
 import os
 import re
 import time
@@ -182,16 +183,45 @@ def retry_temperature(attempt: int) -> float:
     return 0.0 if attempt == 0 else 0.3
 
 
+def retry_seed(attempt: int, key: str = "") -> int | None:
+    """
+    Deterministic sampling seed for retry loops, keyed on a stable per-case string.
+
+    Purpose: retry_temperature() raises to 0.3 on attempt>=1 to break a
+    wrong-but-consistent attempt-0 output. That sampling is stochastic, so the
+    SAME case retries DIFFERENTLY run-to-run — the retry ladder amplifies
+    run-to-run variance on large cases that fail attempt-0 extraction. Passing a
+    fixed seed derived from (key, attempt) makes each retry reproducible across
+    runs (same case -> same retry every run) while keeping temperature 0.3, so the
+    retry still explores away from the failed attempt-0 (recovery preserved).
+
+    attempt 0 -> None: attempt 0 runs at temperature 0 (greedy), where a seed has
+    no effect. This intentionally does NOT touch attempt-0 determinism — the
+    inherent qwen3:30b-a3b MoE routing nondeterminism at temp 0 is model-level and
+    not seedable here.
+
+    Uses hashlib (not builtin hash()) because hash() is salted per-process via
+    PYTHONHASHSEED and would not be stable across runs.
+    """
+    if attempt <= 0:
+        return None
+    digest = hashlib.sha256(f"{key}|{attempt}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:4], "big")
+
+
 # ── One-shot ───────────────────────────────────────────────────────────────────
 
 def chat(prompt: str, system: str = "", model: str = DEFAULT_MODEL,
          max_tokens: int = 8192, temperature: float | None = None,
-         thinking: bool = False) -> str:
+         thinking: bool = False, seed: int | None = None) -> str:
     """Send a single prompt and return the text response.
 
     temperature=0 gives deterministic outputs (recommended for generation agents).
     Leave as None to use the provider default (usually ~1.0).
     thinking=True prepends /think token for Ollama models that support it.
+    seed pins the sampling RNG (Ollama/OpenAI only) so a stochastic call is
+    reproducible across runs; see retry_seed(). Ignored by providers that do not
+    support it.
     """
     global _call_count
     _call_count += 1
@@ -203,8 +233,9 @@ def chat(prompt: str, system: str = "", model: str = DEFAULT_MODEL,
     if provider == "groq":
         return _groq_chat(prompt, system, model, max_tokens, temperature)
     if provider == "ollama":
-        return _ollama_chat(prompt, system, model, max_tokens, temperature, thinking)
-    return _openai_chat(prompt, system, model, max_tokens, temperature)
+        return _ollama_chat(prompt, system, model, max_tokens, temperature,
+                            thinking, seed)
+    return _openai_chat(prompt, system, model, max_tokens, temperature, seed)
 
 
 def _google_chat(prompt: str, system: str, model: str, max_tokens: int,
@@ -236,7 +267,7 @@ def _anthropic_chat(prompt: str, system: str, model: str,
 
 
 def _openai_chat(prompt: str, system: str, model: str, max_tokens: int,
-                 temperature: float | None) -> str:
+                 temperature: float | None, seed: int | None = None) -> str:
     from openai import OpenAI
     client = OpenAI(api_key=_key("OPENAI_API_KEY"))
     messages = []
@@ -246,6 +277,8 @@ def _openai_chat(prompt: str, system: str, model: str, max_tokens: int,
     kwargs: dict = {}
     if temperature is not None:
         kwargs["temperature"] = temperature
+    if seed is not None:
+        kwargs["seed"] = seed
     return _with_retry(lambda: client.chat.completions.create(
         model=model, max_tokens=max_tokens,
         messages=messages, **kwargs).choices[0].message.content)
@@ -275,7 +308,8 @@ _OLLAMA_TIMEOUT = float(os.environ.get("OLLAMA_TIMEOUT", "120"))
 
 
 def _ollama_chat(prompt: str, system: str, model: str, max_tokens: int,
-                 temperature: float | None, thinking: bool = False) -> str:
+                 temperature: float | None, thinking: bool = False,
+                 seed: int | None = None) -> str:
     from openai import OpenAI
     api_key = os.environ.get("OLLAMA_API_KEY", "ollama")
     client = OpenAI(api_key=api_key, base_url=_OLLAMA_BASE_URL, timeout=_OLLAMA_TIMEOUT)
@@ -287,11 +321,14 @@ def _ollama_chat(prompt: str, system: str, model: str, max_tokens: int,
     kwargs: dict = {}
     if temperature is not None:
         kwargs["temperature"] = temperature
+    _options = {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}
+    if seed is not None:
+        _options["seed"] = seed
     def _create():
         return client.chat.completions.create(
             model=model, max_tokens=max_tokens,
             messages=messages,
-            extra_body={"options": {"num_ctx": int(os.environ.get("OLLAMA_NUM_CTX", "16384"))}},
+            extra_body={"options": _options},
             **kwargs).choices[0].message.content
     raw = _with_retry(lambda: _call_with_timeout(_create, _OLLAMA_TIMEOUT),
                       max_retries=3, base_delay=1.0)
