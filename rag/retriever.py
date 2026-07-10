@@ -269,6 +269,32 @@ class ThermoRetriever:
             is_polar = False      # steam is gas-phase → EOS, not activity/ideal
             has_azeo = False
 
+        # Acid-gas / natural-gas systems. H2S/CO2/SO2 co-dominant with light
+        # gases/hydrocarbons (sour or natural gas, sweetening, glycol
+        # dehydration) are gas-phase and need an EOS, but water/H2S flag them
+        # polar. Route to EOS UNLESS a genuine liquid activity-forming organic is
+        # present — glycol dehydration solvents are excluded (they ride along in
+        # a gas EOS package), but amines and other polar organics keep the
+        # activity path (amine acid-gas capture is a chemical/activity system).
+        _acid_gases = {"hydrogen sulfide", "h2s", "carbon dioxide", "co2",
+                       "sulfur dioxide", "so2"}
+        _amines = {"monoethanolamine", "mea", "diethanolamine", "dea",
+                   "methyldiethanolamine", "mdea"}
+        _glycols = {"ethylene glycol", "diethylene glycol", "triethylene glycol",
+                    "glycerol"}
+        _activity_organics = (((cc["ALCOHOLS"] | cc["KETONES"] | cc["ESTERS"]
+                                | cc["ETHERS"] | (cc["POLAR_OTHER"] - {"water"}))
+                               - _glycols - _acid_gases) | _amines)
+        _n_gas_like = len(_comps_l & (cc["LIGHT_GASES"] | cc["ALKANES"]))
+        acid_gas_system = (
+            bool(_comps_l & _acid_gases)
+            and _n_gas_like >= 2
+            and not (_comps_l & _activity_organics)
+        )
+        if acid_gas_system:
+            is_polar = False      # acid gas in a gas context → EOS
+            has_azeo = False
+
         is_light_gas  = "LIGHT_GASES" in classes and not is_polar
         is_cryogenic  = temperature_k < 200.0
         is_high_press = pressure_pa > 3e5
