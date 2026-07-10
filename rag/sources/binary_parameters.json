@@ -5808,5 +5808,27 @@
     "source": "ChemSep NRTL database; DECHEMA VLE Vol. 3, p.206",
     "fit_data": "VLE-Txy",
     "confidence": "high"
+  },
+  {
+    "compound_a": "Benzene",
+    "compound_b": "P-Xylene",
+    "aliases_a": [
+      "benzol"
+    ],
+    "aliases_b": [
+      "p-xylene",
+      "para-xylene",
+      "1,4-dimethylbenzene",
+      "p-dimethylbenzene"
+    ],
+    "model": "NRTL",
+    "A12": 0.0,
+    "A21": 0.0,
+    "alpha12": 0.3,
+    "T_min_K": 273,
+    "T_max_K": 413,
+    "source": "Ideal-solution approximation (NOT a regressed fit): benzene and p-xylene are near-identical nonpolar aromatics with activity coefficients ~1; UNIFAC group parameters give ~0 interaction and measured VLE deviations from Raoult are negligible. NRTL A12=A21=0.",
+    "fit_data": "ideal-approximation",
+    "confidence": "medium"
   }
 ]
