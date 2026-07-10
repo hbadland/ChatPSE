@@ -5830,5 +5830,54 @@
     "source": "Ideal-solution approximation (NOT a regressed fit): benzene and p-xylene are near-identical nonpolar aromatics with activity coefficients ~1; UNIFAC group parameters give ~0 interaction and measured VLE deviations from Raoult are negligible. NRTL A12=A21=0.",
     "fit_data": "ideal-approximation",
     "confidence": "medium"
+  },
+  {
+    "compound_a": "Toluene",
+    "compound_b": "Pyridine",
+    "aliases_a": [
+      "methylbenzene",
+      "phenylmethane"
+    ],
+    "aliases_b": [
+      "azine",
+      "azabenzene"
+    ],
+    "model": "NRTL",
+    "A12": 264.6428,
+    "A21": -60.3423,
+    "alpha12": 0.299,
+    "B12": 0.0,
+    "B21": 0.0,
+    "T_min_K": 273,
+    "T_max_K": 450,
+    "source": "DWSIM built-in database (DWSIM.Thermodynamics NRTL); temperature-independent (B12=B21=0), nominal range.",
+    "fit_data": "DWSIM-builtin-NRTL",
+    "confidence": "high"
+  },
+  {
+    "compound_a": "Ethanol",
+    "compound_b": "P-Xylene",
+    "aliases_a": [
+      "ethyl alcohol",
+      "EtOH",
+      "grain alcohol"
+    ],
+    "aliases_b": [
+      "p-xylene",
+      "para-xylene",
+      "1,4-dimethylbenzene",
+      "p-dimethylbenzene"
+    ],
+    "model": "NRTL",
+    "A12": 768.3633,
+    "A21": 760.08,
+    "alpha12": 0.2914,
+    "B12": 0.0,
+    "B21": 0.0,
+    "T_min_K": 273,
+    "T_max_K": 450,
+    "source": "DWSIM built-in database (DWSIM.Thermodynamics NRTL); temperature-independent (B12=B21=0), nominal range.",
+    "fit_data": "DWSIM-builtin-NRTL",
+    "confidence": "high"
   }
 ]
