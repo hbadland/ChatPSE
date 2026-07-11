@@ -1547,7 +1547,13 @@ class GraphPipeline:
 
         try:
             print("[GP] step: thermo.assign START", flush=True)
-            graph = self._thermo.assign(graph, description=desc)
+            # Package selection scans the description for gas-phase keywords
+            # (steam/reforming/…). Pass the RAW description, not norm_desc: the
+            # LLM-normalised description paraphrases the text and can drop those
+            # keywords. (Robustness only — not the fix for the ammonia-contaminated
+            # gas-dominance case, which is handled in ThermoRetriever.select.)
+            graph = self._thermo.assign(
+                graph, description=(state.get("description") or desc))
             print(f"[GP] step: thermo.assign END  "
                   f"pkg={getattr(graph, 'property_package', '?')}", flush=True)
 
