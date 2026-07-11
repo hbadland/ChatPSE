@@ -244,55 +244,57 @@ class ThermoRetriever:
         is_polar = bool(classes & {"ALCOHOLS","KETONES","ESTERS","ETHERS",
                                    "POLAR_OTHER","WATER"})
 
-        # Steam vs liquid water. Water flags the system polar, but when water is
-        # the ONLY polar species, is mixed with light gases, and the context is a
-        # hot gas-phase process (high T, or a steam/reforming/combustion
-        # description), the water is STEAM — part of the gas phase — and must not
-        # force an activity/ideal-liquid path. Route such systems to an EOS.
-        # Liquid aqueous mixtures with another polar species (ethanol/water,
-        # acetone/water, H2S acid-gas, …) are left unchanged.
+        # ── Gas-phase vs liquid-activity routing ────────────────────────────
+        # Thermodynamic basis: a mixture DOMINATED by light gases / hydrocarbons
+        # is governed by the vapour phase and is correctly modelled with a cubic
+        # EOS (PR/SRK) across the whole mixture. A MINORITY of polar species —
+        # steam, or a trace of NH3 — does not turn it into a liquid system where
+        # activity coefficients govern: the polar fraction is too small to create
+        # activity-dominated liquid non-ideality, and the associating species are
+        # themselves in the vapour phase. Only when polar/associating species are
+        # a substantial fraction does the liquid become activity-controlled and an
+        # activity model (NRTL/UNIQUAC) become necessary. So gas-phase routing
+        # tolerates a minority polar species as long as gas/HC species dominate.
         cc = self._COMPOUND_CLASSES
-        _other_polar = (cc["ALCOHOLS"] | cc["KETONES"] | cc["ESTERS"]
-                        | cc["ETHERS"] | (cc["POLAR_OTHER"] - {"water"}))
         _comps_l = {c.strip().lower() for c in compounds}
-        _other_polar_present = bool(_comps_l & _other_polar)
-        _desc_l = (description or "").lower()
-        _steam_kw = ("steam", "reform", "syngas", "combust", "flue gas", "gasif",
-                     "high temperature", "high-temperature", "furnace",
-                     "cracker", "cracking", "pyrolysis")
-        water_is_steam = (
-            "WATER" in classes and "LIGHT_GASES" in classes
-            and not _other_polar_present
-            and (temperature_k >= 400.0 or any(k in _desc_l for k in _steam_kw))
-        )
-        if water_is_steam:
-            is_polar = False      # steam is gas-phase → EOS, not activity/ideal
-            has_azeo = False
-
-        # Acid-gas / natural-gas systems. H2S/CO2/SO2 co-dominant with light
-        # gases/hydrocarbons (sour or natural gas, sweetening, glycol
-        # dehydration) are gas-phase and need an EOS, but water/H2S flag them
-        # polar. Route to EOS UNLESS a genuine liquid activity-forming organic is
-        # present — glycol dehydration solvents are excluded (they ride along in
-        # a gas EOS package), but amines and other polar organics keep the
-        # activity path (amine acid-gas capture is a chemical/activity system).
         _acid_gases = {"hydrogen sulfide", "h2s", "carbon dioxide", "co2",
                        "sulfur dioxide", "so2"}
         _amines = {"monoethanolamine", "mea", "diethanolamine", "dea",
                    "methyldiethanolamine", "mdea"}
         _glycols = {"ethylene glycol", "diethylene glycol", "triethylene glycol",
                     "glycerol"}
+        # Polar species that DO force a liquid activity model. Water and glycol
+        # dehydration solvents are excluded (they ride along in a gas EOS); acid
+        # gases are gas-phase; amines are chemical solvents that keep the activity
+        # path (so they are counted here as activity-forcing).
         _activity_organics = (((cc["ALCOHOLS"] | cc["KETONES"] | cc["ESTERS"]
                                 | cc["ETHERS"] | (cc["POLAR_OTHER"] - {"water"}))
                                - _glycols - _acid_gases) | _amines)
-        _n_gas_like = len(_comps_l & (cc["LIGHT_GASES"] | cc["ALKANES"]))
-        acid_gas_system = (
-            bool(_comps_l & _acid_gases)
-            and _n_gas_like >= 2
-            and not (_comps_l & _activity_organics)
+        _n_gas_like       = len(_comps_l & (cc["LIGHT_GASES"] | cc["ALKANES"]))
+        _n_activity_polar = len(_comps_l & _activity_organics)
+        # Gas-like species present (>=2) AND any activity-forcing polar species
+        # are a strict minority → the stream is gas-phase, use an EOS.
+        _gas_dominated = _n_gas_like >= 2 and _n_gas_like > _n_activity_polar
+
+        _desc_l = (description or "").lower()
+        _steam_kw = ("steam", "reform", "syngas", "combust", "flue gas", "gasif",
+                     "high temperature", "high-temperature", "furnace",
+                     "cracker", "cracking", "pyrolysis")
+
+        # Steam: hot gas-phase water in a gas-dominated stream is not liquid water
+        # (high T, or a steam/reforming/combustion/pyrolysis context) → EOS.
+        water_is_steam = (
+            "WATER" in classes and "LIGHT_GASES" in classes and _gas_dominated
+            and (temperature_k >= 400.0 or any(k in _desc_l for k in _steam_kw))
         )
-        if acid_gas_system:
-            is_polar = False      # acid gas in a gas context → EOS
+        # Acid gas (H2S/CO2/SO2) in a gas-dominated stream (sour/natural gas,
+        # sweetening, glycol dehydration) → EOS. Amine acid-gas capture is NOT
+        # gas-dominated (amine counted as activity-forcing; typically one gas)
+        # so it correctly keeps the activity path.
+        acid_gas_system = bool(_comps_l & _acid_gases) and _gas_dominated
+
+        if water_is_steam or acid_gas_system:
+            is_polar = False      # gas-dominated phase → EOS, not activity/ideal
             has_azeo = False
 
         is_light_gas  = "LIGHT_GASES" in classes and not is_polar
