@@ -30,6 +30,7 @@ def normalise(graph: FlowsheetGraph) -> FlowsheetGraph:
     g = graph.copy()
     g = _insert_mixers(g)
     g = _insert_splitters(g)
+    g = _complete_separator_outlets(g)   # before port repair: synthesise missing outlets
     g = _repair_vessel_ports(g)
     g = _repair_column_ports(g)
     g = _repair_decanter_ports(g)
@@ -198,6 +199,64 @@ def _repair_vessel_ports(graph: FlowsheetGraph) -> FlowsheetGraph:
             s1.phase    = "vapour"
 
     return g
+
+
+def _complete_separator_outlets(graph: FlowsheetGraph) -> FlowsheetGraph:
+    """
+    Synthesise missing product outlets so a Column (needs distillate + bottoms)
+    or Decanter (needs two liquid outlets) is structurally valid. Extraction
+    sometimes wires only one product stream to a column ("Column needs ≥2
+    outlets, has 1"); the missing outlet is added as a TERMINATED product stream
+    (dst=None, a boundary), never left dangling. Runs BEFORE port repair so the
+    name-based repair then assigns the correct ports across all outlets.
+    """
+    g = graph.copy()
+    for node in g.units():
+        outs = g.outlet_streams(node.tag)
+        if not outs:
+            # No outlets at all — a degenerate emission; leave for validation to
+            # flag rather than fabricating an entire product set.
+            continue
+
+        if node.unit_type == "Column":
+            if len(outs) >= 2:
+                continue
+            # Exactly one outlet: synthesise the MISSING semantic role by name, on
+            # a free port. _repair_column_ports then assigns the correct ports.
+            existing = outs[0]
+            is_bot = any(k in existing.tag.upper() for k in _BOT_KEYWORDS)
+            label = "DIST" if is_bot else "BOT"   # add the other product
+            free_port = 1 if existing.src_port == 0 else 0
+            tag = _unique_stream_tag(g, f"{node.tag}-{label}")
+            g.add_stream(EdgeIR(tag=tag, src_port=free_port, phase="mixed"),
+                         node.tag, None, enforce_phase=False)
+
+        elif node.unit_type == "Decanter":
+            # Needs two LIQUID outlets (vapour port 0 optional). Count non-vapour
+            # outlets; add liquid product streams until there are two.
+            liq = [s for s in outs
+                   if not any(k in s.tag.upper() for k in _DEC_VAP_KEYWORDS)]
+            used = {s.src_port for s in outs}
+            nxt = 1
+            while len(liq) < 2:
+                while nxt in used:
+                    nxt += 1
+                tag = _unique_stream_tag(g, f"{node.tag}-L{len(liq) + 1}")
+                g.add_stream(EdgeIR(tag=tag, src_port=nxt, phase="liquid"),
+                             node.tag, None, enforce_phase=False)
+                used.add(nxt)
+                liq.append(tag)
+    return g
+
+
+def _unique_stream_tag(graph: FlowsheetGraph, base: str) -> str:
+    existing = set(graph.stream_tags())
+    if base not in existing:
+        return base
+    i = 2
+    while f"{base}-{i}" in existing:
+        i += 1
+    return f"{base}-{i}"
 
 
 def _repair_column_ports(graph: FlowsheetGraph) -> FlowsheetGraph:
