@@ -621,6 +621,22 @@ class DWSIMFlowsheet:
         ttype = obj.GetType()
         flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public
 
+        # Graceful key guard: FUG needs two DISTINCT keys both present in the
+        # flowsheet. A degenerate spec (LK==HK, or a key absent — e.g. a
+        # single-component column feed) yields a NaN distillate that would loop
+        # the repair; fail cleanly and early with a clear message instead.
+        _known = {c.lower() for c in self._compounds}
+        _lk, _hk = (light_key or "").strip(), (heavy_key or "").strip()
+        if _lk.lower() == _hk.lower():
+            raise ValueError(
+                f"Column {tag}: light_key and heavy_key are identical ('{_lk}') — "
+                f"cannot define a FUG split")
+        for _role, _k in (("light_key", _lk), ("heavy_key", _hk)):
+            if _k.lower() not in _known:
+                raise ValueError(
+                    f"Column {tag}: {_role}='{_k}' is not among the flowsheet "
+                    f"compounds {self._compounds}")
+
         # Reboiler energy stream → column input port 1 (mirror the reactor pattern).
         en_tag = f"{tag}-EN"
         energy_wired = False

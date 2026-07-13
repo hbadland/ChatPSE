@@ -81,6 +81,7 @@ class ParamMapper:
         desc_pressures       = _extract_pressures(description)
         bp                   = bubble_point_K(g.compounds, feed_P or 101_325.0)
         downstream_map       = _downstream_unit_types(g)
+        col_feeds            = _column_feed_sets(g)   # per-column feed compound set
 
         for node in g.units():
             feeds_vessel = "Vessel" in downstream_map.get(node.tag, set())
@@ -89,7 +90,7 @@ class ParamMapper:
                 node, description, feed_T, feed_P,
                 desc_temps, desc_pressures, bp, max_retries,
                 feeds_vessel=feeds_vessel, feeds_pump=feeds_pump,
-                compounds=g.compounds)
+                compounds=g.compounds, col_feed=col_feeds.get(node.tag))
             # Provenance for units that set no explicit temperature param — DWSIM
             # determines their outlet T: pressure-changers COMPUTE it from adiabatic
             # thermodynamics, mixers/splitters from the mixing energy balance, and a
@@ -120,6 +121,7 @@ class ParamMapper:
         feeds_vessel:   bool = False,
         feeds_pump:     bool = False,
         compounds:      Optional[list[str]] = None,
+        col_feed:       Optional[set] = None,
     ) -> dict:
         defaults = self._retriever.units.defaults(node.unit_type)
         params   = dict(defaults)
@@ -139,7 +141,7 @@ class ParamMapper:
         estimated = _estimate_params(
             node, params, feed_T, feed_P, bp,
             feeds_vessel=feeds_vessel, feeds_pump=feeds_pump,
-            compounds=compounds)
+            compounds=compounds, col_feed=col_feed)
         params.update(estimated)
 
         # ── Step 3: LLM fallback (only if required param is still missing) ─────
@@ -352,6 +354,7 @@ def _estimate_params(
     feeds_vessel: bool = False,
     feeds_pump:   bool = False,
     compounds:    Optional[list[str]] = None,
+    col_feed:     Optional[set] = None,
 ) -> dict:
     """
     Fill missing required params with physics-grounded estimates.
@@ -430,10 +433,13 @@ def _estimate_params(
 
     elif node.unit_type == "Column":
         # Shortcut (FUG) column defaults. Keys are chosen by volatility (light =
-        # most volatile, heavy = least); a sharp 2%/2% key spec, R/Rmin=1.5, and
-        # condenser/reboiler at feed pressure. Any value already extracted/set is
-        # preserved (setdefault semantics via the "not in params" guard).
-        lk, hk = _column_keys(compounds or [])
+        # most volatile, heavy = least) from THIS column's own feed compounds
+        # (col_feed) — NOT the global compound list — so a downstream column whose
+        # feed is a subset after an upstream split gets keys that are actually
+        # present (avoids the FUG NaN-distillate failure). 2%/2% key spec,
+        # R/Rmin=1.5, condenser/reboiler at feed pressure. Extracted values kept.
+        _keys_from = sorted(col_feed) if col_feed else (compounds or [])
+        lk, hk = _column_keys(_keys_from)
         if "light_key" not in params and lk:
             est["light_key"] = lk
         if "heavy_key" not in params and hk:
@@ -452,6 +458,74 @@ def _estimate_params(
         est["_temperature_source"] = "computed"   # DWSIM computes product T (FUG)
 
     return est
+
+
+def _rank_by_bp(compounds) -> list[str]:
+    """Compounds sorted most-volatile → least (ascending boiling point at 1 atm).
+    Compounds without a resolvable boiling point are appended in given order."""
+    known, unknown = [], []
+    for c in compounds:
+        b = boiling_point_K(c, 101_325.0)
+        (known if b is not None else unknown).append((b, c))
+    known.sort(key=lambda t: t[0])
+    return [c for _, c in known] + [c for _, c in unknown]
+
+
+def _column_feed_sets(graph: FlowsheetGraph) -> "dict[str, set]":
+    """
+    Map each Column tag → the set of compounds that actually REACH its feed.
+
+    Forward-propagate compound sets from feed streams. A column splits its feed by
+    volatility (median cut): distillate (outlet port 0) carries the lighter half,
+    bottoms (port 1) the heavier half — so a downstream column sees a REDUCED set
+    and its keys are chosen only from compounds actually present, avoiding the
+    FUG NaN-distillate failure. Non-overlapping split (under-approximation) is
+    safe: keys drawn from a subset of the true feed are still present in it.
+    Fixpoint iteration tolerates recycle edges.
+    """
+    all_c = list(graph.compounds)
+    sset: "dict[str, set]" = {}
+    for s in graph.streams():
+        if s.metadata.get("is_feed") and s.composition:
+            sset[s.tag] = set(s.composition.keys())
+
+    units = graph.units()
+    for _ in range(len(units) + 2):
+        changed = False
+        for u in units:
+            feed: set = set()
+            for s in graph.inlet_streams(u.tag):
+                feed |= sset.get(s.tag, set())
+            if not feed:
+                continue
+            outs = graph.outlet_streams(u.tag)
+            if u.unit_type == "Column" and outs:
+                ranked = _rank_by_bp(feed)
+                k = (len(ranked) + 1) // 2            # size of the light (distillate) half
+                light, heavy = set(ranked[:k]), set(ranked[k:])
+                if len(ranked) == 1:                  # can't split a pure feed
+                    light = heavy = set(ranked)
+                for o in outs:
+                    tgt = light if o.src_port == 0 else heavy
+                    if not tgt <= sset.get(o.tag, set()):
+                        sset[o.tag] = sset.get(o.tag, set()) | tgt
+                        changed = True
+            else:
+                for o in outs:
+                    if not feed <= sset.get(o.tag, set()):
+                        sset[o.tag] = sset.get(o.tag, set()) | feed
+                        changed = True
+        if not changed:
+            break
+
+    col_feeds: "dict[str, set]" = {}
+    for u in units:
+        if u.unit_type == "Column":
+            feed = set()
+            for s in graph.inlet_streams(u.tag):
+                feed |= sset.get(s.tag, set())
+            col_feeds[u.tag] = feed or set(all_c)
+    return col_feeds
 
 
 def _column_keys(compounds: list[str]) -> "tuple[Optional[str], Optional[str]]":
