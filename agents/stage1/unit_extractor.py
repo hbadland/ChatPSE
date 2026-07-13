@@ -21,7 +21,7 @@ from agents.llm import chat, DEFAULT_MODEL, retry_temperature, retry_seed
 SUPPORTED_UNIT_TYPES = [
     "Heater", "Cooler", "Vessel", "Mixer",
     "Splitter", "Pump", "Compressor", "Expander",
-    "ConversionReactor",
+    "ConversionReactor", "Column", "Decanter",
 ]
 
 _EMPTY_ERRORS = ("empty response", "line 1 column 1", "only markdown")
@@ -30,7 +30,8 @@ _EMPTY_ERRORS = ("empty response", "line 1 column 1", "only markdown")
 # avoids the full prompt triggering a long thinking block that exhausts max_tokens.
 _MINIMAL_SYSTEM = (
     'Return ONLY: {"units": [{"tag": "HT-01", "type": "Heater", "role": "..."}]}'
-    "\nTypes: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor"
+    "\nTypes: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander "
+    "ConversionReactor Column Decanter"
 )
 
 # Compact system prompt for cases with >10 compounds — identical rules but no
@@ -45,21 +46,22 @@ Schema:
   "units": [
     {
       "tag": "HT-01",
-      "type": "<one of: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor>",
+      "type": "<one of: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor Column Decanter>",
       "role": "<one-line purpose>"
     }
   ]
 }
 
 Rules:
-- Tags: type abbreviation + 2-digit index (HT-01, V-01, MX-01, SP-01, PM-01, CP-01, EX-01, CL-01, RX-01)
+- Tags: type abbreviation + 2-digit index (HT-01, V-01, MX-01, SP-01, PM-01, CP-01, EX-01, CL-01, RX-01, COL-01, DEC-01)
 - List units in process flow order (feed to product)
 - Extract every unit operation the process description implies. Each distinct physical step
-  (heat, cool, pump, compress, react, separate) is its own unit, and standard equipment expands
-  (a distillation column = condenser + reboiler + column vessel). Do not omit implied steps.
+  (heat, cool, pump, compress, react, separate) is its own unit. Do not omit implied steps.
   Do NOT invent units the description does not imply.
-- Standard equipment expands into component units: a distillation column = condenser (Cooler)
-  + reboiler (Heater) + column vessel (Vessel); a decanter = a Vessel performing liquid-liquid splitting
+- A distillation / fractionation / rectification column is ONE Column unit (shortcut model):
+  do NOT expand it into condenser + reboiler + vessel. Emit one Column per column.
+- A decanter / liquid-liquid settler that splits two liquid phases is ONE Decanter unit.
+- A Vessel performs single flash separation (vapour + liquid); use it for simple flashes only
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
 - Include a Mixer only when combining two or more feed streams is described
 - Include a Splitter only when splitting a stream into two fractions is described
@@ -78,7 +80,7 @@ Schema:
   "units": [
     {
       "tag": "HT-01",
-      "type": "<one of: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor>",
+      "type": "<one of: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor Column Decanter>",
       "role": "<one-line purpose, e.g. 'heat feed to flash temperature'>",
       "reaction": "<ONLY for ConversionReactor: 'reactants -> products', else omit>"
     }
@@ -87,14 +89,16 @@ Schema:
 
 Rules:
 - Tags: use type abbreviation + 2-digit index (HT-01, V-01, MX-01, etc.)
-  Abbreviations: Heater=HT, Cooler=CL, Vessel=V, Mixer=MX, Splitter=SP, Pump=PM, Compressor=CP, Expander=EX, ConversionReactor=RX
+  Abbreviations: Heater=HT, Cooler=CL, Vessel=V, Mixer=MX, Splitter=SP, Pump=PM, Compressor=CP, Expander=EX, ConversionReactor=RX, Column=COL, Decanter=DEC
 - List units in process flow order (feed to product)
 - Extract every unit operation the process description implies. Each distinct physical step
-  (heat, cool, pump, compress, react, separate) is its own unit, and standard equipment expands
-  (a distillation column = condenser + reboiler + column vessel). Do not omit implied steps.
+  (heat, cool, pump, compress, react, separate) is its own unit. Do not omit implied steps.
   Do NOT invent units the description does not imply.
-- Standard equipment expands into component units: a distillation column = condenser (Cooler)
-  + reboiler (Heater) + column vessel (Vessel); a decanter = a Vessel performing liquid-liquid splitting
+- A distillation / fractionation / rectification column is ONE Column unit (shortcut model):
+  do NOT expand it into condenser + reboiler + vessel. Emit one Column per column in the process
+  (a two-column sequence = two Column units).
+- A decanter / liquid-liquid settler that splits two liquid phases is ONE Decanter unit.
+- A Vessel performs a single flash separation (vapour + liquid); use it for simple flashes only
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
 - Include a Mixer only when the description explicitly mentions combining or mixing two feed streams
 - Include a Splitter only when the description explicitly mentions splitting a stream into two fractions
@@ -167,28 +171,23 @@ Input: "Feed a butanol-water mixture to a decanter. The two liquid phases underg
 Compounds: n-Butanol, Water
 Output:
 {"units": [
-  {"tag": "V-01", "type": "Vessel", "role": "liquid-liquid decanter to split butanol-rich and water-rich phases"}
+  {"tag": "DEC-01", "type": "Decanter", "role": "liquid-liquid decanter splitting butanol-rich and water-rich phases"}
 ]}
 
 Input: "Distil an ethanol-water feed in a distillation column. Overhead vapour is condensed and bottoms are reboiled."
 Compounds: Ethanol, Water
 Output:
 {"units": [
-  {"tag": "HT-01", "type": "Heater", "role": "column reboiler to vaporise bottoms"},
-  {"tag": "CL-01", "type": "Cooler", "role": "column condenser to condense overhead vapour"},
-  {"tag": "V-01",  "type": "Vessel", "role": "column separator for vapour-liquid equilibrium"}
+  {"tag": "COL-01", "type": "Column", "role": "distillation column: ethanol distillate, water bottoms"}
 ]}
 
-Input: "Rich TEG from the absorber column is pumped to a regenerator where it is heated to drive off absorbed water. Lean TEG is recycled back."
-Compounds: Triethylene glycol, Water
+Input: "A pyridine-water feed is separated in a two-column extractive distillation with toluene entrainer; a decanter breaks the toluene-water phase split. Toluene is recycled."
+Compounds: Pyridine, Water, Toluene
 Output:
 {"units": [
-  {"tag": "HT-01", "type": "Heater", "role": "absorber column reboiler"},
-  {"tag": "CL-01", "type": "Cooler", "role": "absorber column condenser"},
-  {"tag": "V-01",  "type": "Vessel", "role": "absorber column separator"},
-  {"tag": "PM-01", "type": "Pump",   "role": "pump rich TEG to regenerator pressure"},
-  {"tag": "HT-02", "type": "Heater", "role": "regenerator reboiler to drive off water from rich TEG"},
-  {"tag": "V-02",  "type": "Vessel", "role": "regenerator separator for lean TEG and water vapour"}
+  {"tag": "COL-01", "type": "Column",   "role": "extractive column recovering pyridine with toluene entrainer"},
+  {"tag": "DEC-01", "type": "Decanter", "role": "decanter splitting toluene-rich and water-rich liquid phases"},
+  {"tag": "COL-02", "type": "Column",   "role": "entrainer recovery column, toluene overhead recycled"}
 ]}"""
 
 
@@ -202,17 +201,22 @@ _TAG_ABBREV: dict[str, str] = {
     "Compressor":        "CP",
     "Expander":          "EX",
     "ConversionReactor": "RX",
+    "Column":            "COL",
+    "Decanter":          "DEC",
 }
 
 # Each tuple: (regex_pattern, [(unit_type, role)]).
-# Applied in order — one match emits all listed unit types (e.g. "column" → Heater+Cooler).
+# Applied in order — one match emits all listed unit types.
 _KW_UNITS: list[tuple[str, list[tuple[str, str]]]] = [
     (r"\breactor\b|\breformer\b|\bconverter\b|\bshift\s+reactor\b|\bmethanat\w*",
      [("ConversionReactor", "chemical reaction")]),
-    (r"\bcolumn\b",
-     [("Heater", "column reboiler"), ("Cooler", "column condenser")]),
-    (r"\bdecanter\b",
-     [("Vessel", "liquid-liquid decanter")]),
+    # Fallback counts the explicit equipment noun (one unit per 'column'/'decanter'
+    # mention) to avoid double-counting phrases like "distillation column"; the
+    # broader distillation/fractionation vocabulary is handled in the LLM prompt.
+    (r"\bdecanters?\b|\bsettlers?\b",
+     [("Decanter", "liquid-liquid decanter")]),
+    (r"\bcolumns?\b",
+     [("Column", "distillation column")]),
     (r"\bvessel\b|\bflash\s+drum\b",
      [("Vessel", "flash separation")]),
     (r"\bheater\b|\breboiler\b|\bfurnace\b",
