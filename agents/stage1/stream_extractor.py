@@ -272,6 +272,7 @@ class StreamExtractor:
             try:
                 data    = _parse_json(raw)
                 streams = [_parse_stream(s) for s in data.get("streams", [])]
+                streams = _dedupe_stream_tags(streams)
                 streams = _reconcile_unit_refs(streams, unit_tag_set)
                 _resolve_qualitative_pressure(description, streams)
                 result  = SemanticTopology(streams=streams, raw_json=data)
@@ -368,18 +369,57 @@ def _reconcile_unit_refs(
     unit_tags: set[str],
 ) -> list["SemanticStream"]:
     """
-    Silently fix src/dst references that don't match the known unit tag list.
-    Leaves unresolvable references untouched so validation can still report them.
+    Fix src/dst references that don't match the known unit tag list. A near-miss
+    is snapped to the best-matching real unit; a genuine PHANTOM reference (e.g.
+    a 'COLUMN' the unit list never contained) is nulled so the stream becomes a
+    boundary attached to its remaining real endpoint, rather than crashing
+    validation. A stream whose BOTH endpoints are phantom is dropped.
     """
+    import sys as _sys
+    kept: list["SemanticStream"] = []
     for stream in streams:
-        if stream.src and stream.src not in unit_tags:
-            fixed = _best_match(stream.src, unit_tags)
-            if fixed:
-                stream.src = fixed
-        if stream.dst and stream.dst not in unit_tags:
-            fixed = _best_match(stream.dst, unit_tags)
-            if fixed:
-                stream.dst = fixed
+        for end in ("src", "dst"):
+            ref = getattr(stream, end)
+            if ref and ref not in unit_tags:
+                fixed = _best_match(ref, unit_tags)
+                if fixed:
+                    setattr(stream, end, fixed)
+                else:
+                    setattr(stream, end, None)
+                    print(f"[STREAM_EXT] phantom {end} '{ref}' on stream "
+                          f"'{stream.tag}' → nulled (unit not in list)",
+                          flush=True, file=_sys.stderr)
+        if stream.src is None and stream.dst is None:
+            print(f"[STREAM_EXT] dropped isolated stream '{stream.tag}' "
+                  f"(both endpoints phantom)", flush=True, file=_sys.stderr)
+            continue
+        kept.append(stream)
+    return kept
+
+
+def _dedupe_stream_tags(
+    streams: list["SemanticStream"],
+) -> list["SemanticStream"]:
+    """
+    Enforce unique stream tags: when a tag repeats (e.g. two 'LIQUID' streams
+    from a phase split), suffix every occurrence — LIQUID → LIQUID-1, LIQUID-2 —
+    so a purely-cosmetic collision does not fail extraction. Stream tags are
+    labels only (connectivity is by src/dst unit), so renaming is safe.
+    """
+    from collections import Counter
+    import sys as _sys
+    counts = Counter(s.tag for s in streams if s.tag)
+    dups = {t for t, n in counts.items() if n > 1}
+    if not dups:
+        return streams
+    seen: dict[str, int] = {}
+    for s in streams:
+        if s.tag in dups:
+            seen[s.tag] = seen.get(s.tag, 0) + 1
+            new_tag = f"{s.tag}-{seen[s.tag]}"
+            print(f"[STREAM_EXT] duplicate tag '{s.tag}' → '{new_tag}'",
+                  flush=True, file=_sys.stderr)
+            s.tag = new_tag
     return streams
 
 
@@ -425,6 +465,40 @@ def _parse_json(text: str) -> dict:
     if not text:
         raise ValueError("response contained only markdown fences")
     m = re.search(r"\{.*\}", text, re.DOTALL)
-    if m:
-        return json.loads(m.group())
-    return json.loads(text)
+    return _lenient_loads(m.group() if m else text)
+
+
+def _lenient_loads(candidate: str) -> dict:
+    """
+    Parse JSON, repairing the two malformations LLMs produce most often before
+    giving up: trailing commas, and truncated output (token cutoff leaves the
+    stream array/object unclosed). Strict parse is tried first, so well-formed
+    JSON is completely unaffected.
+    """
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        pass
+    # 1) strip trailing commas:  ,}  or  ,]
+    repaired = re.sub(r",(\s*[}\]])", r"\1", candidate)
+    try:
+        return json.loads(repaired)
+    except json.JSONDecodeError:
+        pass
+    # 2) truncation repair: keep up to the last complete object, then balance
+    #    any still-open [ and { by appending closers.
+    last = repaired.rfind("}")
+    if last != -1:
+        trimmed = re.sub(r",\s*$", "", repaired[:last + 1])
+        n_obj = trimmed.count("{") - trimmed.count("}")
+        n_arr = trimmed.count("[") - trimmed.count("]")
+        trimmed += "]" * max(n_arr, 0) + "}" * max(n_obj, 0)
+        try:
+            import sys as _sys
+            print("[STREAM_EXT] recovered truncated/trailing-comma JSON",
+                  flush=True, file=_sys.stderr)
+            return json.loads(trimmed)
+        except json.JSONDecodeError:
+            pass
+    raise json.JSONDecodeError(
+        "unrecoverable JSON after lenient repair", candidate, 0)
