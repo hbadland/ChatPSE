@@ -247,6 +247,74 @@ class ConversionReactorNode(NodeIR):
         return errors
 
 
+class ColumnNode(NodeIR):
+    """
+    Shortcut (Fenske-Underwood-Gilliland) distillation column. One material feed
+    (inlet port 0) → distillate (outlet port 0) + bottoms (outlet port 1). The
+    reboiler energy stream is attached at DWSIM-mapping time (input port 1), like
+    the reactor's energy stream — it is NOT an IR port.
+
+    Params (probe-validated against DWSIM ShortcutColumn):
+      light_key, heavy_key                 — component names (the split keys)
+      light_key_frac_bottoms               — LK mole fraction allowed in bottoms
+      heavy_key_frac_distillate            — HK mole fraction allowed in distillate
+      reflux_ratio                         — actual reflux as multiple of Rmin
+      condenser_pressure_Pa, boiler_pressure_Pa
+    """
+    UNIT_TYPE = "Column"
+    PORT_SPECS = [
+        PortSpec(0, "inlet",  "any", required=True),
+        PortSpec(0, "outlet", "any", required=True),   # distillate
+        PortSpec(1, "outlet", "any", required=True),   # bottoms
+    ]
+    REQUIRED_PARAMS = [
+        "light_key", "heavy_key",
+        "light_key_frac_bottoms", "heavy_key_frac_distillate",
+        "reflux_ratio", "condenser_pressure_Pa", "boiler_pressure_Pa",
+    ]
+
+    def validate_construction(self) -> list[str]:
+        errors: list[str] = []
+        for k in ("light_key", "heavy_key"):
+            v = self.params.get(k)
+            if v is not None and not str(v).strip():
+                errors.append(f"ColumnNode {self.tag}: {k} is empty")
+        for k in ("light_key_frac_bottoms", "heavy_key_frac_distillate"):
+            v = self.params.get(k)
+            if v is not None and not (0.0 < float(v) < 1.0):
+                errors.append(
+                    f"ColumnNode {self.tag}: {k}={v} out of range (0–1 exclusive)")
+        r = self.params.get("reflux_ratio")
+        if r is not None and float(r) <= 0.0:
+            errors.append(f"ColumnNode {self.tag}: reflux_ratio={r} must be > 0")
+        for k in ("condenser_pressure_Pa", "boiler_pressure_Pa"):
+            v = self.params.get(k)
+            if v is not None and not (100 < float(v) < 1e8):
+                errors.append(
+                    f"ColumnNode {self.tag}: {k}={v} Pa out of range (100–1e8)")
+        return errors
+
+
+class DecanterNode(NodeIR):
+    """
+    Liquid-liquid decanter — a Vessel variant that runs an LLE/VLLE flash
+    (NestedLoopsSVLLE at DWSIM-mapping time) and exposes a THIRD outlet for the
+    second liquid phase. Ports: inlet 0 (mixed); outlet 0 vapour (may be empty),
+    outlet 1 liquid phase 1, outlet 2 liquid phase 2.
+    """
+    UNIT_TYPE = "Decanter"
+    PORT_SPECS = [
+        PortSpec(0, "inlet",  "mixed",  required=True),
+        PortSpec(0, "outlet", "vapour", required=False),  # often zero-flow
+        PortSpec(1, "outlet", "liquid", required=True),
+        PortSpec(2, "outlet", "liquid", required=True),
+    ]
+    REQUIRED_PARAMS = []
+
+    def validate_construction(self) -> list[str]:
+        return []
+
+
 # ── Registry: unit_type string → class ────────────────────────────────────────
 
 NODE_REGISTRY: dict[str, type[NodeIR]] = {
@@ -259,6 +327,8 @@ NODE_REGISTRY: dict[str, type[NodeIR]] = {
     "ConversionReactor":  ConversionReactorNode,
     "Compressor": CompressorNode,
     "Expander":   ExpanderNode,
+    "Column":     ColumnNode,
+    "Decanter":   DecanterNode,
 }
 
 SUPPORTED_UNIT_TYPES: frozenset[str] = frozenset(NODE_REGISTRY.keys())
