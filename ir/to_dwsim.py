@@ -296,6 +296,10 @@ _UNIT_PARAM_KEYS: dict[str, list[str]] = {
     "Compressor":        ["P_out", "efficiency", "dP"],
     "Expander":          ["P_out", "efficiency", "dP"],
     "ConversionReactor": ["temperature_K", "pressure_Pa", "conversion", "reaction"],
+    "Column":            ["light_key", "heavy_key", "light_key_frac_bottoms",
+                          "heavy_key_frac_distillate", "reflux_ratio",
+                          "condenser_pressure_Pa", "boiler_pressure_Pa"],
+    "Decanter":          ["dP"],
 }
 
 def _unit_to_dict(node: NodeIR) -> dict:

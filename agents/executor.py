@@ -312,8 +312,17 @@ class Executor:
         # NO_SEPARATION / PARAM_MISSING from firing, bypassing CALIBRATION routing.
         # When BIPs ARE supplied (binary_parameters populated), set_nrtl_parameters
         # already disables it — this only fires for the no-BIP case.
+        # EXCEPTION: a Decanter's purpose IS the liquid-liquid split, which needs
+        # activity-model interaction parameters. With no pre-supplied BIP the
+        # split can only come from AutoEstimate (UNIFAC), so keep it ON when the
+        # flowsheet contains a Decanter (probe-validated path). The spurious-VLE-
+        # separation concern above does not apply to an LLE decanter.
         early_warnings: list[str] = []
-        if default_pp in ("NRTL", "UNIQUAC") and not flowsheet.get("binary_parameters"):
+        _has_decanter = any(u.get("type") == "Decanter"
+                            for u in flowsheet.get("units", []))
+        if (default_pp in ("NRTL", "UNIQUAC")
+                and not flowsheet.get("binary_parameters")
+                and not _has_decanter):
             try:
                 sim.disable_auto_estimate(dwsim_pp)
             except Exception as e:
@@ -529,6 +538,19 @@ def _set_unit_conditions(sim, u_cfg: dict) -> list[str]:
                 conversion    = u_cfg["conversion"],
                 reaction      = u_cfg.get("reaction", ""),
             )
+        elif utype == "Column":
+            sim.set_column(
+                tag,
+                light_key                 = u_cfg["light_key"],
+                heavy_key                 = u_cfg["heavy_key"],
+                light_key_frac_bottoms    = u_cfg["light_key_frac_bottoms"],
+                heavy_key_frac_distillate = u_cfg["heavy_key_frac_distillate"],
+                reflux_ratio              = u_cfg["reflux_ratio"],
+                condenser_pressure_Pa     = u_cfg["condenser_pressure_Pa"],
+                boiler_pressure_Pa        = u_cfg["boiler_pressure_Pa"],
+            )
+        elif utype == "Decanter":
+            sim.set_decanter(tag, dP=u_cfg.get("dP", 0.0))
         else:
             return [f"Unit '{tag}' type '{utype}' condition-setting "
                     "not yet implemented in executor."]

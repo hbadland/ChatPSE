@@ -58,6 +58,8 @@ _UNIT_TYPE_MAP = {
     "Compressor":        ObjectType.Compressor,
     "Expander":          ObjectType.Expander,
     "Pump":              ObjectType.Pump,
+    "Column":            ObjectType.ShortcutColumn,   # shortcut (FUG) column
+    "Decanter":          ObjectType.Vessel,           # Vessel + VLLE flash (set_decanter)
     "MaterialStream":    ObjectType.MaterialStream,
     # Member name varies by DWSIM build (e.g. RCT_Conversion in current build);
     # discovery loop in add_unit() is the runtime fallback when these are absent.
@@ -601,6 +603,81 @@ class DWSIMFlowsheet:
             f"  [DWSIM] ConversionReactor {tag}: reaction {rxn_id[:8]}… registered "
             f"in DefaultSet, conversion={conversion:.4f} (Expression in %)",
             flush=True, file=sys.stderr)
+
+    def set_column(self, tag: str, light_key: str, heavy_key: str,
+                   light_key_frac_bottoms: float, heavy_key_frac_distillate: float,
+                   reflux_ratio: float, condenser_pressure_Pa: float,
+                   boiler_pressure_Pa: float) -> None:
+        """Configure a DWSIM ShortcutColumn (Fenske-Underwood-Gilliland).
+
+        Probe-validated (dwsim/probe_shortcut_column.py): wire a reboiler energy
+        stream to input port 1 (ConEn) — the column will not solve without it —
+        then set the FUG specs on the column's non-public m_* fields via
+        reflection. Ports: input0=feed, input1=energy; output0=distillate,
+        output1=bottoms (material connections are built by ir/to_dwsim).
+        """
+        from System.Reflection import BindingFlags
+        obj   = self._sim.GetFlowsheetSimulationObject(tag)
+        ttype = obj.GetType()
+        flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public
+
+        # Reboiler energy stream → column input port 1 (mirror the reactor pattern).
+        en_tag = f"{tag}-EN"
+        energy_wired = False
+        for es_name in ("EnergyStream", "OT_EnergyStream"):
+            es_ot = getattr(ObjectType, es_name, None)
+            if es_ot is None:
+                continue
+            try:
+                self._sim.AddObject(es_ot, 0, 0, en_tag)
+                self._sim.ConnectObjects(
+                    self._get_graphic_object(en_tag),
+                    self._get_graphic_object(tag), 0, 1)   # energy → column input port 1
+                energy_wired = True
+                break
+            except Exception:
+                pass
+
+        def _setf(name, val, is_str=False):
+            f = ttype.GetField(name, flags)
+            if f is None:
+                raise ValueError(f"ShortcutColumn field '{name}' not found")
+            f.SetValue(obj, System.String(str(val)) if is_str
+                       else System.Double(float(val)))
+        _setf("m_lightkey", light_key, is_str=True)
+        _setf("m_heavykey", heavy_key, is_str=True)
+        _setf("m_lightkeymolarfrac", light_key_frac_bottoms)     # LK frac in bottoms
+        _setf("m_heavykeymolarfrac", heavy_key_frac_distillate)  # HK frac in distillate
+        _setf("m_refluxratio", reflux_ratio)                     # R / Rmin
+        _setf("m_condenserpressure", condenser_pressure_Pa)
+        _setf("m_boilerpressure", boiler_pressure_Pa)
+        print(f"  [DWSIM] Column {tag}: LK={light_key} HK={heavy_key} "
+              f"R/Rmin={reflux_ratio} energy_wired={energy_wired}",
+              flush=True, file=sys.stderr)
+
+    def set_decanter(self, tag: str, dP: float = 0.0) -> None:
+        """Configure a Vessel as a liquid-liquid decanter.
+
+        Force a VLLE flash so a second liquid phase splits into the vessel's
+        3rd outlet port (probe-validated with NestedLoopsSVLLE). Material
+        connections (feed→0; vapour←0, liquid1←1, liquid2←2) are built by
+        ir/to_dwsim; a DWSIM Vessel exposes all three output ports by default.
+        """
+        obj = self._sim.GetFlowsheetSimulationObject(tag)
+        try:
+            obj.SetPropertyValue("PROP_SEP_0", float(dP))
+        except Exception:
+            pass
+        for alg in ("NestedLoopsSVLLE", "GibbsMinimization3P", "NestedLoops3P"):
+            try:
+                obj.PreferredFlashAlgorithmTag = alg
+                print(f"  [DWSIM] Decanter {tag}: flash={alg} dP={dP}",
+                      flush=True, file=sys.stderr)
+                return
+            except Exception:
+                continue
+        print(f"  [DWSIM] Decanter {tag}: could not set a VLLE flash algorithm",
+              flush=True, file=sys.stderr)
 
     def _setup_conversion_reaction(self, reactor_tag: str,
                                    reaction_str: str,
