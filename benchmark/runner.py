@@ -37,7 +37,9 @@ from benchmark.metrics import (
     RunMetrics, extract_metrics, aggregate, AggregateMetrics
 )
 from benchmark.logger import RunLog, extract_run_log, extract_system_streams
-from benchmark.physics_eval import run_physics_checks, run_reference_comparison, CheckSeverity
+from benchmark.physics_eval import (
+    run_physics_checks, run_reference_comparison, CheckSeverity, _MIN_MATCH_FOR_MAPE,
+)
 from benchmark.ablation import AblationConfig, CONFIGS, apply_ablation, make_orchestrator
 
 _RESULTS_DIR = os.path.join(
@@ -539,8 +541,15 @@ class BenchmarkRunner:
             # match count is below _MIN_MATCH_FOR_MAPE (insufficient_match).
             _match_detail = next((c for c in _ref_checks
                                   if c.get("check") == "reference_stream_matching"), {})
-            _ref_n_matched  = _match_detail.get("n_matched", 0)
-            _ref_sufficient = ref_mape_T is not None
+            _ref_n_matched  = _match_detail.get("n_matched") or 0
+            # Gate SOLELY on the match count: n_matched < _MIN_MATCH_FOR_MAPE is
+            # ALWAYS insufficient_match. Gating on `ref_mape_T is not None` was
+            # inconsistent — early-exit paths (no DWSIM execution / no stream
+            # results / no reference streams) return MAPE=0.0 (not None) with no
+            # matching check, which spuriously reported computed/0.0 over ZERO
+            # matched streams. n_matched defaults to 0 in exactly those paths, so
+            # the count-based gate makes every n<MIN case insufficient uniformly.
+            _ref_sufficient = _ref_n_matched >= _MIN_MATCH_FOR_MAPE
             if _ref_checks:
                 checks.extend(_ref_checks)
                 pr._physics_checks = checks
@@ -607,7 +616,6 @@ class BenchmarkRunner:
                 _fgs.get("n_binary_params"))
 
         if has_reference:
-            from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE
             _ins = "insufficient_match"      # never a bare MAPE without its count
             run_log.reference_comparison = {
                 # n_matched is reported prominently and ALWAYS alongside the MAPE.
