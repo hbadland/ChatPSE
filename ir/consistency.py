@@ -98,6 +98,25 @@ class GlobalConsistencyPass:
             if stream.P is None and c.P is not None:
                 stream.P = round(float(c.P), 2)
 
+        # Vessel/Separator feed-T inheritance. An adiabatic flash operates at its
+        # inlet temperature. If propagation still left a Separator's inlet
+        # stream(s) with no T (a feed with unspecified T, or an upstream chain
+        # that carried none), inherit the graph's feed temperature so the vessel
+        # flashes at a real T instead of being flagged "no feed T — may produce
+        # zero vapour" and solved from a stale default.
+        _feed_T = next((s.T for s in g.feed_streams() if s.T is not None), None)
+        if _feed_T is not None:
+            for node in g.units():
+                if not isinstance(node, SeparatorNode):
+                    continue
+                inlets = g.inlet_streams(node.tag)
+                if inlets and all(s.T is None for s in inlets):
+                    for s in inlets:
+                        s.T = round(float(_feed_T), 2)
+                    changes.append(
+                        f"CONSISTENCY[vessel_inherit_T]: {node.tag} inlet "
+                        f"T={round(float(_feed_T), 2)} K (inherited feed T)")
+
         return g, changes
 
     # ── 1. Topological forward propagation ───────────────────────────────────
