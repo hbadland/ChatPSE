@@ -15,6 +15,13 @@ from ir.graph import FlowsheetGraph, NodeIR, EdgeIR, PORT_SPECS, make_node
 
 _VAP_KEYWORDS = frozenset({"VAP", "VAPOR", "VAPOUR", "GAS", "TOP", "OVER", "DIST"})
 _LIQ_KEYWORDS = frozenset({"LIQ", "LIQUID", "BOT", "BOTTOM", "BOTT", "BASE"})
+# Column outlet naming: distillate → port 0, bottoms → port 1.
+_DIST_KEYWORDS = frozenset({"DIST", "DISTILLATE", "TOP", "OVER", "OVHD",
+                            "OVERHEAD", "LIGHT"})
+_BOT_KEYWORDS  = frozenset({"BOT", "BOTTOM", "BOTT", "BTMS", "BASE", "HEAVY",
+                            "RESIDUE"})
+# Decanter vapour outlet naming (the two liquids take ports 1 and 2).
+_DEC_VAP_KEYWORDS = frozenset({"VAP", "VAPOR", "VAPOUR", "GAS"})
 
 
 def normalise(graph: FlowsheetGraph) -> FlowsheetGraph:
@@ -24,6 +31,8 @@ def normalise(graph: FlowsheetGraph) -> FlowsheetGraph:
     g = _insert_mixers(g)
     g = _insert_splitters(g)
     g = _repair_vessel_ports(g)
+    g = _repair_column_ports(g)
+    g = _repair_decanter_ports(g)
     g = _propagate_phases(g)
     # Defensive: deepcopy of NetworkX graph can silently drop plain-attribute fields
     # if the graph has no nodes at copy time; re-stamp them from the pre-copy values.
@@ -188,6 +197,68 @@ def _repair_vessel_ports(graph: FlowsheetGraph) -> FlowsheetGraph:
             s0.phase    = "liquid"
             s1.phase    = "vapour"
 
+    return g
+
+
+def _repair_column_ports(graph: FlowsheetGraph) -> FlowsheetGraph:
+    """
+    Column outlet ports MUST be distillate → 0, bottoms → 1 (the DWSIM
+    ShortcutColumn distillate/bottoms port order). The GraphBuilder assigns ports
+    by stream ORDER, which is not semantically meaningful; reassign by name so the
+    products wire to the correct ports regardless of emission order.
+    """
+    g = graph.copy()
+    for node in g.units():
+        if node.unit_type != "Column":
+            continue
+        outlets = g.outlet_streams(node.tag)
+        if len(outlets) != 2:
+            continue
+        a, b = outlets
+        au, bu = a.tag.upper(), b.tag.upper()
+        a_bot  = any(k in au for k in _BOT_KEYWORDS)
+        b_bot  = any(k in bu for k in _BOT_KEYWORDS)
+        a_dist = any(k in au for k in _DIST_KEYWORDS)
+        b_dist = any(k in bu for k in _DIST_KEYWORDS)
+        dist = bot = None
+        if   a_bot and not b_bot:   bot, dist = a, b
+        elif b_bot and not a_bot:   bot, dist = b, a
+        elif a_dist and not b_dist: dist, bot = a, b
+        elif b_dist and not a_dist: dist, bot = b, a
+        if dist is not None and bot is not None:
+            dist.src_port = 0
+            bot.src_port  = 1
+            bot.phase     = "liquid"
+    return g
+
+
+def _repair_decanter_ports(graph: FlowsheetGraph) -> FlowsheetGraph:
+    """
+    Decanter outlet ports: vapour → 0, the two liquid phases → 1 and 2 (DWSIM
+    Vessel VLLE port order). The vapour outlet (often zero-flow) is identified by
+    name; the remaining outlets take the liquid ports. Handles the common
+    liquid-only decanter (2 outlets) by leaving port 0 for the vapour.
+    """
+    g = graph.copy()
+    for node in g.units():
+        if node.unit_type != "Decanter":
+            continue
+        outlets = g.outlet_streams(node.tag)
+        vap = None
+        liqs: list[EdgeIR] = []
+        for s in outlets:
+            u = s.tag.upper()
+            if any(k in u for k in _DEC_VAP_KEYWORDS) and not any(
+                    k in u for k in _LIQ_KEYWORDS):
+                vap = s
+            else:
+                liqs.append(s)
+        if vap is not None:
+            vap.src_port = 0
+            vap.phase    = "vapour"
+        for i, s in enumerate(liqs[:2]):
+            s.src_port = 1 + i
+            s.phase    = "liquid"
     return g
 
 

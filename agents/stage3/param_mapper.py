@@ -17,7 +17,7 @@ import re
 from typing import Optional
 
 from ir.graph import FlowsheetGraph, NodeIR
-from ir.thermo_estimation import bubble_point_K
+from ir.thermo_estimation import bubble_point_K, boiling_point_K
 from ir.reaction_conditions import template_temperature
 from agents.llm import chat, DEFAULT_MODEL, retry_temperature
 from rag.retriever import Retriever
@@ -26,7 +26,7 @@ from rag.retriever import Retriever
 _REQUIRES_ASSIGNMENT = {"Heater", "Cooler", "Pump", "Compressor", "Expander",
                         "ConversionReactor"}
 # Units that are fully handled by defaults + normaliser
-_DEFAULTS_ONLY       = {"Vessel", "Mixer", "Splitter"}
+_DEFAULTS_ONLY       = {"Vessel", "Mixer", "Splitter", "Decanter"}
 
 # ── LLM system prompt (minimal — only invoked when deterministic fails) ────────
 
@@ -88,7 +88,8 @@ class ParamMapper:
             params = self._assign_unit(
                 node, description, feed_T, feed_P,
                 desc_temps, desc_pressures, bp, max_retries,
-                feeds_vessel=feeds_vessel, feeds_pump=feeds_pump)
+                feeds_vessel=feeds_vessel, feeds_pump=feeds_pump,
+                compounds=g.compounds)
             # Provenance for units that set no explicit temperature param — DWSIM
             # determines their outlet T: pressure-changers COMPUTE it from adiabatic
             # thermodynamics, mixers/splitters from the mixing energy balance, and a
@@ -98,7 +99,7 @@ class ParamMapper:
                 if node.unit_type in ("Pump", "Compressor", "Expander",
                                       "Mixer", "Splitter"):
                     params["_temperature_source"] = "computed"
-                elif node.unit_type == "Vessel":
+                elif node.unit_type in ("Vessel", "Decanter"):
                     params["_temperature_source"] = "inherited"
             node.params = params
 
@@ -118,6 +119,7 @@ class ParamMapper:
         max_retries:    int,
         feeds_vessel:   bool = False,
         feeds_pump:     bool = False,
+        compounds:      Optional[list[str]] = None,
     ) -> dict:
         defaults = self._retriever.units.defaults(node.unit_type)
         params   = dict(defaults)
@@ -136,7 +138,8 @@ class ParamMapper:
         # ── Step 2: Physical estimator (constraint-aware) ──────────────────────
         estimated = _estimate_params(
             node, params, feed_T, feed_P, bp,
-            feeds_vessel=feeds_vessel, feeds_pump=feeds_pump)
+            feeds_vessel=feeds_vessel, feeds_pump=feeds_pump,
+            compounds=compounds)
         params.update(estimated)
 
         # ── Step 3: LLM fallback (only if required param is still missing) ─────
@@ -348,6 +351,7 @@ def _estimate_params(
     bp:           Optional[float],
     feeds_vessel: bool = False,
     feeds_pump:   bool = False,
+    compounds:    Optional[list[str]] = None,
 ) -> dict:
     """
     Fill missing required params with physics-grounded estimates.
@@ -424,7 +428,49 @@ def _estimate_params(
             # inert); only leave empty if genuinely absent.
             est["reaction"] = _reaction
 
+    elif node.unit_type == "Column":
+        # Shortcut (FUG) column defaults. Keys are chosen by volatility (light =
+        # most volatile, heavy = least); a sharp 2%/2% key spec, R/Rmin=1.5, and
+        # condenser/reboiler at feed pressure. Any value already extracted/set is
+        # preserved (setdefault semantics via the "not in params" guard).
+        lk, hk = _column_keys(compounds or [])
+        if "light_key" not in params and lk:
+            est["light_key"] = lk
+        if "heavy_key" not in params and hk:
+            est["heavy_key"] = hk
+        if "light_key_frac_bottoms" not in params:
+            est["light_key_frac_bottoms"] = 0.02
+        if "heavy_key_frac_distillate" not in params:
+            est["heavy_key_frac_distillate"] = 0.02
+        if "reflux_ratio" not in params:
+            est["reflux_ratio"] = 1.5
+        _P = round(feed_P or 101_325.0, 0)
+        if "condenser_pressure_Pa" not in params:
+            est["condenser_pressure_Pa"] = _P
+        if "boiler_pressure_Pa" not in params:
+            est["boiler_pressure_Pa"] = _P
+        est["_temperature_source"] = "computed"   # DWSIM computes product T (FUG)
+
     return est
+
+
+def _column_keys(compounds: list[str]) -> "tuple[Optional[str], Optional[str]]":
+    """
+    Light key = most volatile (lowest boiling point), heavy key = least volatile
+    (highest). Ranks single-compound boiling points at 1 atm. For a binary this is
+    exact; for a multicomponent split it is a simplification (true keys are the
+    pair adjacent to the split) — adequate as a default, refinable later.
+    """
+    bps: list[tuple[float, str]] = []
+    for c in compounds:
+        b = boiling_point_K(c, 101_325.0)
+        if b is not None:
+            bps.append((b, c))
+    if len(bps) < 2:
+        return (compounds[0] if compounds else None,
+                compounds[-1] if compounds else None)
+    bps.sort()
+    return bps[0][1], bps[-1][1]
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
