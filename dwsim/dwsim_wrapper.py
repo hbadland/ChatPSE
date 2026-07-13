@@ -884,8 +884,70 @@ class DWSIMFlowsheet:
 
     # ── Solve & read ──────────────────────────────────────────────────────────
 
+    # Two-pass reflux tuning for shortcut columns.
+    _REFLUX_FACTOR   = 1.3     # R = factor * Rmin (standard design heuristic 1.2–1.5)
+    _RMIN_MAX        = 20.0    # Rmin above this ⇒ near-azeotropic/infeasible for FUG
+
     def solve(self, timeout: int = 120) -> dict:
-        """Run the headless solver. Returns {tag: stream_dict} for all streams.
+        """Run the headless solver with a two-pass reflux tune for shortcut columns.
+
+        First pass uses the extracted reflux ratio. DWSIM's ShortcutColumn takes an
+        ABSOLUTE reflux R and rejects R < Rmin ("Reflux Ratio lower than calculated
+        minimum"). On that failure we read each column's computed m_Rmin and either
+        (a) bump R = factor * Rmin and re-solve once (feasible split), or
+        (b) if Rmin is very high, fail cleanly — the split is near-azeotropic and
+        infeasible for a plain shortcut column (needs an entrainer), so no reflux
+        value gives a physical result.
+        """
+        res = self._solve_once(timeout)
+        adjusted, infeasible = self._adjust_column_reflux(res)
+        if infeasible:
+            return {"solved": False, "errors": infeasible}
+        if adjusted:
+            res = self._solve_once(timeout)
+        return res
+
+    def _adjust_column_reflux(self, res: dict):
+        """Inspect shortcut columns after a failed solve; tune reflux or flag
+        infeasible. Returns (adjusted: bool, infeasible_errors: list[str])."""
+        if res.get("solved"):
+            return False, []
+        from System.Reflection import BindingFlags
+        flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public
+        adjusted = False
+        infeasible: list[str] = []
+        go = self._sim.GraphicObjects
+        for key in go.Keys:
+            gobj = go[key]
+            if str(gobj.ObjectType) != "ShortcutColumn":
+                continue
+            tag = str(gobj.Tag)
+            obj = self._sim.GetFlowsheetSimulationObject(tag)
+            t   = obj.GetType()
+            try:
+                rmin = float(t.GetField("m_Rmin", flags).GetValue(obj))
+                r    = float(t.GetField("m_refluxratio", flags).GetValue(obj))
+            except Exception:
+                continue
+            if not (rmin > 0.0) or r >= rmin:
+                continue   # no reflux shortfall on this column
+            if rmin > self._RMIN_MAX:
+                infeasible.append(
+                    f"{tag}: minimum reflux Rmin={rmin:.1f} exceeds the shortcut-column "
+                    f"limit ({self._RMIN_MAX:.0f}) — split is near-azeotropic and "
+                    f"infeasible for a plain shortcut column (needs an entrainer / "
+                    f"extractive distillation configuration)")
+                continue
+            new_r = round(self._REFLUX_FACTOR * rmin, 4)
+            t.GetField("m_refluxratio", flags).SetValue(obj, System.Double(new_r))
+            adjusted = True
+            print(f"  [DWSIM] Column {tag}: R={r} < Rmin={rmin:.4f}; bumped R="
+                  f"{new_r} (={self._REFLUX_FACTOR}xRmin), re-solving",
+                  flush=True, file=sys.stderr)
+        return adjusted, infeasible
+
+    def _solve_once(self, timeout: int = 120) -> dict:
+        """Single solver pass. Returns {tag: stream_dict} for all streams.
 
         Uses a daemon thread for the timeout so it works inside Singularity
         containers where signal.SIGALRM is non-functional. The thread is marked
