@@ -604,6 +604,25 @@ class BenchmarkRunner:
         # independent of the PASS decision.
         run_log.system_streams = extract_system_streams(pr)
 
+        # Solve completeness — detect a PARTIAL solve (units downstream of a
+        # failure left at default values). Gates reference-MAPE so a partial-solve
+        # MAPE is not reported as valid correctness (analogue of insufficient_match).
+        from benchmark.solve_status import compute_solve_status, gate_mape_status
+        _fgs_ns = (run_log.final_graph_summary or {}).get("n_units")
+        _solve  = compute_solve_status(run_log.system_streams, _fgs_ns)
+        run_log.fully_solved   = _solve["fully_solved"]
+        run_log.n_units_solved = _solve["n_units_solved"]
+        run_log.n_units_total  = _solve["n_units_total"]
+        # Re-gate the reference metrics on solve completeness: a partial solve is
+        # never a valid correctness MAPE and never a reference-match pass.
+        _mape_status = gate_mape_status(_solve["fully_solved"], _ref_sufficient)
+        _mape_valid  = (_mape_status == "computed")
+        m.reference_match_pass      = ref_match_pass and _solve["fully_solved"]
+        m.reference_mape_sufficient = _mape_valid
+        m.reference_mape_T          = ref_mape_T  if _mape_valid else 0.0
+        m.reference_mape_P          = ref_mape_P  if _mape_valid else 0.0
+        m.reference_mape_vf         = ref_mape_vf if _mape_valid else 0.0
+
         # Property-package family selection scored against the case's expected
         # family label — persisted so family-selection accuracy is measurable
         # from the ACTIVE pipeline's per-run JSONs (not only the offline harness).
@@ -621,11 +640,14 @@ class BenchmarkRunner:
                 # n_matched is reported prominently and ALWAYS alongside the MAPE.
                 "n_matched":                 _ref_n_matched,
                 "min_match_threshold":       _MIN_MATCH_FOR_MAPE,
-                "mape_status":               "computed" if _ref_sufficient else _ins,
-                "reference_match_pass":      ref_match_pass,
-                "reference_mape_T":          ref_mape_T  if _ref_sufficient else _ins,
-                "reference_mape_P":          ref_mape_P  if _ref_sufficient else _ins,
-                "reference_mape_vf":         ref_mape_vf if _ref_sufficient else _ins,
+                # Solve completeness gate: partial_solve > insufficient_match > computed.
+                "fully_solved":              _solve["fully_solved"],
+                "n_streams_at_default":      _solve["n_streams_at_default"],
+                "mape_status":               _mape_status,
+                "reference_match_pass":      ref_match_pass and _solve["fully_solved"],
+                "reference_mape_T":          ref_mape_T  if _mape_valid else _mape_status,
+                "reference_mape_P":          ref_mape_P  if _mape_valid else _mape_status,
+                "reference_mape_vf":         ref_mape_vf if _mape_valid else _mape_status,
                 "reference_excluded":        ref_excluded,
                 "reference_excluded_reason": ref_excluded_reason,
                 # Preserve ALL keys per check (severity serialised) so the

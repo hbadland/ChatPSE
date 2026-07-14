@@ -75,6 +75,12 @@ class RunLog:
     # Property-package family selection scored against the case's expected family
     # label (expected.property_package_class).  None when the case has no label.
     package_family: Optional[dict] = None
+    # Solve completeness — fully_solved is False when any non-feed stream is left
+    # at uncomputed default values (a downstream unit failed).  Gates reference-MAPE
+    # so a partial-solve MAPE is not reported as valid correctness.
+    fully_solved:   Optional[bool] = None
+    n_units_solved: Optional[int]  = None
+    n_units_total:  Optional[int]  = None
 
     @property
     def score_curve(self) -> list[int]:

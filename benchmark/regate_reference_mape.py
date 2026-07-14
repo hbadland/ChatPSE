@@ -20,6 +20,7 @@ Usage:
 """
 import argparse, glob, json, os, sys
 from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE
+from benchmark.solve_status import compute_solve_status, gate_mape_status
 
 _INS = "insufficient_match"
 
@@ -33,22 +34,37 @@ def _n_matched(rc: dict):
     return None
 
 
-def regate(rc: dict) -> tuple[dict, bool]:
-    """Return (rewritten reference_comparison, changed?)."""
+def regate(d: dict) -> tuple[dict, dict, bool]:
+    """Return (rewritten reference_comparison, solve_status, changed?).
+
+    Applies BOTH gates with precedence partial_solve > insufficient_match >
+    computed: a flowsheet that didn't fully solve can't yield a valid correctness
+    MAPE regardless of match count. fully_solved is recomputed from the stored
+    system_streams (exact); unit counts are best-effort.
+    """
+    rc = d.get("reference_comparison") or {}
     nm  = _n_matched(rc)
     nmv = nm if nm is not None else 0
     sufficient = nmv >= _MIN_MATCH_FOR_MAPE
 
+    n_units = (d.get("final_graph_summary") or {}).get("n_units")
+    solve   = compute_solve_status(d.get("system_streams"), n_units)
+    status  = gate_mape_status(solve["fully_solved"], sufficient)
+    valid   = (status == "computed")
+
     new = dict(rc)
-    new["n_matched"]           = nmv
-    new["min_match_threshold"] = _MIN_MATCH_FOR_MAPE
-    new["mape_status"]         = "computed" if sufficient else _INS
-    new["reference_match_pass"] = bool(rc.get("reference_match_pass")) and sufficient
+    new["n_matched"]            = nmv
+    new["min_match_threshold"]  = _MIN_MATCH_FOR_MAPE
+    new["fully_solved"]         = solve["fully_solved"]
+    new["n_streams_at_default"] = solve["n_streams_at_default"]
+    new["mape_status"]          = status
+    new["reference_match_pass"] = (bool(rc.get("reference_match_pass"))
+                                   and solve["fully_solved"] and sufficient)
     for k in ("reference_mape_T", "reference_mape_P", "reference_mape_vf"):
-        if not sufficient:
-            new[k] = _INS
-        # sufficient: keep the stored numeric MAPE unchanged
-    return new, (new != rc)
+        if not valid:
+            new[k] = status
+        # valid: keep the stored numeric MAPE unchanged
+    return new, solve, (new != rc)
 
 
 def main():
@@ -69,16 +85,23 @@ def main():
             n_no_ref += 1
             continue
         n_seen += 1
-        new_rc, changed = regate(rc)
-        if not changed:
+        new_rc, solve, rc_changed = regate(d)
+        top_changed = (d.get("fully_solved")   != solve["fully_solved"] or
+                       d.get("n_units_solved") != solve["n_units_solved"] or
+                       d.get("n_units_total")  != solve["n_units_total"])
+        if not (rc_changed or top_changed):
             continue
         n_changed += 1
-        print(f"  {os.path.basename(path)}: n_matched={new_rc['n_matched']} "
-              f"status={new_rc['mape_status']} "
+        print(f"  {os.path.basename(path)}: fully_solved={solve['fully_solved']} "
+              f"(default_streams={solve['n_streams_at_default']}) "
+              f"status {rc.get('mape_status')!r}->{new_rc['mape_status']!r} "
               f"mape_T {rc.get('reference_mape_T')!r}->{new_rc['reference_mape_T']!r} "
               f"pass {rc.get('reference_match_pass')}->{new_rc['reference_match_pass']}")
         if not args.dry_run:
             d["reference_comparison"] = new_rc
+            d["fully_solved"]   = solve["fully_solved"]
+            d["n_units_solved"] = solve["n_units_solved"]
+            d["n_units_total"]  = solve["n_units_total"]
             json.dump(d, open(path, "w"), indent=2, default=str)
 
     mode = "DRY-RUN (no writes)" if args.dry_run else "written"
