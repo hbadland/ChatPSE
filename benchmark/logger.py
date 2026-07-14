@@ -81,6 +81,11 @@ class RunLog:
     fully_solved:   Optional[bool] = None
     n_units_solved: Optional[int]  = None
     n_units_total:  Optional[int]  = None
+    # Best-of-N sampling audit (None when best-of-N is off / N=1). Records N, the
+    # selected sample, the reference-BLIND selection reason, and every sample's
+    # reference-blind signals — so the selection is auditable and demonstrably
+    # never uses reference/MAPE data.
+    best_of_n:      Optional[dict] = None
 
     @property
     def score_curve(self) -> list[int]:

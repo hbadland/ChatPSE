@@ -478,20 +478,53 @@ class BenchmarkRunner:
         nl_input = getattr(case, "prompt", None) or case.description
 
         t0 = time.time()
-        try:
-            with apply_ablation(config):
-                pr = orch.run(
-                    nl_input,
-                    reference_file=getattr(case, "reference_file", None),
-                    tier=case.tier,
-                )
-        except Exception as exc:
-            import sys as _sys, traceback as _tb
-            print(f"[RUNNER] EXCEPTION in {case.id}: {exc}", flush=True, file=_sys.stderr)
-            if self._verbose:
-                print(f"\n  [EXCEPTION] {exc}")
-                _tb.print_exc()
-            pr = _make_failed_result(str(exc))
+
+        def _one_run():
+            try:
+                with apply_ablation(config):
+                    return orch.run(
+                        nl_input,
+                        reference_file=getattr(case, "reference_file", None),
+                        tier=case.tier,
+                    )
+            except Exception as exc:
+                import traceback as _tb
+                print(f"[RUNNER] EXCEPTION in {case.id}: {exc}",
+                      flush=True, file=_sys.stderr)
+                if self._verbose:
+                    print(f"\n  [EXCEPTION] {exc}")
+                    _tb.print_exc()
+                return _make_failed_result(str(exc))
+
+        # Best-of-N sampling (default OFF: BEST_OF_N unset/1 → single run, no change
+        # in behaviour). When N>1, run the pipeline N times and select the best build
+        # using ONLY reference-blind signals — the selection never reads reference
+        # data (see benchmark/best_of_n.py). Reference comparison happens later on
+        # the SELECTED build, for reporting only.
+        _n = _best_of_n_count()
+        _best_of_n_audit = None
+        if _n <= 1:
+            pr = _one_run()
+        else:
+            from benchmark.best_of_n import sample_signals, select_best
+            _samples = []
+            for _k in range(_n):
+                _pr  = _one_run()
+                _sig = sample_signals(_pr, extract_system_streams(_pr))
+                _samples.append((_pr, _sig))
+                print(f"[BEST_OF_N] {case.id} sample {_k}/{_n}: {_sig}",
+                      flush=True, file=_sys.stderr)
+            _idx, _reason = select_best([s for _, s in _samples])
+            pr = _samples[_idx][0]
+            _best_of_n_audit = {
+                "N":                _n,
+                "selected_index":   _idx,
+                "selection_reason": _reason,
+                "reference_blind":  True,
+                "samples":          [s for _, s in _samples],
+            }
+            print(f"[BEST_OF_N] {case.id} selected {_idx}/{_n} — {_reason}",
+                  flush=True, file=_sys.stderr)
 
         llm_calls = get_call_count()
 
@@ -619,6 +652,7 @@ class BenchmarkRunner:
         if _ex_total is not None:
             _solve["n_units_solved"] = _ex_solved
             _solve["n_units_total"]  = _ex_total
+        run_log.best_of_n      = _best_of_n_audit
         run_log.fully_solved   = _solve["fully_solved"]
         run_log.n_units_solved = _solve["n_units_solved"]
         run_log.n_units_total  = _solve["n_units_total"]
@@ -1015,6 +1049,16 @@ def _execution_results_dict(case_results: list[CaseRunResult]) -> dict:
             "stream_results": stream_results,
         }
     return out
+
+
+def _best_of_n_count() -> int:
+    """N for best-of-N sampling from the BEST_OF_N env var (default 1 = OFF).
+    Toggle-only: N<=1 leaves single-run behaviour completely unchanged."""
+    import os
+    try:
+        return max(int(os.environ.get("BEST_OF_N", "1")), 1)
+    except (TypeError, ValueError):
+        return 1
 
 
 def _make_failed_result(error_msg: str):
