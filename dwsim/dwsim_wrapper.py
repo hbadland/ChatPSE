@@ -908,10 +908,20 @@ class DWSIMFlowsheet:
         return res
 
     def _adjust_column_reflux(self, res: dict):
-        """Inspect shortcut columns after a failed solve; tune reflux or flag
-        infeasible. Returns (adjusted: bool, infeasible_errors: list[str])."""
+        """Inspect shortcut columns after a failed solve. Three per-column outcomes:
+
+        (1) DEGENERATE split (relative volatility α≈1 — e.g. an isomer pair): the
+            FUG distillate equation divides by ~0, so Rmin/reflux/distillate-rate
+            come back NaN. Unfixable by reflux → clean-fail immediately (do NOT
+            bump, do NOT loop).
+        (2) Reflux below minimum but FEASIBLE (finite Rmin ≤ limit) → bump R above
+            Rmin and re-solve.
+        (3) Near-azeotropic (finite Rmin > limit) → clean-fail (needs entrainer).
+
+        Returns (adjusted: bool, infeasible_errors: list[str])."""
         if res.get("solved"):
             return False, []
+        import math
         from System.Reflection import BindingFlags
         flags = BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public
         adjusted = False
@@ -924,11 +934,33 @@ class DWSIMFlowsheet:
             tag = str(gobj.Tag)
             obj = self._sim.GetFlowsheetSimulationObject(tag)
             t   = obj.GetType()
+            err = str(getattr(obj, "ErrorMessage", "") or "").lower()
             try:
                 rmin = float(t.GetField("m_Rmin", flags).GetValue(obj))
-                r    = float(t.GetField("m_refluxratio", flags).GetValue(obj))
             except Exception:
+                rmin = float("nan")
+            try:
+                r = float(t.GetField("m_refluxratio", flags).GetValue(obj))
+            except Exception:
+                r = float("nan")
+
+            # (1) Degenerate split (α≈1). Signatures: NaN Rmin, NaN reflux, or a
+            # 'distillate rate' / 'invalid reflux' error. NOT the same as
+            # 'reflux ratio lower than minimum' (that string is handled below and
+            # contains neither token). Fail clean — no reflux value can fix α≈1.
+            degenerate = (math.isnan(rmin) or math.isnan(r)
+                          or "distillate rate" in err or "invalid reflux" in err)
+            if degenerate:
+                infeasible.append(
+                    f"{tag}: near-degenerate split (relative volatility ≈ 1): "
+                    f"components not separable by a shortcut column; needs a "
+                    f"rigorous column or a different separation")
+                print(f"  [DWSIM] Column {tag}: degenerate split (NaN Rmin/reflux/"
+                      f"distillate) — failing clean, not fixable by reflux",
+                      flush=True, file=sys.stderr)
                 continue
+
+            # (2)/(3) Reflux below minimum (finite Rmin).
             if not (rmin > 0.0) or r >= rmin:
                 continue   # no reflux shortfall on this column
             if rmin > self._RMIN_MAX:
