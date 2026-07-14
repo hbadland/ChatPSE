@@ -82,6 +82,36 @@ def compute_solve_status(system_streams: dict | None,
     }
 
 
+def exact_units_solved(graph, system_streams: dict | None):
+    """
+    EXACT (n_units_solved, n_units_total) from the live graph's unit↔stream
+    connectivity — for fresh runs, where the FlowsheetGraph is available. A unit
+    is solved iff NONE of its outlet streams is at default. This is precise where
+    compute_solve_status()'s tag-prefix mapping is only a floor (it cannot
+    attribute semantic-named default streams like TOL/WATER to their source unit).
+
+    Returns (None, None) if the graph or streams are unavailable, so the caller
+    keeps the stream-based approximation. fully_solved / n_streams_at_default are
+    always stream-based and exact regardless.
+    """
+    if graph is None or not system_streams:
+        return None, None
+    try:
+        units = list(graph.units())
+    except Exception:
+        return None, None
+    n_solved = 0
+    for u in units:
+        try:
+            outs = graph.outlet_streams(u.tag)
+        except Exception:
+            outs = []
+        unsolved = any(stream_is_default(system_streams.get(s.tag, {})) for s in outs)
+        if not unsolved:
+            n_solved += 1
+    return n_solved, len(units)
+
+
 def gate_mape_status(fully_solved: bool, ref_sufficient: bool) -> str:
     """Precedence: a flowsheet that didn't fully solve can't yield a correctness
     MAPE regardless of match count; then the match-count gate; else computed."""

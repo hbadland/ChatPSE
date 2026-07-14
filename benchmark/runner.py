@@ -607,9 +607,18 @@ class BenchmarkRunner:
         # Solve completeness — detect a PARTIAL solve (units downstream of a
         # failure left at default values). Gates reference-MAPE so a partial-solve
         # MAPE is not reported as valid correctness (analogue of insufficient_match).
-        from benchmark.solve_status import compute_solve_status, gate_mape_status
+        from benchmark.solve_status import (
+            compute_solve_status, gate_mape_status, exact_units_solved)
         _fgs_ns = (run_log.final_graph_summary or {}).get("n_units")
         _solve  = compute_solve_status(run_log.system_streams, _fgs_ns)
+        # Fresh runs: replace the stream-prefix APPROXIMATION with the EXACT
+        # unit-solve count from the live graph's unit↔stream connectivity.
+        # fully_solved and n_streams_at_default stay exact (stream-based) either way.
+        _ex_solved, _ex_total = exact_units_solved(
+            getattr(pr, "final_graph", None), run_log.system_streams)
+        if _ex_total is not None:
+            _solve["n_units_solved"] = _ex_solved
+            _solve["n_units_total"]  = _ex_total
         run_log.fully_solved   = _solve["fully_solved"]
         run_log.n_units_solved = _solve["n_units_solved"]
         run_log.n_units_total  = _solve["n_units_total"]
