@@ -4,9 +4,11 @@ DWSIM automation wrapper.
 Property ID reference (discovered empirically):
   PROP_MS_0  = temperature [K]
   PROP_MS_1  = pressure [Pa]
-  PROP_MS_2  = molar flow [mol/s]
+  PROP_MS_2  = MASS flow [kg/s]   (NOT molar — a prior bug used this as molar)
+  PROP_MS_3  = molar flow [mol/s] (this is the wrapper's flow contract)
 
-  Composition is set via the .NET InputComposition dictionary (reflection).
+  Composition is set via SetOverallMolarComposition(double[]) by reflection — the
+  InputComposition dictionary is NOT honoured by the flash for non-default values.
   Composition is read from Phase[0].Compounds[name].MoleFraction (reflection).
 
   Heater: CalcMode defaults to HeatAdded — must set to OutletTemperature via
@@ -354,12 +356,19 @@ class DWSIMFlowsheet:
         obj = self._sim.GetFlowsheetSimulationObject(tag)
         obj.SetPropertyValue("PROP_MS_0", float(T))
         obj.SetPropertyValue("PROP_MS_1", float(P))
-        obj.SetPropertyValue("PROP_MS_2", float(flow))
-        ic = _get_input_composition(obj)
-        for name, frac in composition.items():
+        # PROP_MS_3 is the MOLAR flow spec [mol/s]; PROP_MS_2 is MASS flow [kg/s].
+        obj.SetPropertyValue("PROP_MS_3", float(flow))
+        # Set overall molar composition directly. The InputComposition dict is not
+        # honoured by the flash for non-default values (it silently reverts to the
+        # equimolar default), so call SetOverallMolarComposition — which lives on the
+        # concrete MaterialStream type, not the ISimulationObject interface, hence
+        # reflection. The array is ordered to match SelectedCompounds (self._compounds).
+        for name in composition:
             if name not in self._compounds:
                 raise ValueError(f"Compound '{name}' not in flowsheet.")
-            ic[name] = float(frac)
+        vec = System.Array[System.Double](
+            [float(composition.get(name, 0.0)) for name in self._compounds])
+        obj.GetType().GetMethod("SetOverallMolarComposition").Invoke(obj, [vec])
 
     def set_heater(self, tag: str, T_out: float, dP: float = 0.0) -> None:
         """Set heater outlet temperature [K] and pressure drop [Pa]."""
@@ -1079,7 +1088,13 @@ class DWSIMFlowsheet:
     def _read_stream(self, obj) -> dict:
         T    = float(obj.GetPropertyValue("PROP_MS_0"))
         P    = float(obj.GetPropertyValue("PROP_MS_1"))
-        flow = float(obj.GetPropertyValue("PROP_MS_2"))
+        # PROP_MS_2 is MASS flow [kg/s]; the molar flow is GetMolarFlow()/PROP_MS_3.
+        # Reading PROP_MS_2 here mislabelled mass flow as molar and made flash-vessel
+        # outlet splits mass-based (large error for disparate-MW mixtures).
+        try:
+            flow = float(obj.GetType().GetMethod("GetMolarFlow").Invoke(obj, None))
+        except Exception:
+            flow = float(obj.GetPropertyValue("PROP_MS_3"))
 
         # Read overall (Phase 0) mole fractions via reflection
         composition = {}
