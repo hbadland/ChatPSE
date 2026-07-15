@@ -1,0 +1,82 @@
+{
+  "case_id": "GEN_03",
+  "case_name": "Compress then cool n-heptane",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "N-heptane"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "CP-01",
+      "type": "Compressor",
+      "params": {
+        "P_out": 200000.0,
+        "efficiency": 0.75
+      }
+    },
+    {
+      "tag": "CL-01",
+      "type": "Cooler",
+      "params": {
+        "T_out": 313.15,
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "CP-01"
+    ],
+    [
+      "CP-01",
+      "COMP"
+    ],
+    [
+      "COMP",
+      "CL-01"
+    ],
+    [
+      "CL-01",
+      "PROD"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 333.15,
+      "T_C": 60.0,
+      "P_Pa": 20000.0,
+      "P_bar": 0.2,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-heptane": 1.0
+      }
+    },
+    "COMP": {
+      "T_K": 396.451,
+      "T_C": 123.301,
+      "P_Pa": 200000.0,
+      "P_bar": 2.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.8889832472189677,
+      "composition": {
+        "N-heptane": 1.0
+      }
+    },
+    "PROD": {
+      "T_K": 313.15,
+      "T_C": 40.0,
+      "P_Pa": 200000.0,
+      "P_bar": 2.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-heptane": 1.0
+      }
+    }
+  }
+}
