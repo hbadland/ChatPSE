@@ -101,12 +101,12 @@ def build_EASY_04(fs: DWSIMFlowsheet) -> dict:
     except Exception: pass
     fs.connect("CP-01", "COMP", 0, 0); fs.connect("COMP", "CL-01", 0, 0)
     fs.connect("CL-01", "PROD", 0, 0)
-    fs.set_compressor("CP-01", 1_200_000.0, efficiency=0.75)
+    fs.set_compressor("CP-01", 1_500_000.0, efficiency=0.75)   # 15 bar (was 12; 12 didn't condense)
     fs.set_cooler("CL-01", 303.15, dP=0.0)
     return {"case_id": "EASY_04", "case_name": "Compress then cool propylene",
             "compounds": ["Propylene"], "property_package": "Peng-Robinson",
             "units": [{"tag": "CP-01", "type": "Compressor",
-                       "params": {"P_out": 1_200_000.0, "efficiency": 0.75}},
+                       "params": {"P_out": 1_500_000.0, "efficiency": 0.75}},
                       {"tag": "CL-01", "type": "Cooler",
                        "params": {"T_out": 303.15, "dP": 0.0}}],
             "connections": [["FEED", "CP-01"], ["CP-01", "COMP"],
@@ -149,12 +149,11 @@ def build_GEN_03(fs: DWSIMFlowsheet) -> dict:
 
 def build_EASY_02(fs: DWSIMFlowsheet) -> dict:
     """
-    EASY_02 — "Cool a propane stream from 50 C to 0 C, then pump the liquid from
-    2 bar to 10 bar." Pure propane; Peng-Robinson.
-    FEED(50 C,2 bar) -> CL-01(0 C) -> COOL -> PM-01(10 bar) -> PROD
-    NOTE (sanity): propane boils at ~ -25 C at 2 bar, so at 0 C / 2 bar it is a
-    VAPOUR — the stated conditions do NOT condense it, so the pump has no liquid.
-    Built as-described to expose the inconsistency; conditions need revision.
+    EASY_02 — condense propane at 10 bar, then pump the liquid. Restructured from
+    the original (cool at 2 bar / 0 C did NOT condense — propane boils at -25 C at
+    2 bar). Cooling now occurs at 10 bar where propane liquefies (Tsat~27 C), so
+    there is genuine liquid for the pump. Pure propane; Peng-Robinson.
+    FEED(50 C,10 bar,vap) -> CL-01(20 C -> liquid) -> COOL -> PM-01(10->20 bar) -> PROD
     """
     fs.add_compounds(["Propane"])
     fs.set_property_package("Peng-Robinson (PR)")
@@ -163,27 +162,90 @@ def build_EASY_02(fs: DWSIMFlowsheet) -> dict:
         sim.AddObject(ObjectType.MaterialStream, 0, 0, s)
     sim.AddObject(ObjectType.EnergyStream, 0, 0, "PM-Q")
     fs.add_unit("CL-01", "Cooler"); fs.add_unit("PM-01", "Pump")
-    fs.set_stream("FEED", 323.15, 200000.0, 1.0, {"Propane": 1.0})   # 50 C, 2 bar
+    fs.set_stream("FEED", 323.15, 1_000_000.0, 1.0, {"Propane": 1.0})  # 50 C, 10 bar (vapour)
     fs.connect("FEED", "CL-01", 0, 0); fs.connect("CL-01", "COOL", 0, 0)
     fs.connect("COOL", "PM-01", 0, 0)
     try: fs.connect("PM-Q", "PM-01", 0, 1)
     except Exception: pass
     fs.connect("PM-01", "PROD", 0, 0)
-    fs.set_cooler("CL-01", 273.15, dP=0.0)
-    fs.set_pump("PM-01", 1_000_000.0, efficiency=0.75)
-    return {"case_id": "EASY_02", "case_name": "Cool then pump propane",
+    fs.set_cooler("CL-01", 293.15, dP=0.0)                    # 20 C -> liquid (below 27 C bubble)
+    fs.set_pump("PM-01", 2_000_000.0, efficiency=0.75)        # pump 10 -> 20 bar
+    return {"case_id": "EASY_02", "case_name": "Condense then pump propane",
             "compounds": ["Propane"], "property_package": "Peng-Robinson",
             "units": [{"tag": "CL-01", "type": "Cooler",
-                       "params": {"T_out": 273.15, "dP": 0.0}},
+                       "params": {"T_out": 293.15, "dP": 0.0}},
                       {"tag": "PM-01", "type": "Pump",
-                       "params": {"P_out": 1_000_000.0, "efficiency": 0.75}}],
+                       "params": {"P_out": 2_000_000.0, "efficiency": 0.75}}],
             "connections": [["FEED", "CL-01"], ["CL-01", "COOL"],
                             ["COOL", "PM-01"], ["PM-01", "PROD"]],
             "material_streams": ["FEED", "COOL", "PROD"]}
 
 
+def _flash_case(fs, compounds, feed_comp, pp, T_flash_K, meta):
+    """Shared heat-then-flash builder: FEED -> HT-01(T_flash) -> HOT -> V-01 ->
+    VAP + LIQ. Feed at 25 C / 1 atm; the heater sets the flash temperature and the
+    vessel does an adiabatic flash, so HOT carries the two-phase vapour fraction."""
+    fs.add_compounds(compounds)
+    fs.set_property_package(pp)
+    sim = fs._sim
+    for s in ("FEED", "HOT", "VAP", "LIQ"):
+        sim.AddObject(ObjectType.MaterialStream, 0, 0, s)
+    fs.add_unit("HT-01", "Heater"); fs.add_unit("V-01", "Vessel")
+    fs.set_stream("FEED", 298.15, 101325.0, 1.0, feed_comp)
+    fs.connect("FEED", "HT-01", 0, 0); fs.connect("HT-01", "HOT", 0, 0)
+    fs.connect("HOT", "V-01", 0, 0)
+    fs.connect("V-01", "VAP", 0, 0); fs.connect("V-01", "LIQ", 1, 0)
+    fs.set_heater("HT-01", T_flash_K, dP=0.0)
+    fs.set_vessel("V-01", dP=0.0)
+    meta["material_streams"] = ["FEED", "HOT", "VAP", "LIQ"]
+    return meta
+
+
+def build_SAN_03(fs):
+    """SAN_03 — heat then flash equimolar benzene/toluene to a genuine two-phase
+    split. Benzene bp 80 C, toluene 111 C; bubble ~92 C / dew ~98 C at 1 atm, so a
+    flash near 95 C gives vf ~ 0.5. Near-ideal aromatics; Peng-Robinson."""
+    return _flash_case(fs, ["Benzene", "Toluene"], {"Benzene": 0.5, "Toluene": 0.5},
+        "Peng-Robinson (PR)", 368.15,   # 95 C
+        {"case_id": "SAN_03", "case_name": "Heat then flash benzene-toluene",
+         "compounds": ["Benzene", "Toluene"], "property_package": "Peng-Robinson",
+         "units": [{"tag": "HT-01", "type": "Heater", "params": {"T_out": 368.15, "dP": 0.0}},
+                   {"tag": "V-01", "type": "Vessel", "params": {"dP": 0.0}}],
+         "connections": [["FEED", "HT-01"], ["HT-01", "HOT"], ["HOT", "V-01"],
+                         ["V-01", "VAP"], ["V-01", "LIQ"]]})
+
+
+def build_GEN_01(fs):
+    """GEN_01 — heat then flash equimolar n-hexane/n-heptane to two-phase. Hexane
+    bp 69 C, heptane 98 C; bubble ~81 C / dew ~89 C at 1 atm, so flash near 85 C
+    gives vf ~ 0.5. Near-ideal alkanes; Peng-Robinson."""
+    return _flash_case(fs, ["N-hexane", "N-heptane"], {"N-hexane": 0.5, "N-heptane": 0.5},
+        "Peng-Robinson (PR)", 358.15,   # 85 C
+        {"case_id": "GEN_01", "case_name": "Heat then flash hexane-heptane",
+         "compounds": ["N-hexane", "N-heptane"], "property_package": "Peng-Robinson",
+         "units": [{"tag": "HT-01", "type": "Heater", "params": {"T_out": 358.15, "dP": 0.0}},
+                   {"tag": "V-01", "type": "Vessel", "params": {"dP": 0.0}}],
+         "connections": [["FEED", "HT-01"], ["HT-01", "HOT"], ["HOT", "V-01"],
+                         ["V-01", "VAP"], ["V-01", "LIQ"]]})
+
+
+def build_EASY_01(fs):
+    """EASY_01 — heat then flash 70 mol% acetone / 30 mol% water to two-phase.
+    Acetone bp 56 C, water 100 C; a flash near 70 C gives a partial vaporisation.
+    Polar system -> NRTL (activity)."""
+    return _flash_case(fs, ["Acetone", "Water"], {"Acetone": 0.7, "Water": 0.3},
+        "NRTL", 343.15,   # 70 C
+        {"case_id": "EASY_01", "case_name": "Heat then flash acetone-water",
+         "compounds": ["Acetone", "Water"], "property_package": "NRTL",
+         "units": [{"tag": "HT-01", "type": "Heater", "params": {"T_out": 343.15, "dP": 0.0}},
+                   {"tag": "V-01", "type": "Vessel", "params": {"dP": 0.0}}],
+         "connections": [["FEED", "HT-01"], ["HT-01", "HOT"], ["HOT", "V-01"],
+                         ["V-01", "VAP"], ["V-01", "LIQ"]]})
+
+
 _BUILDERS = {"SAN_04": build_SAN_04, "EASY_04": build_EASY_04,
-             "GEN_03": build_GEN_03, "EASY_02": build_EASY_02}
+             "GEN_03": build_GEN_03, "EASY_02": build_EASY_02,
+             "SAN_03": build_SAN_03, "GEN_01": build_GEN_01, "EASY_01": build_EASY_01}
 
 
 def build_case(case_id: str, write: bool = False) -> dict:

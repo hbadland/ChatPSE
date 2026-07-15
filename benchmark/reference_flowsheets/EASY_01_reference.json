@@ -1,0 +1,101 @@
+{
+  "case_id": "EASY_01",
+  "case_name": "Heat then flash acetone-water",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Acetone",
+    "Water"
+  ],
+  "property_package": "NRTL",
+  "solved": true,
+  "units": [
+    {
+      "tag": "HT-01",
+      "type": "Heater",
+      "params": {
+        "T_out": 343.15,
+        "dP": 0.0
+      }
+    },
+    {
+      "tag": "V-01",
+      "type": "Vessel",
+      "params": {
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "HT-01"
+    ],
+    [
+      "HT-01",
+      "HOT"
+    ],
+    [
+      "HOT",
+      "V-01"
+    ],
+    [
+      "V-01",
+      "VAP"
+    ],
+    [
+      "V-01",
+      "LIQ"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Acetone": 0.5,
+        "Water": 0.5
+      }
+    },
+    "HOT": {
+      "T_K": 343.15,
+      "T_C": 70.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.675352398435046,
+      "composition": {
+        "Acetone": 0.5,
+        "Water": 0.5
+      }
+    },
+    "VAP": {
+      "T_K": 343.15,
+      "T_C": 70.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.8221799284761554,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Acetone": 0.7064653004062801,
+        "Water": 0.29353469959371997
+      }
+    },
+    "LIQ": {
+      "T_K": 343.15,
+      "T_C": 70.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.1778073629610896,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Acetone": 0.07046069640823384,
+        "Water": 0.9295393035917661
+      }
+    }
+  }
+}

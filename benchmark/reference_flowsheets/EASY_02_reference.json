@@ -1,0 +1,82 @@
+{
+  "case_id": "EASY_02",
+  "case_name": "Condense then pump propane",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Propane"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "CL-01",
+      "type": "Cooler",
+      "params": {
+        "T_out": 293.15,
+        "dP": 0.0
+      }
+    },
+    {
+      "tag": "PM-01",
+      "type": "Pump",
+      "params": {
+        "P_out": 2000000.0,
+        "efficiency": 0.75
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "CL-01"
+    ],
+    [
+      "CL-01",
+      "COOL"
+    ],
+    [
+      "COOL",
+      "PM-01"
+    ],
+    [
+      "PM-01",
+      "PROD"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 323.15,
+      "T_C": 50.0,
+      "P_Pa": 1000000.0,
+      "P_bar": 10.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Propane": 1.0
+      }
+    },
+    "COOL": {
+      "T_K": 293.15,
+      "T_C": 20.0,
+      "P_Pa": 1000000.0,
+      "P_bar": 10.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Propane": 1.0
+      }
+    },
+    "PROD": {
+      "T_K": 294.226,
+      "T_C": 21.076,
+      "P_Pa": 2000000.0,
+      "P_bar": 20.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Propane": 1.0
+      }
+    }
+  }
+}
