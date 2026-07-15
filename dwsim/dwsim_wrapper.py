@@ -1106,17 +1106,27 @@ class DWSIMFlowsheet:
         except Exception:
             composition = {n: 0.0 for n in self._compounds}
 
-        # Read vapor phase mole fraction from Phase[1].Properties.molarfraction
+        # Vapor molar fraction — select the phase by NAME "Vapor". This DWSIM build
+        # orders phases [0]=Mixture, [1]=OverallLiquid, [2]=Vapor, so the previous
+        # fixed index [1] returned the LIQUID fraction (an INVERTED vapor_fraction).
+        # Name-based lookup is robust to phase ordering across builds.
         vapor_fraction = 0.0
         try:
             phases = _get_phases(obj)
-            ph1 = phases[1]
-            ph1_pp_prop = ph1.GetType().GetProperty("Properties")
-            ph1_pp = ph1_pp_prop.GetValue(ph1)
-            vf_prop = ph1_pp.GetType().GetProperty("molarfraction")
-            if vf_prop is not None:
-                vf = vf_prop.GetValue(ph1_pp)
-                vapor_fraction = float(vf) if vf is not None else 0.0
+            _n = phases.Count if hasattr(phases, "Count") else 8
+            for _i in range(_n):
+                try:
+                    ph = phases[_i]
+                    if str(getattr(ph, "Name", "")) != "Vapor":
+                        continue
+                    pp = ph.GetType().GetProperty("Properties").GetValue(ph)
+                    vf_prop = pp.GetType().GetProperty("molarfraction")
+                    if vf_prop is not None:
+                        vf = vf_prop.GetValue(pp)
+                        vapor_fraction = float(vf) if vf is not None else 0.0
+                    break
+                except Exception:
+                    continue
         except Exception:
             pass
 
