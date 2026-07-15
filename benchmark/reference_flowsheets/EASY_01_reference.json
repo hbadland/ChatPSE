@@ -1,7 +1,7 @@
 {
   "case_id": "EASY_01",
   "case_name": "Heat then flash acetone-water",
-  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
   "reference_validity": "expert-constructed",
   "compounds": [
     "Acetone",
@@ -97,5 +97,11 @@
         "Water": 0.9295393035917661
       }
     }
+  },
+  "vf_sensitivity": {
+    "dvf_max_per_2C_flashT": 0.038,
+    "dvf_per_2C_feedT": 0.0,
+    "precise_to_0.05_tol": true,
+    "note": "vf is precise to the ±0.05 tolerance"
   }
 }
