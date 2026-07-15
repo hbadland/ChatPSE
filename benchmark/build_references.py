@@ -230,10 +230,13 @@ def build_GEN_01(fs):
 
 
 def build_EASY_01(fs):
-    """EASY_01 — heat then flash 70 mol% acetone / 30 mol% water to two-phase.
-    Acetone bp 56 C, water 100 C; a flash near 70 C gives a partial vaporisation.
+    """EASY_01 — heat then flash 50 mol% acetone / 50 mol% water to two-phase.
+    Acetone bp 56 C, water 100 C; a flash at 70 C gives a robust partial vaporisation
+    (vf ~ 0.68). The equimolar composition sits in a wide two-phase window with a
+    gentle T-vf slope (precise-to-tolerance vf); the acetone-rich 70/30 feed instead
+    flashes almost completely at 70 C and has no stable mid-range flash at 1 atm.
     Polar system -> NRTL (activity)."""
-    return _flash_case(fs, ["Acetone", "Water"], {"Acetone": 0.7, "Water": 0.3},
+    return _flash_case(fs, ["Acetone", "Water"], {"Acetone": 0.5, "Water": 0.5},
         "NRTL", 343.15,   # 70 C
         {"case_id": "EASY_01", "case_name": "Heat then flash acetone-water",
          "compounds": ["Acetone", "Water"], "property_package": "NRTL",

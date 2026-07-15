@@ -78,7 +78,7 @@
       "T_C": 85.0,
       "P_Pa": 101325.0,
       "P_bar": 1.01325,
-      "flow_mol_s": 0.5523804782457707,
+      "flow_mol_s": 0.5599705987857728,
       "vapor_fraction": 1.0,
       "composition": {
         "N-hexane": 0.5900519159557538,
@@ -90,7 +90,7 @@
       "T_C": 85.0,
       "P_Pa": 101325.0,
       "P_bar": 1.01325,
-      "flow_mol_s": 0.4476194445456409,
+      "flow_mol_s": 0.44002940121422707,
       "vapor_fraction": 0.0,
       "composition": {
         "N-hexane": 0.38540331120988497,
@@ -102,6 +102,6 @@
     "dvf_max_per_2C_flashT": 0.343,
     "dvf_per_2C_feedT": 0.0,
     "precise_to_0.05_tol": false,
-    "note": "close-boiling flash: vf swings > tolerance under a small flash-T perturbation — score vf LOOSELY / as SECONDARY (it is already a WARNING check, not gating); T and composition are the reliable signals"
+    "note": "close-boiling flash: vf swings > tolerance under a small flash-T perturbation — score vf LOOSELY / as SECONDARY (it is a non-gating WARNING); T and composition are the reliable signals"
   }
 }

@@ -78,7 +78,7 @@
       "T_C": 95.0,
       "P_Pa": 101325.0,
       "P_bar": 1.01325,
-      "flow_mol_s": 0.4412061784662929,
+      "flow_mol_s": 0.45000315664948687,
       "vapor_fraction": 1.0,
       "composition": {
         "Benzene": 0.6186379587309547,
@@ -90,11 +90,11 @@
       "T_C": 95.0,
       "P_Pa": 101325.0,
       "P_bar": 1.01325,
-      "flow_mol_s": 0.5587938194892582,
+      "flow_mol_s": 0.5499968433505132,
       "vapor_fraction": 0.0,
       "composition": {
-        "Benzene": 0.40293136376071315,
-        "Toluene": 0.597068636239287
+        "Benzene": 0.4029313637607131,
+        "Toluene": 0.5970686362392869
       }
     }
   },
@@ -102,6 +102,6 @@
     "dvf_max_per_2C_flashT": 0.294,
     "dvf_per_2C_feedT": 0.0,
     "precise_to_0.05_tol": false,
-    "note": "close-boiling flash: vf swings > tolerance under a small flash-T perturbation — score vf LOOSELY / as SECONDARY (it is already a WARNING check, not gating); T and composition are the reliable signals"
+    "note": "close-boiling flash: vf swings > tolerance under a small flash-T perturbation — score vf LOOSELY / as SECONDARY (it is a non-gating WARNING); T and composition are the reliable signals"
   }
 }
