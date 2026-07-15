@@ -7,14 +7,34 @@
     "coupling_level": "low",
     "perturbation": "none",
     "domain": "hydrocarbon",
-    "description": "Heat an equimolar n-hexane and n-heptane mixture from 20°C to 80°C at 1 atm, then flash-separate the vapour from the liquid. This tests transfer of learned rules to C6-C7 normal alkanes not seen in development.",
-    "compounds": ["n-Hexane", "n-Heptane"],
+    "description": "Heat an equimolar n-hexane and n-heptane mixture at 1 atm from 25°C to 85°C, then flash-separate the vapour from the liquid in a vessel. This tests transfer to C6-C7 normal alkanes not seen in development.",
+    "compounds": [
+      "n-Hexane",
+      "n-Heptane"
+    ],
     "reference_structure": {
       "n_units": 2,
-      "unit_types": ["Heater", "Vessel"],
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
       "connections": [
-        ["FEED", "HT-01"], ["HT-01", "VES-01"],
-        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
       ]
     },
     "expected": {
@@ -23,14 +43,26 @@
       "n_units_max": 3,
       "convergence_expected": true,
       "physics_checks": [
-        {"type": "unit_type_present", "unit_type": "Vessel"},
-        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
-        {"type": "outlet_t_range", "unit_tag_pattern": "HT", "T_min_K": 335, "T_max_K": 365}
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "HT",
+          "T_min_K": 335,
+          "T_max_K": 365
+        }
       ]
     },
     "transfer_from": "SAN_03",
     "structural_analog": "Heater + Vessel",
-    "notes": "n-Hexane bp=69°C, n-Heptane bp=98°C. At 80°C the mixture is partially vaporised. PR EOS with standard mixing rules. Transfer test: heater+flash pattern learned from benzene-toluene."
+    "notes": "n-Hexane bp=69°C, n-Heptane bp=98°C. At 80°C the mixture is partially vaporised. PR EOS with standard mixing rules. Transfer test: heater+flash pattern learned from benzene-toluene.",
+    "reference_file": "benchmark/reference_flowsheets/GEN_01_reference.json"
   },
   {
     "id": "GEN_02",
@@ -41,14 +73,47 @@
     "perturbation": "none",
     "domain": "polar",
     "description": "Process a methanol-water feed (50 mol% methanol) at 1 atm: heat from 25°C to 70°C, flash-separate in a vessel, cool the water-rich liquid bottoms to 30°C, then pump to 3 bar. Methanol is not used in the development set.",
-    "compounds": ["Methanol", "Water"],
+    "compounds": [
+      "Methanol",
+      "Water"
+    ],
     "reference_structure": {
       "n_units": 4,
-      "unit_types": ["Heater", "Vessel", "Cooler", "Pump"],
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler",
+        "Pump"
+      ],
       "connections": [
-        ["FEED", "HT-01"], ["HT-01", "VES-01"],
-        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-01"],
-        ["LIQ-01", "COOL-01"], ["COOL-01", "PUMP-01"], ["PUMP-01", "PRODUCT"]
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-01"
+        ],
+        [
+          "LIQ-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PUMP-01"
+        ],
+        [
+          "PUMP-01",
+          "PRODUCT"
+        ]
       ]
     },
     "expected": {
@@ -57,11 +122,26 @@
       "n_units_max": 5,
       "convergence_expected": true,
       "physics_checks": [
-        {"type": "unit_type_present", "unit_type": "Heater"},
-        {"type": "unit_type_present", "unit_type": "Vessel"},
-        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
-        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
-        {"type": "pressure_increases_across", "unit_tag_pattern": "PUMP"}
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "PUMP"
+        }
       ]
     },
     "transfer_from": "MED_01",
@@ -76,13 +156,29 @@
     "coupling_level": "low",
     "perturbation": "none",
     "domain": "hydrocarbon",
-    "description": "Compress n-heptane vapour from 0.2 bar to 2 bar in an adiabatic compressor, then cool the compressed gas to 40°C to condense it to liquid. Heptane is not used in training.",
-    "compounds": ["n-Heptane"],
+    "description": "Compress n-heptane vapour at 60°C and 0.2 bar to 2 bar in an adiabatic compressor, then cool the compressed gas to 40°C to condense it to liquid. Heptane is not used in training.",
+    "compounds": [
+      "n-Heptane"
+    ],
     "reference_structure": {
       "n_units": 2,
-      "unit_types": ["Compressor", "Cooler"],
+      "unit_types": [
+        "Compressor",
+        "Cooler"
+      ],
       "connections": [
-        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"], ["COOL-01", "PRODUCT"]
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
       ]
     },
     "expected": {
@@ -91,15 +187,30 @@
       "n_units_max": 3,
       "convergence_expected": true,
       "physics_checks": [
-        {"type": "unit_type_present", "unit_type": "Compressor"},
-        {"type": "unit_type_present", "unit_type": "Cooler"},
-        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
-        {"type": "outlet_t_range", "unit_tag_pattern": "COOL", "T_min_K": 295, "T_max_K": 325}
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "outlet_t_range",
+          "unit_tag_pattern": "COOL",
+          "T_min_K": 295,
+          "T_max_K": 325
+        }
       ]
     },
     "transfer_from": "SAN_04",
     "structural_analog": "Compressor + Cooler",
-    "notes": "n-Heptane bp=98°C at 1 atm. At 2 bar bp≈120°C. Cooling to 40°C gives subcooled liquid. Transfer test: compressor+cooler pattern learned from propane."
+    "notes": "n-Heptane bp=98°C at 1 atm. At 2 bar bp≈120°C. Cooling to 40°C gives subcooled liquid. Transfer test: compressor+cooler pattern learned from propane.",
+    "reference_file": "benchmark/reference_flowsheets/GEN_03_reference.json"
   },
   {
     "id": "GEN_04",
@@ -110,14 +221,42 @@
     "perturbation": "none",
     "domain": "polar",
     "description": "Partially separate an acetone and methyl ethyl ketone (butanone) mixture (50/50 mol%) by heating from 20°C to 80°C and flashing in a separator, then cool the ketone-rich bottoms to 25°C. Both ketones are unseen in the development set.",
-    "compounds": ["Acetone", "Methyl ethyl ketone"],
+    "compounds": [
+      "Acetone",
+      "Methyl ethyl ketone"
+    ],
     "reference_structure": {
       "n_units": 3,
-      "unit_types": ["Heater", "Vessel", "Cooler"],
+      "unit_types": [
+        "Heater",
+        "Vessel",
+        "Cooler"
+      ],
       "connections": [
-        ["FEED", "HT-01"], ["HT-01", "VES-01"],
-        ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-01"],
-        ["LIQ-01", "COOL-01"], ["COOL-01", "PRODUCT"]
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-01"
+        ],
+        [
+          "LIQ-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "PRODUCT"
+        ]
       ]
     },
     "expected": {
@@ -126,10 +265,22 @@
       "n_units_max": 4,
       "convergence_expected": true,
       "physics_checks": [
-        {"type": "unit_type_present", "unit_type": "Vessel"},
-        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
-        {"type": "temp_increases_across", "unit_tag_pattern": "HT"},
-        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"}
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "temp_increases_across",
+          "unit_tag_pattern": "HT"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        }
       ]
     },
     "transfer_from": "MED_05",
@@ -145,13 +296,38 @@
     "perturbation": "none",
     "domain": "hydrocarbon",
     "description": "Separate a hexane-octane mixture (60/40 mol%) using a compress-cool-flash sequence: compress from 0.5 bar to 4 bar, cool to 35°C to partially condense the octane-rich phase, then flash-separate in a vessel. Neither compound appears in training.",
-    "compounds": ["n-Hexane", "n-Octane"],
+    "compounds": [
+      "n-Hexane",
+      "n-Octane"
+    ],
     "reference_structure": {
       "n_units": 3,
-      "unit_types": ["Compressor", "Cooler", "Vessel"],
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Vessel"
+      ],
       "connections": [
-        ["FEED", "COMP-01"], ["COMP-01", "COOL-01"],
-        ["COOL-01", "VES-01"], ["VES-01", "VAP-OUT"], ["VES-01", "LIQ-OUT"]
+        [
+          "FEED",
+          "COMP-01"
+        ],
+        [
+          "COMP-01",
+          "COOL-01"
+        ],
+        [
+          "COOL-01",
+          "VES-01"
+        ],
+        [
+          "VES-01",
+          "VAP-OUT"
+        ],
+        [
+          "VES-01",
+          "LIQ-OUT"
+        ]
       ]
     },
     "expected": {
@@ -160,12 +336,30 @@
       "n_units_max": 4,
       "convergence_expected": true,
       "physics_checks": [
-        {"type": "unit_type_present", "unit_type": "Compressor"},
-        {"type": "unit_type_present", "unit_type": "Cooler"},
-        {"type": "unit_type_present", "unit_type": "Vessel"},
-        {"type": "two_phase_outlet", "unit_tag_pattern": "VES"},
-        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
-        {"type": "temp_decreases_across", "unit_tag_pattern": "COOL"}
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        },
+        {
+          "type": "two_phase_outlet",
+          "unit_tag_pattern": "VES"
+        },
+        {
+          "type": "pressure_increases_across",
+          "unit_tag_pattern": "COMP"
+        },
+        {
+          "type": "temp_decreases_across",
+          "unit_tag_pattern": "COOL"
+        }
       ]
     },
     "transfer_from": "MED_02",
