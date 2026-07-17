@@ -69,6 +69,11 @@ class RunLog:
     # reference_flowsheets/*.json stream format for direct comparison.  None when
     # DWSIM produced no stream results.
     system_streams: Optional[dict] = None
+    # Extracted feed-stream compositions as handed to the DWSIM wrapper — i.e. the
+    # mole fractions in final_flowsheet BEFORE the solve.  Lets us distinguish an
+    # extraction error (IR already carries a wrong/equimolar feed) from a wrapper
+    # error (IR correct but DWSIM feed comes out wrong).  None when no final_flowsheet.
+    ir_feed_streams: Optional[dict] = None
     # Reference-comparison results (also in the aggregate metrics; persisted here
     # per-run too): match pass + MAPEs + per-check detail.  None when no reference.
     reference_comparison: Optional[dict] = None
@@ -144,6 +149,44 @@ def extract_system_streams(pipeline_result) -> Optional[dict]:
             "vapor_fraction": getattr(s, "vapor_fraction", None),
             "composition":    dict(getattr(s, "composition", {}) or {}),
             "is_feed":        getattr(s, "is_feed", None),
+        }
+    return out
+
+
+def extract_ir_feed_streams(pipeline_result) -> Optional[dict]:
+    """
+    Extracted feed-stream specifications from the flowsheet handed to the executor,
+    captured BEFORE the DWSIM wrapper runs.  Reads pipeline_result.final_flowsheet
+    (the exact dict passed to Executor.run) and replicates the executor's feed
+    identification: a feed is any stream with no incoming connection.
+
+    Returns {tag → {composition, composition_sum, T, P, flow}} for each feed, or
+    None when no final_flowsheet is available.  Pure logging.
+
+    Purpose: distinguish an extraction fault (this table already shows a wrong or
+    equimolar feed) from a wrapper fault (this table is correct but the solved
+    system_streams feed is wrong).
+    """
+    fs = getattr(pipeline_result, "final_flowsheet", None)
+    if not isinstance(fs, dict):
+        return None
+    streams = fs.get("streams")
+    if not streams:
+        return None
+    streams_cfg = {s.get("tag"): s for s in streams if isinstance(s, dict)}
+    conns = fs.get("connections") or []
+    has_incoming = {c[1] for c in conns if isinstance(c, (list, tuple)) and len(c) >= 2}
+    feed_tags = [t for t in streams_cfg if t not in has_incoming]
+    out: dict = {}
+    for tag in feed_tags:
+        s = streams_cfg[tag]
+        comp = dict(s.get("composition", {}) or {})
+        out[str(tag)] = {
+            "composition":     comp,
+            "composition_sum": round(sum(comp.values()), 6) if comp else 0.0,
+            "T":               s.get("T"),
+            "P":               s.get("P"),
+            "flow":            s.get("flow"),
         }
     return out
 
@@ -314,6 +357,7 @@ def extract_run_log(
         total_elapsed_s  = elapsed,
         iterations       = iter_logs,
         ir_report_json   = ir_json,
+        ir_feed_streams  = extract_ir_feed_streams(pr),
         final_graph_summary = graph_summary,
         warnings         = warnings[:20],
         completeness_critic = completeness if isinstance(completeness, dict) else None,
