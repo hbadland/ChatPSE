@@ -8,8 +8,9 @@ misleading as a MAPE over 1 matched stream. This module detects partial solves
 from the persisted system_streams so reference-MAPE can be gated on fully_solved.
 
 Detection is stream-based (works retroactively on stored JSONs, which carry no
-per-unit solved flag): a NON-feed stream still sitting at the executor's
-uncomputed default — T=298.15 K, flow=1.0 mol/s, exactly equimolar composition —
+per-unit solved flag): a NON-feed stream still sitting at an uncomputed default —
+T=298.15 K, exactly equimolar composition, and flow of either 1.0 mol/s (the
+executor seed) or 0.0 (the degenerate zero flow a failed decanter/column leaves) —
 never solved. A feed legitimately has those values (is_feed excludes it).
 
 Value-sniffing alone false-positives when a genuinely-solved OUTPUT coincides
@@ -25,7 +26,11 @@ from __future__ import annotations
 import re
 
 _DEFAULT_T   = 298.15
-_DEFAULT_FLOW = 1.0
+# An uncomputed default stream carries either the executor's seed flow (1.0 mol/s)
+# OR a degenerate zero flow (0.0) — the latter is what a failed decanter/column
+# leaves on its outlets (e.g. VAL_02 DEC-01: TOL/WATER at 298.15 K / flow 0.0 /
+# equimolar). Both, combined with default-T and equimolar composition, are unsolved.
+_DEFAULT_FLOWS = (1.0, 0.0)
 _T_MATCH_TOL = 0.5   # K — tolerance for matching a stream T to a specified setpoint
 
 
@@ -52,7 +57,7 @@ def stream_is_default(s: dict, specified_temps: "list[float] | None" = None) -> 
     T    = s.get("T_K")
     flow = s.get("flow_mol_s")
     comp = s.get("composition") or {}
-    if T != _DEFAULT_T or flow != _DEFAULT_FLOW or not comp:
+    if T != _DEFAULT_T or flow not in _DEFAULT_FLOWS or not comp:
         return False
     n = len(comp)
     if not all(abs(v - 1.0 / n) < 1e-6 for v in comp.values()):
