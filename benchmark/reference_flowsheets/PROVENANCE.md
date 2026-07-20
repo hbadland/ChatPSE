@@ -170,6 +170,142 @@ For each case: the process, the specified reference flowsheet, the basis of each
 | DIST | 80.1 | 1.01 | 0.0009 | benzene 0.98 / toluene 0.02 | 0.5000 |
 | BOT | 109.7 | 1.01 | 0.0032 | benzene 0.02 / toluene 0.98 | 0.5000 |
 
+### P2 — Water pump
+- **Process:** Pump liquid water from 1 bar to 10 bar.
+- **Reference flowsheet:** FEED → PM-01 (Pump, 10 bar, η = 0.75) → PROD.
+- **Specified / assumed / computed:** specified — FEED water 25 °C / 1.013 bar / 1.0 mol/s, PM-01 P_out = 10 bar; assumed — η = 0.75 (standard); computed — outlet T.
+- **Property package:** Steam Tables (IAPWS-IF97) — reference-grade pure-water properties (NRTL gives an identical result to 0.002 °C).
+- **Validation (incompressible pump work, ΔP·v/η):** v = 1.807×10⁻⁵ m³/mol → ideal 16.2, actual 21.6 J/mol → predicted ΔT ≈ 0.07–0.09 °C; DWSIM ΔT = 0.089 °C. Near-isothermal, vf = 0 throughout.
+- **Scoring note:** 2-stream case — below the 3-stream aggregate-MAPE gate, so scored by exact per-stream match (2/2, dT/dP/dvf = 0) + physics checks, not an aggregate MAPE.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 25.0 | 1.01 | 0.0000 | water 1.0 | 1.0000 |
+| PROD | 25.1 | 10.00 | 0.0000 | water 1.0 | 1.0000 |
+
+### P3 — Methane compression
+- **Process:** Compress methane 1 → 30 bar, cool to 40 °C.
+- **Reference flowsheet:** FEED → CP-01 (Compressor, 30 bar, η = 0.75) → COMP → CL-01 (Cooler, 40 °C) → PROD.
+- **Specified / assumed / computed:** specified — FEED CH₄ 25 °C / 1.013 bar / 1.0 mol/s, CP-01 30 bar, CL-01 40 °C; assumed — η = 0.75; computed — COMP T, all vf.
+- **Property package:** Peng-Robinson.
+- **Validation:** a constant-γ = 1.30 isentropic estimate gives 496 °C (110 °C above DWSIM), but that holds γ at its 25 °C value while methane's Cₚ rises steeply (35.6 → 57.8 J/mol·K). A **variable-Cₚ (NIST Shomate) isentropic** calc gives **385.2 °C, matching DWSIM's 386.1 °C to <1 °C** — the apparent gap is the constant-γ shortcut, not real-gas (the ideal-gas variable-Cₚ calc already matches, so PR compressibility adds ~0). PROD supercritical vapour (T_c = 190 K), vf = 1.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 25.0 | 1.01 | 1.0000 | methane 1.0 | 1.0000 |
+| COMP | 386.1 | 30.00 | 1.0000 | methane 1.0 | 1.0000 |
+| PROD | 40.0 | 30.00 | 1.0000 | methane 1.0 | 1.0000 |
+
+### F2 — Methanol/water partial vaporisation + flash
+- **Process:** Heat an equimolar methanol/water mixture to 77 °C and flash at 1 bar.
+- **Reference flowsheet:** FEED → HT-01 (Heater, 77 °C) → HOT → V-01 (Flash Vessel) → VAP + LIQ.
+- **Specified / assumed / computed:** specified — 50/50, feed 25 °C; assumed — heater 77 °C chosen for a mid-range flash (vf ≈ 0.47 ∈ [0.3, 0.7]); computed — vf, phase compositions.
+- **Property package:** NRTL (strongly non-ideal aqueous-organic).
+- **Validation (literature methanol/water VLE, 1 atm):** at the DWSIM liquid x_MeOH = 0.330, vapour y_MeOH = 0.692 vs literature 0.684 (Δ +0.008), equilibrium T = 77.0 °C vs 77.2 °C (Δ −0.2 °C) — on the tabulated VLE curve.
+- **Precision (see §X.4):** Δvf ≈ 0.190 per ±2 °C → **model-sensitive**, vf secondary.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 25.0 | 1.01 | 0.0000 | methanol 0.5 / water 0.5 | 1.0000 |
+| HOT | 77.0 | 1.01 | 0.4691 | methanol 0.5 / water 0.5 | 1.0000 |
+| VAP | 77.0 | 1.01 | 1.0000 | methanol 0.6924 / water 0.3076 | 0.4691 |
+| LIQ | 77.0 | 1.01 | 0.0000 | methanol 0.33 / water 0.67 | 0.5309 |
+
+### F3 — Acetone/toluene partial vaporisation + flash
+- **Process:** Heat an equimolar acetone/toluene mixture to 76 °C and flash at 1 bar.
+- **Reference flowsheet:** FEED → HT-01 (Heater, 76 °C) → HOT → V-01 (Flash Vessel) → VAP + LIQ.
+- **Specified / assumed / computed:** specified — 50/50, feed 25 °C; assumed — heater 76 °C for vf ≈ 0.40; computed — vf, phase compositions.
+- **Property package:** NRTL.
+- **Validation (Raoult/Antoine, near-ideal):** DWSIM NRTL y_acetone = 0.760 vs Raoult 0.730 (Δ +0.029) at x_acetone 0.324, 76 °C. The +0.029 is the *expected* modest positive deviation from Raoult (acetone/toluene, no azeotrope); the two bracket within 3 mol%, confirming near-ideal and the correct direction.
+- **Precision (see §X.4):** Δvf ≈ 0.092 per ±2 °C — a 55 °C boiling gap is not wide enough for a tolerance-precise vf (contrast F1's 90 °C), so **mildly model-sensitive**, vf secondary.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 25.0 | 1.01 | 0.0000 | acetone 0.5 / toluene 0.5 | 1.0000 |
+| HOT | 76.0 | 1.01 | 0.4046 | acetone 0.5 / toluene 0.5 | 1.0000 |
+| VAP | 76.0 | 1.01 | 1.0000 | acetone 0.7596 / toluene 0.2404 | 0.4046 |
+| LIQ | 76.0 | 1.01 | 0.0000 | acetone 0.3236 / toluene 0.6764 | 0.5954 |
+
+### F4 — Dilute ethanol/water partial vaporisation + flash
+- **Process:** Heat a 20 mol% ethanol / 80 mol% water mixture to 90 °C and flash at 1 bar.
+- **Reference flowsheet:** FEED → HT-01 (Heater, 90 °C) → HOT → V-01 (Flash Vessel) → VAP + LIQ.
+- **Specified / assumed / computed:** specified — 20/80 ethanol/water, feed 25 °C; assumed — heater 90 °C for vf ≈ 0.50; computed — vf, phase compositions.
+- **Property package:** NRTL.
+- **Validation (literature ethanol/water VLE):** equilibrium T matches literature to 0.2 °C; vapour y_EtOH = 0.342 sits at the low end of the dilute-region literature band (~0.33–0.39 across sources at x ≈ 0.06). **Azeotrope clearance:** y_EtOH = 0.342 is far below the 0.894 ethanol/water azeotrope — the design constraint holds with no feed reduction needed.
+- **Precision (see §X.4):** Δvf ≈ 0.163 per ±2 °C → **model-sensitive** (narrow 22 °C gap), vf secondary.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 25.0 | 1.01 | 0.0000 | ethanol 0.2 / water 0.8 | 1.0000 |
+| HOT | 90.0 | 1.01 | 0.4999 | ethanol 0.2 / water 0.8 | 1.0000 |
+| VAP | 90.0 | 1.01 | 1.0000 | ethanol 0.3418 / water 0.6582 | 0.4999 |
+| LIQ | 90.0 | 1.01 | 0.0000 | ethanol 0.0582 / water 0.9418 | 0.5001 |
+
+### S1 — Water heating (sanity floor)
+- **Process:** Heat liquid water from 25 °C to 80 °C at 2 bar.
+- **Reference flowsheet:** FEED → HT-01 (Heater, 80 °C) → PROD.
+- **Specified / computed:** specified — water 25 °C / 2 bar / 1.0 mol/s, HT-01 80 °C; computed — nothing beyond confirming single phase.
+- **Property package:** Steam Tables (IAPWS-IF97).
+- **Validation:** outlet exactly 80.000 °C, vf = 0 — water's saturation T at 2 bar is 120 °C, so 80 °C stays liquid. Duty ≈ n·Cₚ·ΔT ≈ 4.14 kJ/s. Trivially exact.
+- **Scoring note:** 2-stream case — scored by exact per-stream match (2/2) + physics checks, below the aggregate-MAPE gate.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 25.0 | 2.00 | 0.0000 | water 1.0 | 1.0000 |
+| PROD | 80.0 | 2.00 | 0.0000 | water 1.0 | 1.0000 |
+
+### S2 — Benzene condensation (sanity floor)
+- **Process:** Cool benzene vapour from 100 °C to 60 °C.
+- **Reference flowsheet:** FEED → CL-01 (Cooler, 60 °C) → PROD.
+- **Specified / computed:** specified — benzene 100 °C / 1.013 bar / 1.0 mol/s, CL-01 60 °C; computed — the two vapour fractions.
+- **Property package:** Peng-Robinson.
+- **Validation:** benzene normal boiling point 80.1 °C (NIST) — FEED at 100 °C is superheated vapour (**vf = 1**), PROD at 60 °C is subcooled liquid (**vf = 0**). Complete, unambiguous condensation. This case exists to confirm phase transitions are captured; both vapour fractions are explicit and correct.
+- **Scoring note:** 2-stream case — scored by exact per-stream match (2/2) + physics checks.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 100.0 | 1.01 | 1.0000 | benzene 1.0 | 1.0000 |
+| PROD | 60.0 | 1.01 | 0.0000 | benzene 1.0 | 1.0000 |
+
+### C2 — n-Hexane/n-heptane shortcut (FUG) column
+- **Process:** Separate an equimolar n-hexane/n-heptane mixture at atmospheric pressure to 98% n-hexane distillate / 98% n-heptane bottoms.
+- **Reference flowsheet:** FEED → COL-01 (ShortcutColumn) → DIST + BOT.
+- **Specified / assumed / computed:** specified — 50/50, saturated liquid at the 1 atm bubble point (81.46 °C), LK = n-hexane, HK = n-heptane, 2% LK-in-bottoms / 2% HK-in-distillate, condenser & reboiler 1 atm; computed — R = 1.3 × R_min via the two-pass logic, Nmin, all T.
+- **Property package:** Peng-Robinson (near-ideal alkanes).
+- **Validation (Fenske/Underwood, α @ 83 °C = 2.46):** Nmin 8.64 (hand) vs 8.99 (DWSIM); Rmin 1.273 (hand) vs 1.355 (DWSIM) — within ~4/6%, like C1. α comfortably above the degenerate-split threshold. **Mass balance closes exactly** (see §X.5).
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 81.5 | 1.01 | 0.0001 | n-hexane 0.5 / n-heptane 0.5 | 1.0000 |
+| DIST | 69.0 | 1.01 | 0.0120 | n-hexane 0.98 / n-heptane 0.02 | 0.5000 |
+| BOT | 97.7 | 1.01 | 0.0045 | n-hexane 0.02 / n-heptane 0.98 | 0.5000 |
+
+### C3 — Methanol/water shortcut (FUG) column
+- **Process:** Separate an equimolar methanol/water mixture at atmospheric pressure to 98% methanol distillate / 98% water bottoms.
+- **Reference flowsheet:** FEED → COL-01 (ShortcutColumn) → DIST + BOT.
+- **Specified / assumed / computed:** specified — 50/50, saturated liquid at the 1 atm bubble point (72.98 °C), LK = methanol, HK = water, 2%/2%, condenser & reboiler 1 atm; computed — R = 1.3 × R_min, Nmin, all T.
+- **Property package:** NRTL — the only column exercising the activity-model path.
+- **Validation (Fenske/Underwood, Raoult α @ 81 °C = 3.80):** Nmin 5.83 (hand) vs 6.01 (DWSIM); Rmin 0.645 (hand) vs 0.683 (DWSIM). **Caveat:** this hand-check uses a single Raoult α, but methanol/water's relative volatility varies substantially with composition through the activity coefficients. The ~3–6% agreement is **partly fortuitous** — the column's effective α (~3.65) happens to sit near the Raoult value — and should not be read as carrying the same validation weight as the near-ideal hydrocarbon columns (C1, C2). R_min = 0.68 is well below the 20 degenerate-split threshold. Mass balance closes exactly.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED | 73.0 | 1.01 | 0.0000 | methanol 0.5 / water 0.5 | 1.0000 |
+| DIST | 64.9 | 1.01 | 0.0051 | methanol 0.98 / water 0.02 | 0.5000 |
+| BOT | 96.6 | 1.01 | 0.0001 | methanol 0.02 / water 0.98 | 0.5000 |
+
+### M1 — Adiabatic mixer (two distinct feeds)
+- **Process:** Mix an n-hexane stream (0.6 mol/s, 25 °C) with an n-heptane stream (0.4 mol/s, 80 °C).
+- **Reference flowsheet:** FEED-A → MX-01 ← FEED-B; MX-01 → MIXED.
+- **Specified / computed:** specified — FEED-A n-hexane 25 °C / 1.013 bar / 0.6 mol/s, FEED-B n-heptane 80 °C / 1.013 bar / 0.4 mol/s; computed — MIXED T and phase.
+- **Property package:** Peng-Robinson.
+- **Validation:** mass balance gives 1.0 mol/s at n-hexane 0.6 / n-heptane 0.4 ✓; an adiabatic energy balance (constant Cₚ) gives T_mix ≈ 48.9 °C vs DWSIM 50.2 °C; MIXED is liquid (vf = 0). **Both distinct feed compositions survive intact** — an incidental regression test that the composition-set fix (Bug A) holds for multiple different feeds.
+
+| Stream | T (°C) | P (bar) | Vapour fraction | Composition (mole fractions) | Molar flow (mol/s) |
+|---|---|---|---|---|---|
+| FEED-A | 25.0 | 1.01 | 0.0000 | n-hexane 1.0 | 0.6000 |
+| FEED-B | 80.0 | 1.01 | 0.0000 | n-heptane 1.0 | 0.4000 |
+| MIXED | 50.2 | 1.01 | 0.0000 | n-hexane 0.6 / n-heptane 0.4 | 1.0000 |
+
 ## X.4 Vapour-fraction reference precision (stability analysis)
 
 Each flash reference vf was tested for stability by rebuilding the DWSIM model under small perturbations (flash-temperature ±2 °C; feed-temperature ±2 °C).
@@ -180,13 +316,17 @@ Each flash reference vf was tested for stability by rebuilding the DWSIM model u
 | GEN_01 | hexane/heptane | 0.560 | 0.343 | 0.000 | model-sensitive → vf secondary |
 | EASY_01 | acetone/water | 0.675 | 0.038 | 0.000 | precise-to-tolerance |
 | F1 | pentane/octane | 0.384 | 0.031 | 0.000 | precise-to-tolerance |
+| F3 | acetone/toluene | 0.405 | 0.092 | 0.000 | mildly model-sensitive → vf secondary |
+| F4 | ethanol/water | 0.500 | 0.163 | 0.000 | model-sensitive → vf secondary |
+| F2 | methanol/water | 0.469 | 0.190 | 0.000 | model-sensitive → vf secondary |
 
-**Findings:** (1) Feed-temperature perturbation moves flash vf by exactly zero — the flash sits at the heater-outlet set-point regardless of feed state, so feed-condition assumptions never threaten the vf reference. (2) Flash-temperature sensitivity scales with how close-boiling the mixture is: the close-boiling binaries (SAN_03, GEN_01, ~6–8 °C two-phase windows) have steep vf-vs-T curves (a ±2 °C deviation swings vf by ~0.3, well beyond the ±0.05 tolerance), so their vf reference is meaningful only if the build matches the flash temperature to ~0.3 °C; the wide-boiling cases (EASY_01 acetone/water ~44 °C apart; F1 pentane/octane ~90 °C apart) have gentle slopes and tolerance-precise vf. Pure-component condensation and permanent-gas compression cases (vf = 0 or 1) are robust by construction, except SAN_04 (borderline, treated as secondary).
+**Findings:** (1) Feed-temperature perturbation moves flash vf by exactly zero — the flash sits at the heater-outlet set-point regardless of feed state, so feed-condition assumptions never threaten the vf reference. (2) The dedicated F-series flashes turn the vf classification into a small result: Δvf broadly **increases as the binary's boiling-point gap narrows** — pentane/octane (90 °C gap, Δvf 0.031) → acetone/toluene (55 °C, 0.092) → methanol/water (35 °C, 0.190), with ethanol/water (22 °C, 0.163) in the same model-sensitive band. The trend is **not strictly monotonic in the pure-component boiling gap** — ethanol/water's Δvf (0.163) sits just below methanol/water's (0.190) despite the narrower gap — because the quantity that actually sets the slope is the two-phase T-window *at the feed composition*, which non-ideality (activity coefficients, azeotrope proximity) reshapes. (3) The precise/model-sensitive split is robust regardless: only the two widest gaps (F1 pentane/octane 0.031; EASY_01 acetone/water 0.038) are tolerance-precise (Δvf ≤ 0.04); F3/F4/F2 and the close-boiling SAN_03/GEN_01 are model-sensitive and scored with vf secondary. Pure-component condensation and permanent-gas compression cases (vf = 0 or 1) are robust by construction, except SAN_04 (borderline, treated as secondary).
 
 ## X.5 Integrity notes
 
 - References are independently constructed (expert-specified DWSIM models), never harvested from the system under test; reference-injection into extraction (`VARIANT_B`) is disabled during scoring.
-- Self-consistency verified: feeding each reference back through the scoring path yields 0.0 MAPE on T, P, and vf for **every** case (every stream matches), confirming the references and scoring pipeline agree and no min-match gate is triggered.
+- Self-consistency verified: feeding each reference back through the scoring path reproduces every stream exactly (dT/dP/dvf = 0). For flowsheets with ≥3 streams this yields 0.0 aggregate MAPE on T, P and vf; the three 2-stream cases (**P2, S1, S2**) fall below the 3-stream min-match gate, so they report `insufficient_match` for the aggregate MAPE *by design* and are scored by their exact per-stream match (2/2) plus the structural physics checks — the reference values are exact, only the aggregate statistic is withheld.
+- **Evaluated and dropped: D1 (water/n-butanol decanter).** The 3-phase SVLLE decanter mechanism was validated (both liquid outlets carry flow, vf = 0 — a genuine LLE split, not the zero-flow decanter failure), but neither default NRTL nor UNIQUAC reproduced the literature mutual solubilities within a few wt% (aqueous butanol 2–4 wt% vs ~7.5; organic water 13–27 wt% vs ~20). With no trustworthy LLE-fitted binary-parameter set to hand, D1 was dropped rather than ship a reference encoding a ~5 wt%-off tie-line. It is buildable later if a validated LLE parameter set is supplied.
 - **Shortcut (FUG) column mass balance closes exactly.** For the column cases (C1 and its variants), the Fenske–Underwood–Gilliland distillate/bottoms split conserves every component to <1e-6 — there is **no** inherent imbalance floor limiting achievable MAPE. The ~4% imbalance seen in an early column probe was a wrapper bug (the mass-based stream property `PROP_MS_2` was read as molar flow, so the D/B split was mass-weighted), since fixed; it was never a limitation of the shortcut method. Column references therefore carry exact molar splits, and the reflux is set by the two-pass logic (R = 1.3 × R_min).
 - Four cases required correction of thermodynamically-inconsistent conditions in the original process descriptions: EASY_04 (12→15 bar), EASY_02 (restructured to condense at 10 bar before pumping), SAN_03 (100→95 °C flash), GEN_01 (80→85 °C flash), and EASY_01 (feed 70/30→50/50, since 70/30 acetone/water has no stable mid-range flash at 1 atm); all are documented above with their physical justification. These corrections were made to render physically-inconsistent original specifications self-consistent — **not** to make the cases easier: the corrected description simply gives the system a thermodynamically consistent set-point, and the test remains whether the system builds the correct flowsheet for that specification.
 - Scoring gates on exact set-point T/P; vf is non-gating and, for the two close-boiling flashes plus SAN_04, treated as secondary per the stability analysis.
