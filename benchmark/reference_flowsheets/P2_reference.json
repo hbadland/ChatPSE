@@ -1,0 +1,55 @@
+{
+  "case_id": "P2",
+  "case_name": "Water pump",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Water"
+  ],
+  "property_package": "Steam Tables (IAPWS-IF97)",
+  "solved": true,
+  "units": [
+    {
+      "tag": "PM-01",
+      "type": "Pump",
+      "params": {
+        "P_out": 1000000.0,
+        "efficiency": 0.75
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "PM-01"
+    ],
+    [
+      "PM-01",
+      "PROD"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Water": 1.0
+      }
+    },
+    "PROD": {
+      "T_K": 298.238,
+      "T_C": 25.088,
+      "P_Pa": 1000000.0,
+      "P_bar": 10.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Water": 1.0
+      }
+    }
+  }
+}

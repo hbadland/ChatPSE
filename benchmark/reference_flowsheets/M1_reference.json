@@ -1,0 +1,71 @@
+{
+  "case_id": "M1",
+  "case_name": "Mix hexane and heptane",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "N-hexane",
+    "N-heptane"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "MX-01",
+      "type": "Mixer",
+      "params": {}
+    }
+  ],
+  "connections": [
+    [
+      "FEED-A",
+      "MX-01"
+    ],
+    [
+      "FEED-B",
+      "MX-01"
+    ],
+    [
+      "MX-01",
+      "MIXED"
+    ]
+  ],
+  "streams": {
+    "FEED-A": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.6,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-hexane": 1.0,
+        "N-heptane": 0.0
+      }
+    },
+    "FEED-B": {
+      "T_K": 353.15,
+      "T_C": 80.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.4,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-hexane": 0.0,
+        "N-heptane": 1.0
+      }
+    },
+    "MIXED": {
+      "T_K": 323.379,
+      "T_C": 50.229,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-hexane": 0.5999999999999999,
+        "N-heptane": 0.4
+      }
+    }
+  }
+}

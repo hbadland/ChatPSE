@@ -1,0 +1,79 @@
+{
+  "case_id": "C3",
+  "case_name": "Methanol/water shortcut column",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Methanol",
+    "Water"
+  ],
+  "property_package": "NRTL",
+  "solved": true,
+  "units": [
+    {
+      "tag": "COL-01",
+      "type": "Column",
+      "params": {
+        "light_key": "Methanol",
+        "heavy_key": "Water",
+        "light_key_frac_bottoms": 0.02,
+        "heavy_key_frac_distillate": 0.02,
+        "reflux_ratio": 0.5,
+        "condenser_pressure_Pa": 101325.0,
+        "boiler_pressure_Pa": 101325.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "COL-01"
+    ],
+    [
+      "COL-01",
+      "DIST"
+    ],
+    [
+      "COL-01",
+      "BOT"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 346.13,
+      "T_C": 72.98,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methanol": 0.5,
+        "Water": 0.5
+      }
+    },
+    "DIST": {
+      "T_K": 338.049,
+      "T_C": 64.899,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.4999999999999999,
+      "vapor_fraction": 0.005085212840082773,
+      "composition": {
+        "Methanol": 0.98,
+        "Water": 0.02
+      }
+    },
+    "BOT": {
+      "T_K": 369.722,
+      "T_C": 96.572,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 8.317747837912655e-05,
+      "composition": {
+        "Methanol": 0.02,
+        "Water": 0.98
+      }
+    }
+  }
+}

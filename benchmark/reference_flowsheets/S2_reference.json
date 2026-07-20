@@ -1,0 +1,55 @@
+{
+  "case_id": "S2",
+  "case_name": "Benzene condensation",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Benzene"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "CL-01",
+      "type": "Cooler",
+      "params": {
+        "T_out": 333.15,
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "CL-01"
+    ],
+    [
+      "CL-01",
+      "PROD"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 373.15,
+      "T_C": 100.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Benzene": 1.0
+      }
+    },
+    "PROD": {
+      "T_K": 333.15,
+      "T_C": 60.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Benzene": 1.0
+      }
+    }
+  }
+}

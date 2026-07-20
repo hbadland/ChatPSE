@@ -1,0 +1,107 @@
+{
+  "case_id": "F3",
+  "case_name": "Heat then flash acetone/toluene",
+  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Acetone",
+    "Toluene"
+  ],
+  "property_package": "NRTL",
+  "solved": true,
+  "units": [
+    {
+      "tag": "HT-01",
+      "type": "Heater",
+      "params": {
+        "T_out": 349.15,
+        "dP": 0.0
+      }
+    },
+    {
+      "tag": "V-01",
+      "type": "Vessel",
+      "params": {
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "HT-01"
+    ],
+    [
+      "HT-01",
+      "HOT"
+    ],
+    [
+      "HOT",
+      "V-01"
+    ],
+    [
+      "V-01",
+      "VAP"
+    ],
+    [
+      "V-01",
+      "LIQ"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Acetone": 0.5,
+        "Toluene": 0.5
+      }
+    },
+    "HOT": {
+      "T_K": 349.15,
+      "T_C": 76.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.40463967252379934,
+      "composition": {
+        "Acetone": 0.5,
+        "Toluene": 0.5
+      }
+    },
+    "VAP": {
+      "T_K": 349.15,
+      "T_C": 76.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.4046396725237994,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Acetone": 0.7595665758694887,
+        "Toluene": 0.24043342413051136
+      }
+    },
+    "LIQ": {
+      "T_K": 349.15,
+      "T_C": 76.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5953603274762006,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Acetone": 0.32356744357972955,
+        "Toluene": 0.6764325564202704
+      }
+    }
+  },
+  "vf_sensitivity": {
+    "dvf_max_per_2C_flashT": 0.092,
+    "dvf_per_2C_feedT": 0.0,
+    "precise_to_0.05_tol": false,
+    "note": "acetone/toluene flash: dvf 0.092 per +/-2C > 0.05 tol -> model-sensitive, score vf secondary"
+  }
+}

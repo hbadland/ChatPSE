@@ -189,5 +189,517 @@
     },
     "notes": "Canonical FUG shortcut column. LK=benzene, HK=toluene; 2% LK-in-bottoms, 2% HK-in-distillate; reflux R=1.3xRmin via two-pass. Fenske Nmin=8.77 (hand 8.58), Underwood Rmin=1.30 (hand 1.26). Mass balance closes EXACTLY (0.00%) with the molar-flow-fixed wrapper (05d263a); the ~4% seen in the pre-fix Stage-A probe was the mass-as-molar flow bug, not an FUG limitation.",
     "reference_file": "benchmark/reference_flowsheets/C1_reference.json"
+  },
+  {
+    "id": "P2",
+    "name": "Water pump",
+    "tier": "capability",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Liquid water at 25°C and 1 bar is pumped to 10 bar.",
+    "compounds": [
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Pump"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "PM-01"
+        ],
+        [
+          "PM-01",
+          "PROD"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Pump"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (P2).",
+    "reference_file": "benchmark/reference_flowsheets/P2_reference.json"
+  },
+  {
+    "id": "P3",
+    "name": "Methane compression",
+    "tier": "capability",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Methane at 25°C and 1 bar is compressed to 30 bar and cooled to 40°C.",
+    "compounds": [
+      "Methane"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Compressor",
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "CP-01"
+        ],
+        [
+          "CP-01",
+          "COMP"
+        ],
+        [
+          "COMP",
+          "CL-01"
+        ],
+        [
+          "CL-01",
+          "PROD"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Compressor"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (P3).",
+    "reference_file": "benchmark/reference_flowsheets/P3_reference.json"
+  },
+  {
+    "id": "F2",
+    "name": "Heat then flash methanol/water",
+    "tier": "capability",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "An equimolar mixture of methanol and water at 25°C and 1 bar is heated to 77°C and flashed at 1 bar.",
+    "compounds": [
+      "Methanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "HOT"
+        ],
+        [
+          "HOT",
+          "V-01"
+        ],
+        [
+          "V-01",
+          "VAP"
+        ],
+        [
+          "V-01",
+          "LIQ"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (F2).",
+    "reference_file": "benchmark/reference_flowsheets/F2_reference.json"
+  },
+  {
+    "id": "F3",
+    "name": "Heat then flash acetone/toluene",
+    "tier": "capability",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "An equimolar mixture of acetone and toluene at 25°C and 1 bar is heated to 76°C and flashed at 1 bar.",
+    "compounds": [
+      "Acetone",
+      "Toluene"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "HOT"
+        ],
+        [
+          "HOT",
+          "V-01"
+        ],
+        [
+          "V-01",
+          "VAP"
+        ],
+        [
+          "V-01",
+          "LIQ"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (F3).",
+    "reference_file": "benchmark/reference_flowsheets/F3_reference.json"
+  },
+  {
+    "id": "F4",
+    "name": "Heat then flash dilute ethanol/water",
+    "tier": "capability",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "A mixture of 20 mol% ethanol and 80 mol% water at 25°C and 1 bar is heated to 90°C and flashed at 1 bar.",
+    "compounds": [
+      "Ethanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 2,
+      "unit_types": [
+        "Heater",
+        "Vessel"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "HOT"
+        ],
+        [
+          "HOT",
+          "V-01"
+        ],
+        [
+          "V-01",
+          "VAP"
+        ],
+        [
+          "V-01",
+          "LIQ"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 2,
+      "n_units_max": 3,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        },
+        {
+          "type": "unit_type_present",
+          "unit_type": "Vessel"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (F4).",
+    "reference_file": "benchmark/reference_flowsheets/F4_reference.json"
+  },
+  {
+    "id": "S1",
+    "name": "Water heating",
+    "tier": "capability",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Liquid water at 25°C and 2 bar is heated to 80°C.",
+    "compounds": [
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Heater"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "HT-01"
+        ],
+        [
+          "HT-01",
+          "PROD"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Heater"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (S1).",
+    "reference_file": "benchmark/reference_flowsheets/S1_reference.json"
+  },
+  {
+    "id": "S2",
+    "name": "Benzene condensation",
+    "tier": "capability",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Benzene vapour at 100°C and 1 bar is cooled to 60°C.",
+    "compounds": [
+      "Benzene"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Cooler"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "CL-01"
+        ],
+        [
+          "CL-01",
+          "PROD"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Cooler"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (S2).",
+    "reference_file": "benchmark/reference_flowsheets/S2_reference.json"
+  },
+  {
+    "id": "C2",
+    "name": "n-Hexane/n-heptane shortcut column",
+    "tier": "capability",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "An equimolar n-hexane/n-heptane mixture is separated in a distillation column at atmospheric pressure to give 98% n-hexane in the distillate and 98% n-heptane in the bottoms.",
+    "compounds": [
+      "N-hexane",
+      "N-heptane"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Column"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COL-01"
+        ],
+        [
+          "COL-01",
+          "DIST"
+        ],
+        [
+          "COL-01",
+          "BOT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Column"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (C2).",
+    "reference_file": "benchmark/reference_flowsheets/C2_reference.json"
+  },
+  {
+    "id": "C3",
+    "name": "Methanol/water shortcut column",
+    "tier": "capability",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "An equimolar methanol/water mixture is separated in a distillation column at atmospheric pressure to give 98% methanol in the distillate and 98% water in the bottoms.",
+    "compounds": [
+      "Methanol",
+      "Water"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Column"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COL-01"
+        ],
+        [
+          "COL-01",
+          "DIST"
+        ],
+        [
+          "COL-01",
+          "BOT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "activity_coefficient",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Column"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (C3).",
+    "reference_file": "benchmark/reference_flowsheets/C3_reference.json"
+  },
+  {
+    "id": "M1",
+    "name": "Mix hexane and heptane",
+    "tier": "capability",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "A stream of n-hexane at 25°C and 1 bar (0.6 mol/s) is mixed with a stream of n-heptane at 80°C and 1 bar (0.4 mol/s).",
+    "compounds": [
+      "N-hexane",
+      "N-heptane"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Mixer"
+      ],
+      "connections": [
+        [
+          "FEED-A",
+          "MX-01"
+        ],
+        [
+          "FEED-B",
+          "MX-01"
+        ],
+        [
+          "MX-01",
+          "MIXED"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Mixer"
+        }
+      ]
+    },
+    "notes": "Capability reference; see PROVENANCE.md (M1).",
+    "reference_file": "benchmark/reference_flowsheets/M1_reference.json"
   }
 ]

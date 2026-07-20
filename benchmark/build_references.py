@@ -362,10 +362,154 @@ def build_C1(fs):
             "material_streams": ["FEED", "DIST", "BOT"]}
 
 
+def build_P2(fs):
+    """P2 — water pump. Liquid water 25 C / 1.013 bar pumped to 10 bar (eta=0.75).
+    Steam Tables (IAPWS-IF97). Near-isothermal (dT~0.09 C), vf=0 throughout."""
+    fs.add_compounds(["Water"]); fs.set_property_package("Steam Tables (IAPWS-IF97)")
+    sim=fs._sim
+    for s in ("FEED","PROD"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+    sim.AddObject(ObjectType.EnergyStream,0,0,"PM-Q")
+    fs.add_unit("PM-01","Pump")
+    fs.set_stream("FEED",298.15,101325.0,1.0,{"Water":1.0})
+    fs.connect("FEED","PM-01",0,0)
+    try: fs.connect("PM-Q","PM-01",0,1)
+    except Exception: pass
+    fs.connect("PM-01","PROD",0,0)
+    fs.set_pump("PM-01",1.0e6,0.75)
+    return {"case_id":"P2","case_name":"Water pump","compounds":["Water"],
+            "property_package":"Steam Tables (IAPWS-IF97)",
+            "units":[{"tag":"PM-01","type":"Pump","params":{"P_out":1.0e6,"efficiency":0.75}}],
+            "connections":[["FEED","PM-01"],["PM-01","PROD"]],
+            "material_streams":["FEED","PROD"]}
+
+
+def build_P3(fs):
+    """P3 — methane compression + cool. CH4 25 C / 1.013 bar -> CP-01(30 bar,eta0.75)
+    -> COMP -> CL-01(40 C) -> PROD. Peng-Robinson. COMP ~386 C (variable-Cp isentropic
+    matches to <1 C); PROD supercritical vapour (Tc=190 K), vf=1."""
+    fs.add_compounds(["Methane"]); fs.set_property_package("Peng-Robinson (PR)")
+    sim=fs._sim
+    for s in ("FEED","COMP","PROD"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+    sim.AddObject(ObjectType.EnergyStream,0,0,"CP-Q")
+    fs.add_unit("CP-01","Compressor"); fs.add_unit("CL-01","Cooler")
+    fs.set_stream("FEED",298.15,101325.0,1.0,{"Methane":1.0})
+    fs.connect("FEED","CP-01",0,0)
+    try: fs.connect("CP-Q","CP-01",0,1)
+    except Exception: pass
+    fs.connect("CP-01","COMP",0,0); fs.connect("COMP","CL-01",0,0); fs.connect("CL-01","PROD",0,0)
+    fs.set_compressor("CP-01",3.0e6,0.75); fs.set_cooler("CL-01",313.15,dP=0.0)
+    return {"case_id":"P3","case_name":"Methane compression","compounds":["Methane"],
+            "property_package":"Peng-Robinson",
+            "units":[{"tag":"CP-01","type":"Compressor","params":{"P_out":3.0e6,"efficiency":0.75}},
+                     {"tag":"CL-01","type":"Cooler","params":{"T_out":313.15,"dP":0.0}}],
+            "connections":[["FEED","CP-01"],["CP-01","COMP"],["COMP","CL-01"],["CL-01","PROD"]],
+            "material_streams":["FEED","COMP","PROD"]}
+
+
+def _flash_builder(cid, name, compounds, feed, pkg_set, pkg_meta, T_K):
+    def _b(fs):
+        fs.add_compounds(compounds); fs.set_property_package(pkg_set)
+        sim=fs._sim
+        for s in ("FEED","HOT","VAP","LIQ"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+        fs.add_unit("HT-01","Heater"); fs.add_unit("V-01","Vessel")
+        fs.set_stream("FEED",298.15,101325.0,1.0,feed)
+        fs.connect("FEED","HT-01",0,0); fs.connect("HT-01","HOT",0,0)
+        fs.connect("HOT","V-01",0,0); fs.connect("V-01","VAP",0,0); fs.connect("V-01","LIQ",1,0)
+        fs.set_heater("HT-01",T_K,dP=0.0); fs.set_vessel("V-01",dP=0.0)
+        return {"case_id":cid,"case_name":name,"compounds":compounds,"property_package":pkg_meta,
+                "units":[{"tag":"HT-01","type":"Heater","params":{"T_out":T_K,"dP":0.0}},
+                         {"tag":"V-01","type":"Vessel","params":{"dP":0.0}}],
+                "connections":[["FEED","HT-01"],["HT-01","HOT"],["HOT","V-01"],["V-01","VAP"],["V-01","LIQ"]],
+                "material_streams":["FEED","HOT","VAP","LIQ"]}
+    return _b
+
+# F2 methanol/water @77 C, F3 acetone/toluene @76 C, F4 20% ethanol/water @90 C (all NRTL)
+build_F2=_flash_builder("F2","Heat then flash methanol/water",["Methanol","Water"],{"Methanol":0.5,"Water":0.5},"NRTL","NRTL",350.15)
+build_F3=_flash_builder("F3","Heat then flash acetone/toluene",["Acetone","Toluene"],{"Acetone":0.5,"Toluene":0.5},"NRTL","NRTL",349.15)
+build_F4=_flash_builder("F4","Heat then flash dilute ethanol/water",["Ethanol","Water"],{"Ethanol":0.2,"Water":0.8},"NRTL","NRTL",363.15)
+
+
+def build_S1(fs):
+    """S1 — water heating (sanity floor). Liquid water 25 C / 2 bar -> HT-01(80 C).
+    Steam Tables; stays liquid (sat T at 2 bar = 120 C), vf=0."""
+    fs.add_compounds(["Water"]); fs.set_property_package("Steam Tables (IAPWS-IF97)")
+    sim=fs._sim
+    for s in ("FEED","PROD"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+    fs.add_unit("HT-01","Heater")
+    fs.set_stream("FEED",298.15,200000.0,1.0,{"Water":1.0})
+    fs.connect("FEED","HT-01",0,0); fs.connect("HT-01","PROD",0,0)
+    fs.set_heater("HT-01",353.15,dP=0.0)
+    return {"case_id":"S1","case_name":"Water heating","compounds":["Water"],
+            "property_package":"Steam Tables (IAPWS-IF97)",
+            "units":[{"tag":"HT-01","type":"Heater","params":{"T_out":353.15,"dP":0.0}}],
+            "connections":[["FEED","HT-01"],["HT-01","PROD"]],
+            "material_streams":["FEED","PROD"]}
+
+
+def build_S2(fs):
+    """S2 — benzene condensation (sanity floor). Benzene vapour 100 C / 1.013 bar ->
+    CL-01(60 C). Peng-Robinson. FEED vf=1 (bp 80.1 C), PROD vf=0 (complete condensation)."""
+    fs.add_compounds(["Benzene"]); fs.set_property_package("Peng-Robinson (PR)")
+    sim=fs._sim
+    for s in ("FEED","PROD"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+    fs.add_unit("CL-01","Cooler")
+    fs.set_stream("FEED",373.15,101325.0,1.0,{"Benzene":1.0})
+    fs.connect("FEED","CL-01",0,0); fs.connect("CL-01","PROD",0,0)
+    fs.set_cooler("CL-01",333.15,dP=0.0)
+    return {"case_id":"S2","case_name":"Benzene condensation","compounds":["Benzene"],
+            "property_package":"Peng-Robinson",
+            "units":[{"tag":"CL-01","type":"Cooler","params":{"T_out":333.15,"dP":0.0}}],
+            "connections":[["FEED","CL-01"],["CL-01","PROD"]],
+            "material_streams":["FEED","PROD"]}
+
+
+def _column_builder(cid, name, compounds, pkg_set, pkg_meta, lk, hk, Tbub_K):
+    def _b(fs):
+        fs.add_compounds(compounds); fs.set_property_package(pkg_set)
+        sim=fs._sim
+        for s in ("FEED","DIST","BOT"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+        fs.add_unit("COL-01","Column")
+        fs.set_stream("FEED",Tbub_K,101325.0,1.0,{c:0.5 for c in compounds})  # saturated liquid
+        fs.connect("FEED","COL-01",0,0); fs.connect("COL-01","DIST",0,0); fs.connect("COL-01","BOT",1,0)
+        fs.set_column("COL-01",lk,hk,0.02,0.02,0.5,101325.0,101325.0)
+        return {"case_id":cid,"case_name":name,"compounds":compounds,"property_package":pkg_meta,
+                "units":[{"tag":"COL-01","type":"Column","params":{"light_key":lk,"heavy_key":hk,
+                          "light_key_frac_bottoms":0.02,"heavy_key_frac_distillate":0.02,
+                          "reflux_ratio":0.5,"condenser_pressure_Pa":101325.0,"boiler_pressure_Pa":101325.0}}],
+                "connections":[["FEED","COL-01"],["COL-01","DIST"],["COL-01","BOT"]],
+                "material_streams":["FEED","DIST","BOT"]}
+    return _b
+
+# C2 hexane/heptane (PR, bubble 81.46 C), C3 methanol/water (NRTL, bubble 72.98 C)
+build_C2=_column_builder("C2","n-Hexane/n-heptane shortcut column",["N-hexane","N-heptane"],"Peng-Robinson (PR)","Peng-Robinson","N-hexane","N-heptane",354.61)
+build_C3=_column_builder("C3","Methanol/water shortcut column",["Methanol","Water"],"NRTL","NRTL","Methanol","Water",346.13)
+
+
+def build_M1(fs):
+    """M1 — adiabatic mixer, two DISTINCT feeds (also a composition-path regression
+    test). n-hexane 25 C / 0.6 mol/s + n-heptane 80 C / 0.4 mol/s -> MIXED
+    (~50 C, 0.6/0.4). Peng-Robinson."""
+    fs.add_compounds(["N-hexane","N-heptane"]); fs.set_property_package("Peng-Robinson (PR)")
+    sim=fs._sim
+    for s in ("FEED-A","FEED-B","MIXED"): sim.AddObject(ObjectType.MaterialStream,0,0,s)
+    fs.add_unit("MX-01","Mixer")
+    fs.set_stream("FEED-A",298.15,101325.0,0.6,{"N-hexane":1.0})
+    fs.set_stream("FEED-B",353.15,101325.0,0.4,{"N-heptane":1.0})
+    fs.connect("FEED-A","MX-01",0,0); fs.connect("FEED-B","MX-01",0,1); fs.connect("MX-01","MIXED",0,0)
+    return {"case_id":"M1","case_name":"Mix hexane and heptane","compounds":["N-hexane","N-heptane"],
+            "property_package":"Peng-Robinson",
+            "units":[{"tag":"MX-01","type":"Mixer","params":{}}],
+            "connections":[["FEED-A","MX-01"],["FEED-B","MX-01"],["MX-01","MIXED"]],
+            "material_streams":["FEED-A","FEED-B","MIXED"]}
+
+
 _BUILDERS = {"SAN_04": build_SAN_04, "EASY_04": build_EASY_04,
              "GEN_03": build_GEN_03, "EASY_02": build_EASY_02,
              "SAN_03": build_SAN_03, "GEN_01": build_GEN_01, "EASY_01": build_EASY_01,
-             "P1": build_P1, "F1": build_F1, "C1": build_C1}
+             "P1": build_P1, "F1": build_F1, "C1": build_C1,
+             "P2": build_P2, "P3": build_P3, "F2": build_F2, "F3": build_F3,
+             "F4": build_F4, "S1": build_S1, "S2": build_S2, "C2": build_C2,
+             "C3": build_C3, "M1": build_M1}
 
 
 def build_case(case_id: str, write: bool = False) -> dict:

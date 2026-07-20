@@ -1,0 +1,82 @@
+{
+  "case_id": "P3",
+  "case_name": "Methane compression",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Methane"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "CP-01",
+      "type": "Compressor",
+      "params": {
+        "P_out": 3000000.0,
+        "efficiency": 0.75
+      }
+    },
+    {
+      "tag": "CL-01",
+      "type": "Cooler",
+      "params": {
+        "T_out": 313.15,
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "CP-01"
+    ],
+    [
+      "CP-01",
+      "COMP"
+    ],
+    [
+      "COMP",
+      "CL-01"
+    ],
+    [
+      "CL-01",
+      "PROD"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 1.0
+      }
+    },
+    "COMP": {
+      "T_K": 659.264,
+      "T_C": 386.114,
+      "P_Pa": 3000000.0,
+      "P_bar": 30.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 1.0
+      }
+    },
+    "PROD": {
+      "T_K": 313.15,
+      "T_C": 40.0,
+      "P_Pa": 3000000.0,
+      "P_bar": 30.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 1.0
+      }
+    }
+  }
+}

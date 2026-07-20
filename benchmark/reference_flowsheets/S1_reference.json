@@ -1,0 +1,55 @@
+{
+  "case_id": "S1",
+  "case_name": "Water heating",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Water"
+  ],
+  "property_package": "Steam Tables (IAPWS-IF97)",
+  "solved": true,
+  "units": [
+    {
+      "tag": "HT-01",
+      "type": "Heater",
+      "params": {
+        "T_out": 353.15,
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "HT-01"
+    ],
+    [
+      "HT-01",
+      "PROD"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 200000.0,
+      "P_bar": 2.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Water": 1.0
+      }
+    },
+    "PROD": {
+      "T_K": 353.15,
+      "T_C": 80.0,
+      "P_Pa": 200000.0,
+      "P_bar": 2.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Water": 1.0
+      }
+    }
+  }
+}

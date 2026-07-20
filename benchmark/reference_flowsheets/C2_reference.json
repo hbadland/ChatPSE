@@ -1,0 +1,79 @@
+{
+  "case_id": "C2",
+  "case_name": "n-Hexane/n-heptane shortcut column",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "N-hexane",
+    "N-heptane"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "COL-01",
+      "type": "Column",
+      "params": {
+        "light_key": "N-hexane",
+        "heavy_key": "N-heptane",
+        "light_key_frac_bottoms": 0.02,
+        "heavy_key_frac_distillate": 0.02,
+        "reflux_ratio": 0.5,
+        "condenser_pressure_Pa": 101325.0,
+        "boiler_pressure_Pa": 101325.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "COL-01"
+    ],
+    [
+      "COL-01",
+      "DIST"
+    ],
+    [
+      "COL-01",
+      "BOT"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 354.61,
+      "T_C": 81.46,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.00014164376219787407,
+      "composition": {
+        "N-hexane": 0.5,
+        "N-heptane": 0.5
+      }
+    },
+    "DIST": {
+      "T_K": 342.15,
+      "T_C": 69.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 0.011954591912951257,
+      "composition": {
+        "N-hexane": 0.98,
+        "N-heptane": 0.02
+      }
+    },
+    "BOT": {
+      "T_K": 370.867,
+      "T_C": 97.717,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 0.004468247912877966,
+      "composition": {
+        "N-hexane": 0.02,
+        "N-heptane": 0.98
+      }
+    }
+  }
+}
