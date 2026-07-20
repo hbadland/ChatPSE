@@ -246,6 +246,36 @@ def build_EASY_01(fs):
                          ["V-01", "VAP"], ["V-01", "LIQ"]]})
 
 
+def build_F1(fs):
+    """
+    F1 — wide-boiling n-pentane/n-octane flash. Unlike the close-boiling SAN_03/
+    GEN_01, the 36-vs-126 C boiling gap gives a gentle T-vf slope, so vf is precise
+    to the +/-0.05 tolerance (Delta_vf ~ 0.031 per +/-2 C). Peng-Robinson.
+
+    FEED(50/50 pentane/octane, 25 C, 1 bar, 1 mol/s) -> HT-01(75 C) -> HOT
+      -> V-01(adiabatic flash, 1 bar) -> VAP + LIQ.
+    """
+    fs.add_compounds(["N-pentane", "N-octane"])
+    fs.set_property_package("Peng-Robinson (PR)")
+    sim = fs._sim
+    for s in ("FEED", "HOT", "VAP", "LIQ"):
+        sim.AddObject(ObjectType.MaterialStream, 0, 0, s)
+    fs.add_unit("HT-01", "Heater"); fs.add_unit("V-01", "Vessel")
+    fs.set_stream("FEED", 298.15, 100000.0, 1.0, {"N-pentane": 0.5, "N-octane": 0.5})
+    fs.connect("FEED", "HT-01", 0, 0); fs.connect("HT-01", "HOT", 0, 0)
+    fs.connect("HOT", "V-01", 0, 0)
+    fs.connect("V-01", "VAP", 0, 0); fs.connect("V-01", "LIQ", 1, 0)
+    fs.set_heater("HT-01", 348.15, dP=0.0)   # 75 C
+    fs.set_vessel("V-01", dP=0.0)
+    return {"case_id": "F1", "case_name": "Heat then flash n-pentane/n-octane",
+            "compounds": ["N-pentane", "N-octane"], "property_package": "Peng-Robinson",
+            "units": [{"tag": "HT-01", "type": "Heater", "params": {"T_out": 348.15, "dP": 0.0}},
+                      {"tag": "V-01", "type": "Vessel", "params": {"dP": 0.0}}],
+            "connections": [["FEED", "HT-01"], ["HT-01", "HOT"], ["HOT", "V-01"],
+                            ["V-01", "VAP"], ["V-01", "LIQ"]],
+            "material_streams": ["FEED", "HOT", "VAP", "LIQ"]}
+
+
 def build_P1(fs):
     """
     P1 — two-stage nitrogen compression with intercooling. Directly targets the
@@ -298,7 +328,7 @@ def build_P1(fs):
 _BUILDERS = {"SAN_04": build_SAN_04, "EASY_04": build_EASY_04,
              "GEN_03": build_GEN_03, "EASY_02": build_EASY_02,
              "SAN_03": build_SAN_03, "GEN_01": build_GEN_01, "EASY_01": build_EASY_01,
-             "P1": build_P1}
+             "P1": build_P1, "F1": build_F1}
 
 
 def build_case(case_id: str, write: bool = False) -> dict:

@@ -1,0 +1,107 @@
+{
+  "case_id": "F1",
+  "case_name": "Heat then flash n-pentane/n-octane",
+  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "N-pentane",
+    "N-octane"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "HT-01",
+      "type": "Heater",
+      "params": {
+        "T_out": 348.15,
+        "dP": 0.0
+      }
+    },
+    {
+      "tag": "V-01",
+      "type": "Vessel",
+      "params": {
+        "dP": 0.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "HT-01"
+    ],
+    [
+      "HT-01",
+      "HOT"
+    ],
+    [
+      "HOT",
+      "V-01"
+    ],
+    [
+      "V-01",
+      "VAP"
+    ],
+    [
+      "V-01",
+      "LIQ"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 100000.0,
+      "P_bar": 1.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-pentane": 0.5,
+        "N-octane": 0.5
+      }
+    },
+    "HOT": {
+      "T_K": 348.15,
+      "T_C": 75.0,
+      "P_Pa": 100000.0,
+      "P_bar": 1.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.38395558449062017,
+      "composition": {
+        "N-pentane": 0.5,
+        "N-octane": 0.5
+      }
+    },
+    "VAP": {
+      "T_K": 348.15,
+      "T_C": 75.0,
+      "P_Pa": 100000.0,
+      "P_bar": 1.0,
+      "flow_mol_s": 0.38395558449062017,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-pentane": 0.8507509523939899,
+        "N-octane": 0.1492490476060101
+      }
+    },
+    "LIQ": {
+      "T_K": 348.15,
+      "T_C": 75.0,
+      "P_Pa": 100000.0,
+      "P_bar": 1.0,
+      "flow_mol_s": 0.6160444155093798,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-pentane": 0.2814015969855847,
+        "N-octane": 0.7185984030144154
+      }
+    }
+  },
+  "vf_sensitivity": {
+    "dvf_max_per_2C_flashT": 0.031,
+    "dvf_per_2C_feedT": 0.0,
+    "precise_to_0.05_tol": true,
+    "note": "wide-boiling (pentane 36C/octane 126C): gentle T-vf slope, vf precise to the +/-0.05 tolerance (contrast SAN_03 0.294 / GEN_01 0.343)"
+  }
+}
