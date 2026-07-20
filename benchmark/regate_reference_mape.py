@@ -19,7 +19,7 @@ Usage:
   (default glob: results/per_run/*.json)
 """
 import argparse, glob, json, os, sys
-from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE
+from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE, sufficient_match
 from benchmark.solve_status import (
     compute_solve_status, gate_mape_status, specified_outlet_temps)
 
@@ -46,7 +46,16 @@ def regate(d: dict) -> tuple[dict, dict, bool]:
     rc = d.get("reference_comparison") or {}
     nm  = _n_matched(rc)
     nmv = nm if nm is not None else 0
-    sufficient = nmv >= _MIN_MATCH_FOR_MAPE
+    # Reference stream count for the coverage gate: prefer the stored field, else
+    # derive from the matching detail (matched + reference-unmatched); 0 if unknown
+    # (=> coverage path disabled, falls back to the absolute >=3 rule).
+    n_ref = rc.get("n_reference_streams")
+    if n_ref is None:
+        for c in (rc.get("checks") or []):
+            if c.get("check") == "reference_stream_matching":
+                n_ref = (c.get("n_matched") or 0) + (c.get("n_reference_unmatched") or 0)
+                break
+    sufficient = sufficient_match(nmv, n_ref or 0)
 
     _fgs    = d.get("final_graph_summary") or {}
     n_units = _fgs.get("n_units")

@@ -39,6 +39,7 @@ from benchmark.metrics import (
 from benchmark.logger import RunLog, extract_run_log, extract_system_streams
 from benchmark.physics_eval import (
     run_physics_checks, run_reference_comparison, CheckSeverity, _MIN_MATCH_FOR_MAPE,
+    sufficient_match,
 )
 from benchmark.ablation import AblationConfig, CONFIGS, apply_ablation, make_orchestrator
 
@@ -575,14 +576,13 @@ class BenchmarkRunner:
             _match_detail = next((c for c in _ref_checks
                                   if c.get("check") == "reference_stream_matching"), {})
             _ref_n_matched  = _match_detail.get("n_matched") or 0
-            # Gate SOLELY on the match count: n_matched < _MIN_MATCH_FOR_MAPE is
-            # ALWAYS insufficient_match. Gating on `ref_mape_T is not None` was
-            # inconsistent — early-exit paths (no DWSIM execution / no stream
-            # results / no reference streams) return MAPE=0.0 (not None) with no
-            # matching check, which spuriously reported computed/0.0 over ZERO
-            # matched streams. n_matched defaults to 0 in exactly those paths, so
-            # the count-based gate makes every n<MIN case insufficient uniformly.
-            _ref_sufficient = _ref_n_matched >= _MIN_MATCH_FOR_MAPE
+            _n_ref = _ref_n_matched + (_match_detail.get("n_reference_unmatched") or 0)
+            # Gate on match EVIDENCE = coverage, not a bare count: sufficient when
+            # >= _MIN_MATCH_FOR_MAPE matched (absolute) OR the match covers (nearly)
+            # the whole reference (a 2/2 pump/heater is complete coverage; a 2/8 is
+            # thin). Early-exit paths (no execution / no streams / no reference)
+            # return n_matched=0 -> insufficient uniformly, as before.
+            _ref_sufficient = sufficient_match(_ref_n_matched, _n_ref)
             if _ref_checks:
                 checks.extend(_ref_checks)
                 pr._physics_checks = checks
@@ -683,8 +683,10 @@ class BenchmarkRunner:
         if has_reference:
             _ins = "insufficient_match"      # never a bare MAPE without its count
             run_log.reference_comparison = {
-                # n_matched is reported prominently and ALWAYS alongside the MAPE.
+                # n_matched is reported prominently and ALWAYS alongside the MAPE;
+                # n_reference_streams lets the coverage gate be recomputed retroactively.
                 "n_matched":                 _ref_n_matched,
+                "n_reference_streams":       _n_ref,
                 "min_match_threshold":       _MIN_MATCH_FOR_MAPE,
                 # Solve completeness gate: partial_solve > insufficient_match > computed.
                 "fully_solved":              _solve["fully_solved"],

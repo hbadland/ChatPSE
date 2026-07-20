@@ -95,10 +95,27 @@ _REF_TOL_T_K   = 5.0    # K absolute  — used for reference_match_T check
 _REF_TOL_P_REL = 0.05   # fractional  — used for reference_match_P check
 _REF_TOL_VF    = 0.05   # absolute    — used for reference_match_vf check (WARNING)
 
-# Minimum matched streams before a reference-MAPE is trustworthy.  Below this the
-# MAPE is a misleading artifact (e.g. 1 perfectly-matched stream reads 0.0% and
-# passes spuriously), so it is reported as "insufficient_match", NOT a number.
+# A reference-MAPE is trustworthy when the matched streams are strong EVIDENCE —
+# which is a matter of COVERAGE, not a bare absolute count.  The gate is sufficient
+# when EITHER at least _MIN_MATCH_FOR_MAPE streams matched in absolute terms (enough
+# evidence even on a large flowsheet where full coverage is unlikely) OR the match
+# covers (nearly) the whole reference.  A 2/2 match is complete coverage (sufficient);
+# a 2/8 match is thin evidence (insufficient).  This lets a genuinely tiny flowsheet
+# (a 2-stream pump/heater) score, while still rejecting a handful of matches against
+# a large reference — the property the count-only gate was reaching for.
 _MIN_MATCH_FOR_MAPE = 3
+_MIN_COVERAGE_FRAC  = 0.8   # matched / reference-streams for the coverage path
+
+
+def sufficient_match(n_matched: int, n_reference: int) -> bool:
+    """True if the matched-stream evidence is strong enough to trust a reference-MAPE.
+    Sufficient when >= _MIN_MATCH_FOR_MAPE matched (absolute) OR >= 2 matched AND
+    covering >= _MIN_COVERAGE_FRAC of the reference streams (coverage). The >=2 floor
+    keeps a single self-matched stream from passing on 1/1 coverage."""
+    if n_matched >= _MIN_MATCH_FOR_MAPE:
+        return True
+    return (n_matched >= 2 and n_reference > 0
+            and n_matched >= _MIN_COVERAGE_FRAC * n_reference)
 
 
 def _pkg_class(pkg: str) -> str:
@@ -1471,13 +1488,15 @@ def _do_reference_comparison(
                 vf_fails.append(f"{rt}->{st}: |dvf|={ae:.3f}")
 
     n_matched = match["n_matched"]
-    if n_matched < _MIN_MATCH_FOR_MAPE:
-        # Too few matched streams to compute a trustworthy MAPE.  Emit the T/P/vf
+    n_ref = len(ref_streams)
+    if not sufficient_match(n_matched, n_ref):
+        # Too little coverage to compute a trustworthy MAPE.  Emit the T/P/vf
         # checks as INFO/none (so they do NOT count as passing critical checks —
         # reference_match_pass will be False) and return None for every MAPE so
         # the caller reports "insufficient_match", never a bare 0.0.
-        _reason = (f"insufficient_match: {n_matched} matched stream(s) < "
-                   f"{_MIN_MATCH_FOR_MAPE} required — MAPE not computed")
+        _reason = (f"insufficient_match: {n_matched}/{n_ref} matched — need "
+                   f">= {_MIN_MATCH_FOR_MAPE} streams or >= "
+                   f"{_MIN_COVERAGE_FRAC:.0%} coverage — MAPE not computed")
         checks = [
             {"check": c, "passed": True, "severity": CheckSeverity.INFO,
              "source": "none", "detail": _reason}
