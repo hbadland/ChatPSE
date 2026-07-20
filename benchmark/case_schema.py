@@ -22,6 +22,9 @@ _CASES_DIR = os.path.join(os.path.dirname(__file__), "cases")
 
 TIERS = [
     "sanity", "easy", "medium", "hard", "perturbation", "generalisation",
+    # Capability-demo cases (P1/F1/C1/...): independently-built references, each
+    # with an independent validation route (NIST / closed-form / published VLE).
+    "capability",
     # Extended hard-benchmark tiers — each maps to a separate file via _TIER_FILENAMES
     "multi_unit", "missing_bip", "ambiguous", "adversarial",
     # Ground-truth validation tiers — real DWSIM/FOSSEE flowsheets, split by the

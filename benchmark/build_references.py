@@ -246,9 +246,59 @@ def build_EASY_01(fs):
                          ["V-01", "VAP"], ["V-01", "LIQ"]]})
 
 
+def build_P1(fs):
+    """
+    P1 — two-stage nitrogen compression with intercooling. Directly targets the
+    stage-collapse fault (a system that fuses 1->25 bar into one stage puts the
+    intermediate streams at 25 bar instead of 5). Pure N2; Peng-Robinson.
+
+    FEED(N2,25 C,1 bar,1 mol/s) -> CP-01(5 bar, eta=0.75) -> INT1
+      -> CL-01(40 C) -> COOLED -> CP-02(25 bar, eta=0.75) -> INT2
+      -> CL-02(40 C) -> PROD.  N2 stays supercritical vapour (Tc=126 K), vf=1.
+    """
+    fs.add_compounds(["Nitrogen"])
+    fs.set_property_package("Peng-Robinson (PR)")
+    sim = fs._sim
+    for s in ("FEED", "INT1", "COOLED", "INT2", "PROD"):
+        sim.AddObject(ObjectType.MaterialStream, 0, 0, s)
+    for e in ("CP1-Q", "CP2-Q"):
+        sim.AddObject(ObjectType.EnergyStream, 0, 0, e)
+    fs.add_unit("CP-01", "Compressor"); fs.add_unit("CL-01", "Cooler")
+    fs.add_unit("CP-02", "Compressor"); fs.add_unit("CL-02", "Cooler")
+    fs.set_stream("FEED", 298.15, 100000.0, 1.0, {"Nitrogen": 1.0})
+    fs.connect("FEED", "CP-01", 0, 0)
+    try: fs.connect("CP1-Q", "CP-01", 0, 1)
+    except Exception: pass
+    fs.connect("CP-01", "INT1", 0, 0); fs.connect("INT1", "CL-01", 0, 0)
+    fs.connect("CL-01", "COOLED", 0, 0); fs.connect("COOLED", "CP-02", 0, 0)
+    try: fs.connect("CP2-Q", "CP-02", 0, 1)
+    except Exception: pass
+    fs.connect("CP-02", "INT2", 0, 0); fs.connect("INT2", "CL-02", 0, 0)
+    fs.connect("CL-02", "PROD", 0, 0)
+    fs.set_compressor("CP-01", 500_000.0, efficiency=0.75)     # 5 bar
+    fs.set_cooler("CL-01", 313.15, dP=0.0)                     # 40 C
+    fs.set_compressor("CP-02", 2_500_000.0, efficiency=0.75)   # 25 bar
+    fs.set_cooler("CL-02", 313.15, dP=0.0)                     # 40 C
+    return {"case_id": "P1", "case_name": "Two-stage nitrogen compression with intercooling",
+            "compounds": ["Nitrogen"], "property_package": "Peng-Robinson",
+            "units": [{"tag": "CP-01", "type": "Compressor",
+                       "params": {"P_out": 500_000.0, "efficiency": 0.75}},
+                      {"tag": "CL-01", "type": "Cooler",
+                       "params": {"T_out": 313.15, "dP": 0.0}},
+                      {"tag": "CP-02", "type": "Compressor",
+                       "params": {"P_out": 2_500_000.0, "efficiency": 0.75}},
+                      {"tag": "CL-02", "type": "Cooler",
+                       "params": {"T_out": 313.15, "dP": 0.0}}],
+            "connections": [["FEED", "CP-01"], ["CP-01", "INT1"], ["INT1", "CL-01"],
+                            ["CL-01", "COOLED"], ["COOLED", "CP-02"], ["CP-02", "INT2"],
+                            ["INT2", "CL-02"], ["CL-02", "PROD"]],
+            "material_streams": ["FEED", "INT1", "COOLED", "INT2", "PROD"]}
+
+
 _BUILDERS = {"SAN_04": build_SAN_04, "EASY_04": build_EASY_04,
              "GEN_03": build_GEN_03, "EASY_02": build_EASY_02,
-             "SAN_03": build_SAN_03, "GEN_01": build_GEN_01, "EASY_01": build_EASY_01}
+             "SAN_03": build_SAN_03, "GEN_01": build_GEN_01, "EASY_01": build_EASY_01,
+             "P1": build_P1}
 
 
 def build_case(case_id: str, write: bool = False) -> dict:

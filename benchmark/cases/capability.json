@@ -1,0 +1,48 @@
+[
+  {
+    "id": "P1",
+    "name": "Two-stage nitrogen compression with intercooling",
+    "tier": "capability",
+    "difficulty": "easy",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "gas_compression",
+    "description": "Nitrogen at 25°C and 1 bar is compressed to 5 bar, cooled to 40°C, then compressed to 25 bar and cooled again to 40°C.",
+    "compounds": [
+      "Nitrogen"
+    ],
+    "reference_structure": {
+      "n_units": 4,
+      "unit_types": [
+        "Compressor",
+        "Cooler",
+        "Compressor",
+        "Cooler"
+      ],
+      "connections": [
+        ["FEED", "CP-01"],
+        ["CP-01", "INT1"],
+        ["INT1", "CL-01"],
+        ["CL-01", "COOLED"],
+        ["COOLED", "CP-02"],
+        ["CP-02", "INT2"],
+        ["INT2", "CL-02"],
+        ["CL-02", "PROD"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 4,
+      "n_units_max": 5,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "CP"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CL"}
+      ]
+    },
+    "notes": "Two-stage compression with intercooling; both intermediate pressures (5, 25 bar) are explicitly specified to detect stage-collapse (a single 1->25 bar compression puts INT1/COOLED at 25 bar). N2 stays supercritical vapour (Tc=126 K), vf=1 throughout. Independent check: per-stage isentropic-with-efficiency (gamma=1.40, eta=0.75); DWSIM lands ~2.5 C below the ideal-gas estimate (real-gas), correct direction.",
+    "reference_file": "benchmark/reference_flowsheets/P1_reference.json"
+  }
+]
