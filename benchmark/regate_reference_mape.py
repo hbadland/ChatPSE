@@ -20,7 +20,8 @@ Usage:
 """
 import argparse, glob, json, os, sys
 from benchmark.physics_eval import _MIN_MATCH_FOR_MAPE
-from benchmark.solve_status import compute_solve_status, gate_mape_status
+from benchmark.solve_status import (
+    compute_solve_status, gate_mape_status, specified_outlet_temps)
 
 _INS = "insufficient_match"
 
@@ -47,8 +48,10 @@ def regate(d: dict) -> tuple[dict, dict, bool]:
     nmv = nm if nm is not None else 0
     sufficient = nmv >= _MIN_MATCH_FOR_MAPE
 
-    n_units = (d.get("final_graph_summary") or {}).get("n_units")
-    solve   = compute_solve_status(d.get("system_streams"), n_units)
+    _fgs    = d.get("final_graph_summary") or {}
+    n_units = _fgs.get("n_units")
+    _spec_T = specified_outlet_temps(_fgs.get("unit_conditions"))
+    solve   = compute_solve_status(d.get("system_streams"), n_units, _spec_T)
     status  = gate_mape_status(solve["fully_solved"], sufficient)
     valid   = (status == "computed")
 

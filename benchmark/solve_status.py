@@ -10,19 +10,43 @@ from the persisted system_streams so reference-MAPE can be gated on fully_solved
 Detection is stream-based (works retroactively on stored JSONs, which carry no
 per-unit solved flag): a NON-feed stream still sitting at the executor's
 uncomputed default — T=298.15 K, flow=1.0 mol/s, exactly equimolar composition —
-never solved. A feed legitimately has those values (is_feed excludes it), and a
-genuinely-solved equimolar pass-through has a computed T != 298.15 (verified on
-VAL_04, whose solved COMP/MIX are flow=1.0/equimolar at T=352 K, NOT flagged).
+never solved. A feed legitimately has those values (is_feed excludes it).
+
+Value-sniffing alone false-positives when a genuinely-solved OUTPUT coincides
+with the defaults: a cooler outlet specified to 25 C (=298.15 K), or a pure /
+equimolar feed passed through, reads exactly T=298.15 / flow=1.0 / "equimolar"
+(trivially true for a single component). To disambiguate we compare against the
+flowsheet's SPECIFIED unit outlet temperatures: a stream whose temperature
+matches a specified setpoint is that unit's solved output, not an uncomputed
+default. (VAL_04's real partial solve is unaffected — its failed outlet sits at
+298.15 while every specified reformer/shift outlet is high-T, so no match.)
 """
 from __future__ import annotations
 import re
 
 _DEFAULT_T   = 298.15
 _DEFAULT_FLOW = 1.0
+_T_MATCH_TOL = 0.5   # K — tolerance for matching a stream T to a specified setpoint
 
 
-def stream_is_default(s: dict) -> bool:
-    """True if a stream is a non-feed stream still at uncomputed default values."""
+def specified_outlet_temps(unit_conditions) -> list[float]:
+    """Collect the specified/expected outlet temperatures [K] from a run's
+    final_graph_summary.unit_conditions, for disambiguating default coincidences."""
+    out: list[float] = []
+    for u in unit_conditions or []:
+        t = u.get("T_K") if isinstance(u, dict) else None
+        if isinstance(t, (int, float)):
+            out.append(float(t))
+    return out
+
+
+def stream_is_default(s: dict, specified_temps: "list[float] | None" = None) -> bool:
+    """True if a stream is a non-feed stream still at uncomputed default values.
+
+    specified_temps: specified unit outlet temperatures [K]. A non-feed stream
+    at the default temperature that matches one of these is a solved output that
+    merely coincides with the default (not uncomputed), so it is NOT flagged.
+    """
     if not isinstance(s, dict) or s.get("is_feed"):
         return False
     T    = s.get("T_K")
@@ -31,7 +55,15 @@ def stream_is_default(s: dict) -> bool:
     if T != _DEFAULT_T or flow != _DEFAULT_FLOW or not comp:
         return False
     n = len(comp)
-    return all(abs(v - 1.0 / n) < 1e-6 for v in comp.values())
+    if not all(abs(v - 1.0 / n) < 1e-6 for v in comp.values()):
+        return False
+    # Solved output coinciding with the default T (e.g. a 25 C cooler outlet):
+    # if T matches a specified unit setpoint, it is solved, not an uncomputed default.
+    if specified_temps:
+        for st in specified_temps:
+            if st is not None and abs(float(st) - float(T)) <= _T_MATCH_TOL:
+                return False
+    return True
 
 
 def _unit_prefix(tag: str) -> str | None:
@@ -42,7 +74,8 @@ def _unit_prefix(tag: str) -> str | None:
 
 
 def compute_solve_status(system_streams: dict | None,
-                         n_units_total: int | None = None) -> dict:
+                         n_units_total: int | None = None,
+                         specified_temps: "list[float] | None" = None) -> dict:
     """
     Returns a solve-status block:
       fully_solved          — True iff no non-feed stream is at default (exact)
@@ -62,7 +95,8 @@ def compute_solve_status(system_streams: dict | None,
             "n_units_total": n_units_total,
             "n_units_solved": (0 if n_units_total is not None else None),
         }
-    defaults = [t for t, s in system_streams.items() if stream_is_default(s)]
+    defaults = [t for t, s in system_streams.items()
+                if stream_is_default(s, specified_temps)]
     fully = (len(defaults) == 0)
     n_units_solved = None
     if n_units_total is not None:
@@ -106,7 +140,14 @@ def exact_units_solved(graph, system_streams: dict | None):
             outs = graph.outlet_streams(u.tag)
         except Exception:
             outs = []
-        unsolved = any(stream_is_default(system_streams.get(s.tag, {})) for s in outs)
+        # Compare each outlet against THIS unit's own specified outlet temperature
+        # (exact) rather than the coarse union — so a 25 C cooler outlet is solved
+        # while a failed unit's 298.15 default (with a non-default spec) is flagged.
+        p = getattr(u, "params", {}) or {}
+        utemp = p.get("temperature_K", p.get("T_out"))
+        temps = [float(utemp)] if isinstance(utemp, (int, float)) else None
+        unsolved = any(stream_is_default(system_streams.get(s.tag, {}), temps)
+                       for s in outs)
         if not unsolved:
             n_solved += 1
     return n_solved, len(units)
