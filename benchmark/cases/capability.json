@@ -141,5 +141,53 @@
     },
     "notes": "Wide-boiling flash (pentane 36C/octane 126C): gentle T-vf slope, vf precise to +/-0.05 (Delta_vf ~0.031 per +/-2C), unlike close-boiling SAN_03/GEN_01. Independent check: Antoine+Raoult+Rachford-Rice vf 0.396 vs DWSIM 0.384 (Delta 0.012).",
     "reference_file": "benchmark/reference_flowsheets/F1_reference.json"
+  },
+  {
+    "id": "C1",
+    "name": "Benzene/toluene shortcut column",
+    "tier": "capability",
+    "difficulty": "medium",
+    "coupling_level": "low",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "An equimolar benzene/toluene mixture is separated in a distillation column at atmospheric pressure to give 98% benzene in the distillate and 98% toluene in the bottoms.",
+    "compounds": [
+      "Benzene",
+      "Toluene"
+    ],
+    "reference_structure": {
+      "n_units": 1,
+      "unit_types": [
+        "Column"
+      ],
+      "connections": [
+        [
+          "FEED",
+          "COL-01"
+        ],
+        [
+          "COL-01",
+          "DIST"
+        ],
+        [
+          "COL-01",
+          "BOT"
+        ]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 1,
+      "n_units_max": 2,
+      "convergence_expected": true,
+      "physics_checks": [
+        {
+          "type": "unit_type_present",
+          "unit_type": "Column"
+        }
+      ]
+    },
+    "notes": "Canonical FUG shortcut column. LK=benzene, HK=toluene; 2% LK-in-bottoms, 2% HK-in-distillate; reflux R=1.3xRmin via two-pass. Fenske Nmin=8.77 (hand 8.58), Underwood Rmin=1.30 (hand 1.26). Mass balance closes EXACTLY (0.00%) with the molar-flow-fixed wrapper (05d263a); the ~4% seen in the pre-fix Stage-A probe was the mass-as-molar flow bug, not an FUG limitation.",
+    "reference_file": "benchmark/reference_flowsheets/C1_reference.json"
   }
 ]

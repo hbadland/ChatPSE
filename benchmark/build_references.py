@@ -325,10 +325,47 @@ def build_P1(fs):
             "material_streams": ["FEED", "INT1", "COOLED", "INT2", "PROD"]}
 
 
+def build_C1(fs):
+    """
+    C1 — canonical benzene/toluene shortcut (FUG) distillation column. Light key
+    benzene, heavy key toluene; 2% LK in bottoms, 2% HK in distillate; column at
+    atmospheric pressure. Reflux via the two-pass logic: seed R below Rmin so
+    solve() reads the computed Rmin and bumps R = 1.3 x Rmin. Peng-Robinson.
+
+    FEED(50/50, saturated liquid at the 1 atm bubble point ~92 C, 1 mol/s)
+      -> COL-01 (ShortcutColumn) -> DIST + BOT.
+    Fenske Nmin ~ 8.77, Underwood Rmin ~ 1.30; mass balance closes exactly.
+    """
+    fs.add_compounds(["Benzene", "Toluene"])
+    fs.set_property_package("Peng-Robinson (PR)")
+    sim = fs._sim
+    for s in ("FEED", "DIST", "BOT"):
+        sim.AddObject(ObjectType.MaterialStream, 0, 0, s)
+    fs.add_unit("COL-01", "Column")
+    # 92.00 C = PR bubble point of 50/50 benzene/toluene at 1 atm -> saturated liquid (q=1)
+    fs.set_stream("FEED", 365.15, 101325.0, 1.0, {"Benzene": 0.5, "Toluene": 0.5})
+    fs.connect("FEED", "COL-01", 0, 0)
+    fs.connect("COL-01", "DIST", 0, 0); fs.connect("COL-01", "BOT", 1, 0)
+    # LK=benzene, HK=toluene; LK-in-bottoms 0.02, HK-in-distillate 0.02; seed R=0.5
+    # (< Rmin) -> solve() two-pass bumps to 1.3 x Rmin.
+    fs.set_column("COL-01", "Benzene", "Toluene", 0.02, 0.02, 0.5, 101325.0, 101325.0)
+    return {"case_id": "C1", "case_name": "Benzene/toluene shortcut column",
+            "compounds": ["Benzene", "Toluene"], "property_package": "Peng-Robinson",
+            "units": [{"tag": "COL-01", "type": "Column",
+                       "params": {"light_key": "Benzene", "heavy_key": "Toluene",
+                                  "light_key_frac_bottoms": 0.02,
+                                  "heavy_key_frac_distillate": 0.02,
+                                  "reflux_ratio": 0.5,
+                                  "condenser_pressure_Pa": 101325.0,
+                                  "boiler_pressure_Pa": 101325.0}}],
+            "connections": [["FEED", "COL-01"], ["COL-01", "DIST"], ["COL-01", "BOT"]],
+            "material_streams": ["FEED", "DIST", "BOT"]}
+
+
 _BUILDERS = {"SAN_04": build_SAN_04, "EASY_04": build_EASY_04,
              "GEN_03": build_GEN_03, "EASY_02": build_EASY_02,
              "SAN_03": build_SAN_03, "GEN_01": build_GEN_01, "EASY_01": build_EASY_01,
-             "P1": build_P1, "F1": build_F1}
+             "P1": build_P1, "F1": build_F1, "C1": build_C1}
 
 
 def build_case(case_id: str, write: bool = False) -> dict:

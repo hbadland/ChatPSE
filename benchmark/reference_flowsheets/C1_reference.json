@@ -1,0 +1,79 @@
+{
+  "case_id": "C1",
+  "case_name": "Benzene/toluene shortcut column",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "reference_validity": "expert-constructed",
+  "compounds": [
+    "Benzene",
+    "Toluene"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {
+      "tag": "COL-01",
+      "type": "Column",
+      "params": {
+        "light_key": "Benzene",
+        "heavy_key": "Toluene",
+        "light_key_frac_bottoms": 0.02,
+        "heavy_key_frac_distillate": 0.02,
+        "reflux_ratio": 0.5,
+        "condenser_pressure_Pa": 101325.0,
+        "boiler_pressure_Pa": 101325.0
+      }
+    }
+  ],
+  "connections": [
+    [
+      "FEED",
+      "COL-01"
+    ],
+    [
+      "COL-01",
+      "DIST"
+    ],
+    [
+      "COL-01",
+      "BOT"
+    ]
+  ],
+  "streams": {
+    "FEED": {
+      "T_K": 365.15,
+      "T_C": 92.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.00036631973877139854,
+      "composition": {
+        "Benzene": 0.5,
+        "Toluene": 0.5
+      }
+    },
+    "DIST": {
+      "T_K": 353.224,
+      "T_C": 80.074,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 0.0009441771332441215,
+      "composition": {
+        "Benzene": 0.98,
+        "Toluene": 0.02
+      }
+    },
+    "BOT": {
+      "T_K": 382.892,
+      "T_C": 109.742,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 0.0031694629676052863,
+      "composition": {
+        "Benzene": 0.02,
+        "Toluene": 0.98
+      }
+    }
+  }
+}
