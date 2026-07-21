@@ -603,3 +603,38 @@ class FlowsheetGraph:
                 f"units={[u.tag for u in self.units()]}, "
                 f"streams={[s.tag for s in self.streams()]}, "
                 f"package={self.property_package!r})")
+
+
+def inlet_traces_to_pressure_raiser(graph: "FlowsheetGraph", unit_tag: str) -> bool:
+    """True when a unit's PROPAGATED inlet temperature is unreliable because it
+    traces upstream to a Compressor/Pump with no intervening temperature-setting
+    unit (Heater/Cooler/ConversionReactor).
+
+    The consistency pass propagates a pressure-raiser's inlet T unchanged to its
+    outlet (it has no compression-heating model), so a cooler placed downstream
+    sees the cold FEED temperature rather than the real hot discharge. Its
+    legitimate setpoint (e.g. cool a 250 C discharge to 40 C, above the 25 C feed)
+    must therefore NOT be 'corrected' by the monotonic check, nor flagged by the
+    validate feasibility check, against that unreliable inlet. A temperature-setting
+    unit between the pressure-raiser and this unit resets the propagated T, so the
+    walk stops at the first such unit on each branch.
+    """
+    ug = graph.unit_graph()
+    if unit_tag not in ug:
+        return False
+    seen: set = set()
+    stack = list(ug.predecessors(unit_tag))
+    while stack:
+        p = stack.pop()
+        if p in seen:
+            continue
+        seen.add(p)
+        node = graph.unit(p)
+        if node is None:
+            continue
+        if isinstance(node, (CompressorNode, PumpNode)):
+            return True                        # pressure-raiser upstream → inlet T unreliable
+        if isinstance(node, (HeaterNode, CoolerNode, ConversionReactorNode)):
+            continue                           # T reset here → this branch is reliable; stop
+        stack.extend(ug.predecessors(p))       # pass-through (mixer/splitter) → keep walking up
+    return False

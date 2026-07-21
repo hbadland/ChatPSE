@@ -19,6 +19,7 @@ from ir.graph import (
     FlowsheetGraph, NodeIR,
     HeaterNode, CoolerNode, SeparatorNode,
     PumpNode, CompressorNode, ExpanderNode, ConversionReactorNode,
+    inlet_traces_to_pressure_raiser,
 )
 from ir.thermo_estimation import bubble_point_K  # noqa: F401 — re-exported for callers
 from ir.constraint_solver import (
@@ -192,16 +193,36 @@ class GlobalConsistencyPass:
         conds: dict[str, _PropCond],
         changes: list[str],
     ) -> None:
-        for node in graph.units():
-            inlets = graph.inlet_streams(node.tag)
-            in_T   = next((conds[s.tag].T for s in inlets
-                           if s.tag in conds and conds[s.tag].T is not None), None)
-            in_P   = next((conds[s.tag].P for s in inlets
-                           if s.tag in conds and conds[s.tag].P is not None), None)
+        # Process in topological order and RE-PROPAGATE before each unit, so a
+        # correction to an upstream unit is reflected in this unit's inlet. The
+        # single-pass `conds` argument would correct a second cooler against an
+        # inlet that no longer exists once the first correction cascades downstream.
+        try:
+            order = list(nx.topological_sort(graph.unit_graph()))
+        except nx.NetworkXUnfeasible:
+            order = [u.tag for u in graph.units()]
+
+        for tag in order:
+            node = graph.unit(tag)
+            if node is None:
+                continue
+            cur    = self._propagate(graph)   # fresh — reflects all prior corrections
+            inlets = graph.inlet_streams(tag)
+            in_T   = next((cur[s.tag].T for s in inlets
+                           if s.tag in cur and cur[s.tag].T is not None), None)
+            in_P   = next((cur[s.tag].P for s in inlets
+                           if s.tag in cur and cur[s.tag].P is not None), None)
 
             if isinstance(node, HeaterNode):
                 self._fix_heater(node, in_T, graph.compounds, in_P, changes)
             elif isinstance(node, CoolerNode):
+                # Skip the 'cooler must be < inlet' monotonic fix when the inlet T
+                # is known-unreliable (traces to a compressor/pump with no
+                # intervening temperature-setting unit) — a legitimate intercooling
+                # setpoint would otherwise be misread as 'heating' and corrupted to
+                # feed−25.
+                if inlet_traces_to_pressure_raiser(graph, tag):
+                    continue
                 self._fix_cooler(node, in_T, changes)
             elif isinstance(node, (PumpNode, CompressorNode)):
                 self._fix_p_raiser(node, in_P, changes)

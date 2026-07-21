@@ -22,6 +22,7 @@ from ir.graph import (
     FlowsheetGraph, PORT_SPECS, SUPPORTED_UNIT_TYPES,
     SeparatorNode, PumpNode, CompressorNode, ExpanderNode,
     HeaterNode, CoolerNode, SplitterNode, TopologyError,
+    inlet_traces_to_pressure_raiser,
 )
 from ir.types import ErrorType, RepairStrategy, ErrorSeverity, ErrorTarget, SimError
 
@@ -350,10 +351,15 @@ def _physics_validate_with_metrics(
         feed_T = next((s.T for s in inlets if s.T is not None), None)
         feed_P = next((s.P for s in inlets if s.P is not None), None)
 
-        # Cooler: T_out must be below feed T
+        # Cooler: T_out must be below feed T — but only when feed_T is reliable.
+        # A cooler downstream of a compressor/pump sees the propagated (cold) feed
+        # T, not the real hot discharge; its legitimate setpoint is above that
+        # cold value, so skip the check there (same rationale as the consistency
+        # pass) to avoid a spurious CRITICAL on a correct intercooling setpoint.
         if isinstance(node, CoolerNode):
             t_out = node.params.get("T_out")
-            if t_out is not None and feed_T is not None and float(t_out) >= feed_T:
+            if (t_out is not None and feed_T is not None and float(t_out) >= feed_T
+                    and not inlet_traces_to_pressure_raiser(graph, node.tag)):
                 issues.append(_err("PHYSICS", ErrorType.INVALID_UNIT_CONFIG,
                                    ErrorTarget.unit(node.tag, "T_out"),
                                    f"Cooler T_out={t_out} K ≥ feed T={feed_T} K",
