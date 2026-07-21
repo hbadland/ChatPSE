@@ -7,7 +7,7 @@
     "coupling_level": "low",
     "perturbation": "none",
     "domain": "polar",
-    "description": "Heat an acetone and water feed (70 mol% acetone) at 1 atm from 25°C to 70°C, then flash-separate the vapour from the liquid in a vessel.",
+    "description": "Heat an equimolar acetone and water feed at 1 atm from 25°C to 70°C, then flash-separate the vapour from the liquid in a vessel.",
     "compounds": [
       "Acetone",
       "Water"
