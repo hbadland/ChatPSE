@@ -38,7 +38,7 @@ from agents.stage4 import ErrorClassifier, ClassifiedError, RepairAgent
 from agents.stage4.repair_agent import RepairMemory
 from ir.types import RepairStrategy as _RepairStrategy
 from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
-from agents.rule_store import FailureRuleStore, RULES_PATH
+from agents.rule_store import FailureRuleStore, RULES_PATH, _PROV_FIELDS
 
 from ir import FlowsheetGraph, normalise, validate, to_dwsim
 from ir.margin_model import get_global_margin_model
@@ -948,10 +948,12 @@ def _record_repairs_in_store(
         # symptom (a stated setpoint that produced a thin/zero flash), not a general
         # rule; recording it re-accumulates exactly the pattern the application guard
         # now blocks. Only synthesise from genuinely-estimated params. (The repair
-        # preserves _temperature_source, so the description tag is still readable.)
-        if param in ("T_out", "temperature_K"):
-            _src = node.params.get("_temperature_source")
-            if _src in ("specified", "extracted") or node.params.get("_desc_T_out"):
+        # preserves the provenance tag, so the description origin is still readable.)
+        # Covers temperature (T_out/temperature_K) AND pressure (P_out).
+        _prov = _PROV_FIELDS.get(param)
+        if _prov is not None:
+            _src = node.params.get(_prov[0])
+            if _src in ("specified", "extracted") or node.params.get(_prov[1]):
                 continue
 
         downstream = _outlet_unit_types(graph, unit_tag)

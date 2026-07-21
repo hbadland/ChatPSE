@@ -320,12 +320,16 @@ def _parse_params_from_description(
                       if feed_P is None or p > feed_P * 1.05]
         if candidates:
             params["P_out"] = round(min(candidates), 0)
+            params["_pressure_source"] = "specified"   # from description
+            params["_desc_P_out"]      = True          # sentinel: P_out from description
 
     elif unit_type == "Expander":
         candidates = [p for p in desc_pressures
                       if feed_P is None or p < feed_P * 0.95]
         if candidates:
             params["P_out"] = round(max(candidates), 0)
+            params["_pressure_source"] = "specified"
+            params["_desc_P_out"]      = True
 
     elif unit_type == "ConversionReactor":
         # Temperature: highest extracted T (reactors run hot)
@@ -398,10 +402,12 @@ def _estimate_params(
     elif node.unit_type in ("Pump", "Compressor") and "P_out" not in params:
         base = feed_P or 101_325.0
         est["P_out"] = round(base * 5.0, 0)
+        est["_pressure_source"] = "computed" if feed_P is not None else "default_fallback"
 
     elif node.unit_type == "Expander" and "P_out" not in params:
         base = feed_P or 506_625.0
         est["P_out"] = max(round(base / 3.0, 0), 101_325.0)
+        est["_pressure_source"] = "computed" if feed_P is not None else "default_fallback"
 
     elif node.unit_type == "ConversionReactor":
         _reaction = node.params.get("reaction", "") or params.get("reaction", "")

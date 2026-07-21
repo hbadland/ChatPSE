@@ -31,6 +31,16 @@ RULE_THRESHOLD = 3  # minimum occurrences before a rule is synthesized
 # Persistent rule store written after every repair; loaded at orchestrator init.
 RULES_PATH = str(Path(__file__).resolve().parent.parent / "results" / "rule_store.json")
 
+# param → (provenance source field, description sentinel). A synthesized rule may
+# overwrite a param only when its source is estimated ({computed, default_fallback}
+# or untagged/non-sentinel); description-specified values are protected. Shared by
+# apply()'s guard and the synthesis-exclusion in the record_fix caller.
+_PROV_FIELDS = {
+    "T_out":         ("_temperature_source", "_desc_T_out"),
+    "temperature_K": ("_temperature_source", "_desc_T_out"),
+    "P_out":         ("_pressure_source",     "_desc_P_out"),
+}
+
 # ── Compound classification ────────────────────────────────────────────────────
 
 _COMPOUND_CLASSES: dict[str, set[str]] = {
@@ -229,18 +239,19 @@ class FailureRuleStore:
                     if rule.param == "P_out" and diff / max(abs(target_val), 1.0) <= 0.05:
                         continue
 
-                # Provenance guard (temperature params): a synthesized rule must
-                # NOT overwrite a value that came from the description. Overwrite
-                # ONLY genuinely-estimated / absent values — whitelist of
-                # overwritable sources = {computed, default_fallback}, or untagged
-                # and not the _desc_T_out sentinel. specified/extracted (description)
-                # and inherited/template are protected by construction. Log the
-                # suppression so this bug's blast radius is measurable per run.
-                if rule.param in ("T_out", "temperature_K"):
-                    _src = node.params.get("_temperature_source")
+                # Provenance guard: a synthesized rule must NOT overwrite a value
+                # that came from the description. Overwrite ONLY genuinely-estimated
+                # / absent values — whitelist {computed, default_fallback}, or
+                # untagged and not the description sentinel. specified/extracted
+                # (description) and inherited/template are protected by construction.
+                # Applies to temperature (T_out/temperature_K) AND pressure (P_out).
+                # Log the suppression so this bug's blast radius is measurable per run.
+                _prov = _PROV_FIELDS.get(rule.param)   # (source_field, desc_sentinel)
+                if _prov is not None:
+                    _src = node.params.get(_prov[0])
                     _overwritable = (_src in ("computed", "default_fallback")
                                      or (_src is None
-                                         and not node.params.get("_desc_T_out")))
+                                         and not node.params.get(_prov[1])))
                     if not _overwritable:
                         changes.append(
                             f"[rule] SUPPRESSED RULE[{rule.unit_type}→"
@@ -254,8 +265,8 @@ class FailureRuleStore:
                 node.params[rule.param] = target_val
                 # Keep provenance truthful: the value is now a learned median, not
                 # whatever it was tagged before (fixes the self-certifying tag bug).
-                if rule.param in ("T_out", "temperature_K"):
-                    node.params["_temperature_source"] = "rule"
+                if _prov is not None:
+                    node.params[_prov[0]] = "rule"
                 changes.append(
                     f"RULE[{rule.unit_type}→{rule.downstream_type or '*'}/"
                     f"{rule.error_code}]: {node.tag}.{rule.param} "
