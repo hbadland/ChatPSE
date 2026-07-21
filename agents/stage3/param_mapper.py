@@ -250,7 +250,13 @@ class ParamMapper:
 # ── Step 1: Description parser ─────────────────────────────────────────────────
 
 def _extract_temperatures(text: str) -> list[float]:
-    """Return all temperatures from text, converted to Kelvin, sorted ascending."""
+    """Return all temperatures from text, converted to Kelvin, sorted ascending.
+
+    Duplicates are preserved (not set-deduped): a temperature mentioned twice —
+    e.g. the feed condition and then restated as a unit target ("at 25 C … cool
+    back to 25 C") — is a real signal that the value is a setpoint, not only a
+    stream label. All consumers use min/max/truthiness, which are unaffected by
+    duplicates; only the cooler feed-fallback reads the multiplicity."""
     temps: list[float] = []
 
     # Celsius
@@ -265,7 +271,7 @@ def _extract_temperatures(text: str) -> list[float]:
         if 100.0 < val < 2000.0:
             temps.append(val)
 
-    return sorted(set(round(t, 2) for t in temps))
+    return sorted(round(t, 2) for t in temps)
 
 
 def _extract_pressures(text: str) -> list[float]:
@@ -371,10 +377,21 @@ def _parse_params_from_description(
             # Cooler after a pressure-raiser: discharge (inlet) T unknown but
             # strictly above the feed. The cool target is a stated temperature
             # distinct from the feed's own temperature (a stream label, not a
-            # setpoint); if only the feed T is stated, it is a "cool back to feed".
+            # setpoint).
             non_feed = [t for t in desc_temps
                         if feed_T is None or abs(t - feed_T) > 1.0]
-            pick = min(non_feed) if non_feed else feed_T
+            n_feed_mentions = (0 if feed_T is None else
+                               sum(1 for t in desc_temps if abs(t - feed_T) <= 1.0))
+            if non_feed:
+                pick = min(non_feed)
+            elif n_feed_mentions > 1:
+                # The feed T was restated as the cool target ("cool back to
+                # ambient"): it appears once as the feed condition and again as
+                # the setpoint. A single mention is only the feed — leave that to
+                # the estimator rather than over-claiming a specified setpoint.
+                pick = feed_T
+            else:
+                pick = None
         if pick is not None:
             params["T_out"] = round(pick, 2)
             params["_desc_T_out"] = True  # sentinel: T_out came from description
