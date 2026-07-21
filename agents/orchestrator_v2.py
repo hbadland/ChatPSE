@@ -942,6 +942,18 @@ def _record_repairs_in_store(
         node = graph.unit(unit_tag)
         if node is None:
             continue
+
+        # Amendment 2 — root fix: do NOT teach the store from a repair that
+        # overrode a DESCRIPTION-specified value. Such a repair is a case-specific
+        # symptom (a stated setpoint that produced a thin/zero flash), not a general
+        # rule; recording it re-accumulates exactly the pattern the application guard
+        # now blocks. Only synthesise from genuinely-estimated params. (The repair
+        # preserves _temperature_source, so the description tag is still readable.)
+        if param in ("T_out", "temperature_K"):
+            _src = node.params.get("_temperature_source")
+            if _src in ("specified", "extracted") or node.params.get("_desc_T_out"):
+                continue
+
         downstream = _outlet_unit_types(graph, unit_tag)
         # Use the first downstream type (most relevant constraint)
         dst_type = next(iter(downstream), None)
