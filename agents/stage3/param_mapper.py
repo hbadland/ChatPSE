@@ -16,6 +16,8 @@ import json
 import re
 from typing import Optional
 
+import networkx as nx
+
 from ir.graph import FlowsheetGraph, NodeIR
 from ir.thermo_estimation import bubble_point_K, boiling_point_K
 from ir.reaction_conditions import template_temperature
@@ -83,14 +85,36 @@ class ParamMapper:
         downstream_map       = _downstream_unit_types(g)
         col_feeds            = _column_feed_sets(g)   # per-column feed compound set
 
-        for node in g.units():
-            feeds_vessel = "Vessel" in downstream_map.get(node.tag, set())
-            feeds_pump   = "Pump"   in downstream_map.get(node.tag, set())
+        # Per-unit inlet temperature, propagated from upstream unit outlets in
+        # topological order and interleaved with assignment (a downstream unit's
+        # inlet is its upstream unit's just-assigned outlet). The global feed_T is
+        # only a fallback seed. A pressure-raiser's discharge T is computed by the
+        # solver, not known here, so its outlet is marked unknown (None) — the
+        # description parser reads None as "no reliable inlet bound". This makes
+        # "reject stated temperatures below the actual inlet" hold for any upstream
+        # temperature-raiser (heater, reactor, second cooler), not just compressors.
+        stream_T: dict[str, Optional[float]] = {
+            s.tag: s.T for s in g.streams() if s.T is not None}
+        try:
+            order = list(nx.topological_sort(g.unit_graph()))
+        except (nx.NetworkXUnfeasible, nx.NetworkXError):
+            order = []                                   # cyclic (recycle) graph
+        order += [n.tag for n in g.units() if n.tag not in set(order)]
+
+        for tag in order:
+            node = g.unit(tag)
+            if node is None:
+                continue
+            inlet_T = next((stream_T[s.tag] for s in g.inlet_streams(tag)
+                            if stream_T.get(s.tag) is not None), None)
+            feeds_vessel = "Vessel" in downstream_map.get(tag, set())
+            feeds_pump   = "Pump"   in downstream_map.get(tag, set())
             params = self._assign_unit(
                 node, description, feed_T, feed_P,
                 desc_temps, desc_pressures, bp, max_retries,
                 feeds_vessel=feeds_vessel, feeds_pump=feeds_pump,
-                compounds=g.compounds, col_feed=col_feeds.get(node.tag))
+                compounds=g.compounds, col_feed=col_feeds.get(tag),
+                inlet_T=inlet_T)
             # Provenance for units that set no explicit temperature param — DWSIM
             # determines their outlet T: pressure-changers COMPUTE it from adiabatic
             # thermodynamics, mixers/splitters from the mixing energy balance, and a
@@ -103,6 +127,12 @@ class ParamMapper:
                 elif node.unit_type in ("Vessel", "Decanter"):
                     params["_temperature_source"] = "inherited"
             node.params = params
+
+            # Propagate this unit's outlet T to its downstream streams so the next
+            # unit in topological order sees its real inlet.
+            out_T = _unit_outlet_T(node, inlet_T, params)
+            for s in g.outlet_streams(tag):
+                stream_T[s.tag] = out_T
 
         return g
 
@@ -122,6 +152,7 @@ class ParamMapper:
         feeds_pump:     bool = False,
         compounds:      Optional[list[str]] = None,
         col_feed:       Optional[set] = None,
+        inlet_T:        Optional[float] = None,
     ) -> dict:
         defaults = self._retriever.units.defaults(node.unit_type)
         params   = dict(defaults)
@@ -134,7 +165,8 @@ class ParamMapper:
 
         # ── Step 1: Description parser ─────────────────────────────────────────
         parsed = _parse_params_from_description(
-            node.unit_type, description, desc_temps, desc_pressures, feed_T, feed_P)
+            node.unit_type, description, desc_temps, desc_pressures, feed_T, feed_P,
+            inlet_T=inlet_T)
         params.update(parsed)
 
         # ── Step 2: Physical estimator (constraint-aware) ──────────────────────
@@ -280,6 +312,24 @@ def _extract_conversion(text: str) -> Optional[float]:
     return None
 
 
+def _unit_outlet_T(node: NodeIR, inlet_T: Optional[float],
+                   params: dict) -> Optional[float]:
+    """Outlet temperature this unit hands to its downstream streams, for pre-solve
+    inlet-T propagation. Heater/Cooler set it (T_out); a reactor sets it
+    (temperature_K); a pressure-raiser's discharge is computed by the solver, so
+    it is unknown here (None); everything else passes the inlet through."""
+    ut = node.unit_type
+    if ut in ("Heater", "Cooler"):
+        t = params.get("T_out")
+        return float(t) if t is not None else inlet_T
+    if ut == "ConversionReactor":
+        t = params.get("temperature_K")
+        return float(t) if t is not None else inlet_T
+    if ut in ("Compressor", "Expander"):
+        return None                       # discharge T not known pre-solve
+    return inlet_T                        # Pump/Mixer/Splitter/Vessel: pass-through
+
+
 def _parse_params_from_description(
     unit_type:      str,
     description:    str,
@@ -287,33 +337,48 @@ def _parse_params_from_description(
     desc_pressures: list[float],
     feed_T:         Optional[float],
     feed_P:         Optional[float],
+    inlet_T:        Optional[float] = None,
 ) -> dict:
     """
     Extract unit parameters directly from the description using extracted values.
 
     Logic per unit type:
-      Heater  : T_out = highest extracted T above feed_T
-      Cooler  : T_out = lowest extracted T below feed_T
+      Heater  : T_out = lowest extracted T above the unit's inlet T
+      Cooler  : T_out = highest extracted T below the unit's inlet T
       Pump/CP : P_out = highest extracted P above feed_P (if any)
       Expander: P_out = lowest extracted P below feed_P (if any)
+
+    ``inlet_T`` is the unit's actual inlet temperature (propagated from upstream
+    outlets). It is ``None`` when the inlet traces to an upstream pressure-raiser
+    whose discharge T is not known pre-solve; in that case a cooler's stated
+    target is the discharge being cooled to a value distinct from the feed's own
+    temperature, so the feed T is excluded rather than used as the filter bound.
     """
     params: dict = {}
 
     if unit_type in ("Heater", "Cooler"):
+        # Reject stated temperatures on the wrong side of the unit's inlet. Use
+        # the actual inlet where known; fall back to the global feed T otherwise.
+        bound = inlet_T if inlet_T is not None else feed_T
         if unit_type == "Heater":
             candidates = [t for t in desc_temps
-                          if feed_T is None or t > feed_T + 1.0]
-            if candidates:
-                params["T_out"] = round(min(candidates), 2)
-                params["_desc_T_out"] = True  # sentinel: T_out came from description
-                params["_temperature_source"] = "specified"
+                          if bound is None or t > bound + 1.0]
+            pick = min(candidates) if candidates else None
+        elif inlet_T is not None:
+            candidates = [t for t in desc_temps if t < inlet_T - 1.0]
+            pick = max(candidates) if candidates else None
         else:
-            candidates = [t for t in desc_temps
-                          if feed_T is None or t < feed_T - 1.0]
-            if candidates:
-                params["T_out"] = round(max(candidates), 2)
-                params["_desc_T_out"] = True
-                params["_temperature_source"] = "specified"
+            # Cooler after a pressure-raiser: discharge (inlet) T unknown but
+            # strictly above the feed. The cool target is a stated temperature
+            # distinct from the feed's own temperature (a stream label, not a
+            # setpoint); if only the feed T is stated, it is a "cool back to feed".
+            non_feed = [t for t in desc_temps
+                        if feed_T is None or abs(t - feed_T) > 1.0]
+            pick = min(non_feed) if non_feed else feed_T
+        if pick is not None:
+            params["T_out"] = round(pick, 2)
+            params["_desc_T_out"] = True  # sentinel: T_out came from description
+            params["_temperature_source"] = "specified"
 
     elif unit_type in ("Pump", "Compressor"):
         candidates = [p for p in desc_pressures
