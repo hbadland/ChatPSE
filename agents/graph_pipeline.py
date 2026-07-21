@@ -1532,6 +1532,17 @@ class GraphPipeline:
         compounds = state["compounds"]
         new_warns: list[str] = []
 
+        # ── Reference-blind announcement ──────────────────────────────────────
+        # The three solve-path reference reads (reference-guided refinement,
+        # reactor-param seeding, recycle-init seeding) are gated behind VARIANT_B.
+        # Log their state on EVERY run so blind mode is visible and can never
+        # silently activate again just because a reference file happens to exist.
+        _vb = bool(state.get("variant_b_active"))
+        for _p in ("reference-guided refinement", "reactor-param seeding",
+                   "recycle-init seeding"):
+            print(f"[GP] VARIANT_B: {_p} ON (seeded ablation arm)" if _vb
+                  else f"[GP] scoring blind: {_p} OFF (VARIANT_B unset)", flush=True)
+
         # Variant B only: seed each unit's reference setpoints (T_out/P_out/…)
         # before ParamMapper runs.  ParamMapper preserves existing node.params
         # (node.params take priority over its estimates), so the reference
@@ -1620,11 +1631,14 @@ class GraphPipeline:
         # reference before serialising (mirrors orchestrator_v2). ParamMapper
         # inserts reaction="" when LLM extraction fails; this overrides it with
         # the consistency-verified reference stoichiometry.
-        if is_validation_tier(state["tier"]) and reference_data is not None:
+        if _vb and is_validation_tier(state["tier"]) and reference_data is not None:
             _inject_reference_reactor_params(graph, reference_data)
 
         print("[GP] step: to_dwsim(graph) START", flush=True)
-        dwsim_json = to_dwsim(graph, reference_data=reference_data)
+        # Recycle-init tear seeding from the reference is VARIANT_B-only; on the
+        # default path pass None so to_dwsim falls back to the physics-based tear
+        # estimate (priority 2).
+        dwsim_json = to_dwsim(graph, reference_data=(reference_data if _vb else None))
         print("[GP] step: to_dwsim(graph) END", flush=True)
 
         return {
@@ -1676,7 +1690,11 @@ class GraphPipeline:
             dwsim_json = state["dwsim_json"]
             ref_data   = state["reference_data"]
             new_warns: list[str] = []
-            if ref_data is not None:
+            # Reference-guided refinement is a VARIANT_B-only ablation arm; it must
+            # NOT run on the default (scored) path — it snaps Heater/Cooler T_out to
+            # the reference and re-solves, which would leak the reference into the
+            # scored output.
+            if state.get("variant_b_active") and ref_data is not None:
                 _ref_json, _ref_exec, _ref_changes = _reference_guided_refinement(
                     state["ir_graph"], execution, ref_data, self._executor)
                 if _ref_exec is not None and getattr(_ref_exec, "solved", False):
@@ -1810,10 +1828,12 @@ class GraphPipeline:
             # Validation tier: re-seed reactor reaction/conversion from the
             # reference after repair, since the repair agent may have rebuilt
             # or perturbed the reactor node's params.
-            if is_validation_tier(state["tier"]) and ref_data is not None:
+            if (state.get("variant_b_active") and is_validation_tier(state["tier"])
+                    and ref_data is not None):
                 _inject_reference_reactor_params(graph, ref_data)
 
-            dwsim_json = to_dwsim(graph, reference_data=ref_data)
+            dwsim_json = to_dwsim(graph,
+                                  reference_data=(ref_data if state.get("variant_b_active") else None))
 
             iter_record = IterationRecord(
                 iteration=iteration, errors=errors, changes=changes,
