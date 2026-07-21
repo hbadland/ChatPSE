@@ -1608,10 +1608,13 @@ class GraphPipeline:
             return {"ir_graph": graph, "ir_report": post_report,
                     "outcome": "INVALID_IR", "warnings": new_warns}
 
-        # Load reference data (Stage 3→4 bridge)
+        # Load reference data (Stage 3→4 bridge) — VARIANT_B ONLY. On the default
+        # (scored) path the reference file is never opened, so the solve path cannot
+        # read it at all; the only reference read remaining is the post-solve scoring
+        # comparison in the benchmark runner. Scoring loads its own copy separately.
         reference_data: Optional[dict] = None
         reference_file = state["reference_file"]
-        if reference_file:
+        if reference_file and state.get("variant_b_active"):
             import json as _json
             from pathlib import Path as _Path
             _candidates = [

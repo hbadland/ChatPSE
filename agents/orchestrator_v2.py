@@ -689,8 +689,19 @@ class OrchestratorV2:
         # Try the path as given first, then an absolute path anchored at the
         # project root — needed when the working directory inside Singularity
         # differs from the project root.
+        # Reference reads on this (legacy, USE_LANGGRAPH-off) loop — reactor-param
+        # seeding (728), recycle-init seeding (732), ref_refine (778) — are all keyed
+        # off _reference_data, so gating the LOAD behind VARIANT_B makes the default
+        # path blind here too, matching GraphPipeline. Log the state every run.
+        import os as _os
+        _vb = _os.environ.get("VARIANT_B", "").strip().lower() in ("1", "true", "yes")
+        for _pth in ("reference-guided refinement", "reactor-param seeding",
+                     "recycle-init seeding"):
+            print(f"[ORCH] VARIANT_B: {_pth} ON (seeded ablation arm)" if _vb
+                  else f"[ORCH] scoring blind: {_pth} OFF (VARIANT_B unset)", flush=True)
+
         _reference_data: Optional[dict] = None
-        if reference_file:
+        if reference_file and _vb:
             import json as _json
             from pathlib import Path as _Path
             _ref_candidates = [
