@@ -193,7 +193,9 @@ def _route_topology_repair(state: PipelineState) -> str:
 
 
 def _route_thermo(state: PipelineState) -> str:
-    return END if state["outcome"] in ("PLAN_FAILED", "INVALID_JSON") else "execute"
+    # INVALID_IR (validate #2 failure) must dead-end, not route to execute — an
+    # invalid graph must never be solved. (Was labelled INVALID_JSON here.)
+    return END if state["outcome"] in ("PLAN_FAILED", "INVALID_JSON", "INVALID_IR") else "execute"
 
 
 def _route_execute(state: PipelineState) -> str:
@@ -1598,7 +1600,13 @@ class GraphPipeline:
         print(f"[GP] step: validate(graph) #2 END  valid={post_report.valid}", flush=True)
         if not post_report.valid:
             new_warns += [str(e) for e in post_report.errors()]
-            return {"ir_graph": graph, "outcome": "INVALID_JSON", "warnings": new_warns}
+            # C: persist post_report so ir_report_json reflects THIS failure (mirrors
+            # the validate-#1 branch); without it the stale validate-#1 report (valid,
+            # 0 issues) was logged for a case that failed validate #2.
+            # D: an IR validation failure is INVALID_IR, not INVALID_JSON (nothing is
+            # malformed JSON). _route_thermo must also dead-end on INVALID_IR.
+            return {"ir_graph": graph, "ir_report": post_report,
+                    "outcome": "INVALID_IR", "warnings": new_warns}
 
         # Load reference data (Stage 3→4 bridge)
         reference_data: Optional[dict] = None
