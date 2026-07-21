@@ -150,7 +150,7 @@
     "coupling_level": "low",
     "perturbation": "none",
     "domain": "hydrocarbon",
-    "description": "An equimolar benzene/toluene mixture is separated in a distillation column at atmospheric pressure to give 98% benzene in the distillate and 98% toluene in the bottoms.",
+    "description": "An equimolar benzene/toluene mixture is fed as a saturated liquid at 92 °C and separated in a distillation column at atmospheric pressure, with the reflux ratio set to 1.3 times the minimum, to give 98% benzene in the distillate and 98% toluene in the bottoms.",
     "compounds": [
       "Benzene",
       "Toluene"
@@ -566,7 +566,7 @@
     "coupling_level": "low",
     "perturbation": "none",
     "domain": "hydrocarbon",
-    "description": "An equimolar n-hexane/n-heptane mixture is separated in a distillation column at atmospheric pressure to give 98% n-hexane in the distillate and 98% n-heptane in the bottoms.",
+    "description": "An equimolar n-hexane/n-heptane mixture is fed as a saturated liquid at 81.46 °C and separated in a distillation column at atmospheric pressure, with the reflux ratio set to 1.3 times the minimum, to give 98% n-hexane in the distillate and 98% n-heptane in the bottoms.",
     "compounds": [
       "N-hexane",
       "N-heptane"
@@ -614,7 +614,7 @@
     "coupling_level": "low",
     "perturbation": "none",
     "domain": "hydrocarbon",
-    "description": "An equimolar methanol/water mixture is separated in a distillation column at atmospheric pressure to give 98% methanol in the distillate and 98% water in the bottoms.",
+    "description": "An equimolar methanol/water mixture is fed as a saturated liquid at 72.98 °C and separated in a distillation column at atmospheric pressure, with the reflux ratio set to 1.3 times the minimum, to give 98% methanol in the distillate and 98% water in the bottoms.",
     "compounds": [
       "Methanol",
       "Water"
