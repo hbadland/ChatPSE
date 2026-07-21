@@ -229,8 +229,33 @@ class FailureRuleStore:
                     if rule.param == "P_out" and diff / max(abs(target_val), 1.0) <= 0.05:
                         continue
 
+                # Provenance guard (temperature params): a synthesized rule must
+                # NOT overwrite a value that came from the description. Overwrite
+                # ONLY genuinely-estimated / absent values — whitelist of
+                # overwritable sources = {computed, default_fallback}, or untagged
+                # and not the _desc_T_out sentinel. specified/extracted (description)
+                # and inherited/template are protected by construction. Log the
+                # suppression so this bug's blast radius is measurable per run.
+                if rule.param in ("T_out", "temperature_K"):
+                    _src = node.params.get("_temperature_source")
+                    _overwritable = (_src in ("computed", "default_fallback")
+                                     or (_src is None
+                                         and not node.params.get("_desc_T_out")))
+                    if not _overwritable:
+                        changes.append(
+                            f"[rule] SUPPRESSED RULE[{rule.unit_type}→"
+                            f"{rule.downstream_type or '*'}/{rule.error_code}]: "
+                            f"{node.tag}.{rule.param} {current} "
+                            f"({_src or 'desc-specified'}, would have set "
+                            f"{target_val:.2f})")
+                        continue
+
                 old = node.params.get(rule.param, "?")
                 node.params[rule.param] = target_val
+                # Keep provenance truthful: the value is now a learned median, not
+                # whatever it was tagged before (fixes the self-certifying tag bug).
+                if rule.param in ("T_out", "temperature_K"):
+                    node.params["_temperature_source"] = "rule"
                 changes.append(
                     f"RULE[{rule.unit_type}→{rule.downstream_type or '*'}/"
                     f"{rule.error_code}]: {node.tag}.{rule.param} "
