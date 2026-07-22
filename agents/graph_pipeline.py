@@ -920,6 +920,7 @@ class GraphPipeline:
         self._recursion_limit = recursion_limit
 
         retriever = Retriever()
+        self._retriever   = retriever   # for the STALLED gate's untried-package check
 
         self._basis       = BasisAgent(model=model)
         self._unit_ext    = UnitExtractor(model=model)
@@ -1704,16 +1705,37 @@ class GraphPipeline:
         # never mistaken for a stall.
         if (iteration > 0 and _cur_hash == _prev
                 and state.get("last_repair_noop")):
-            print(f"[GP] STALLED: iteration={iteration} flowsheet unchanged "
-                  f"(hash={_cur_hash}) and previous repair changed no unit params "
-                  f"— terminating (repair has no applicable action)",
-                  flush=True, file=sys.stderr)
-            return {
-                "outcome":  "STALLED",
-                "warnings": [f"repair stalled at iteration {iteration}: "
-                             "unchanged flowsheet + no param change "
-                             "(no applicable repair action)"],
-            }
+            # Gate: stay our hand while untried thermodynamic packages remain. A
+            # THERMO_SWITCH changes the package (and hence the flowsheet), so this
+            # no-op is not yet a fixpoint — the search can still make progress.
+            # Only a no-op with the package space exhausted is a true stall.
+            _g = state["ir_graph"]
+            try:
+                _untried = self._retriever.select_package(
+                    _g.compounds,
+                    exclude=set(state["tried_packages"]) | {_g.property_package})
+            except Exception as _pkg_exc:   # noqa: BLE001
+                print(f"[GP] STALLED gate: select_package failed ({_pkg_exc}) — "
+                      "treating package space as exhausted",
+                      flush=True, file=sys.stderr)
+                _untried = []
+            if _untried:
+                print(f"[GP] no-op detected (hash={_cur_hash}) but "
+                      f"{len(_untried)} untried package(s) remain "
+                      f"({_untried[:3]}) — not stalling",
+                      flush=True, file=sys.stderr)
+            else:
+                print(f"[GP] STALLED: iteration={iteration} flowsheet unchanged "
+                      f"(hash={_cur_hash}), previous repair changed no unit params, "
+                      f"and no untried packages remain — terminating "
+                      f"(repair has no applicable action)",
+                      flush=True, file=sys.stderr)
+                return {
+                    "outcome":  "STALLED",
+                    "warnings": [f"repair stalled at iteration {iteration}: "
+                                 "unchanged flowsheet + no param change + "
+                                 "package space exhausted (no applicable repair)"],
+                }
 
         print(f"[GP] step: executor.run iteration={iteration} START", flush=True)
         execution = self._executor.run(state["dwsim_json"])
