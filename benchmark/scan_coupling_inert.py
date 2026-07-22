@@ -22,7 +22,7 @@ import glob, json, os
 from collections import defaultdict, Counter
 
 COUPLED_TYPES = ("(Compressor)", "(Cooler)", "(Expander)")
-FAIL_OUTCOMES = ("MAX_ITER", "HUMAN")
+FAIL_OUTCOMES = ("MAX_ITER", "HUMAN", "STALLED")
 
 
 def tier_map():

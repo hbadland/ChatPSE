@@ -148,6 +148,7 @@ class PipelineState(TypedDict):
     execution:      Optional[Any]   # ExecutionResult
     errors:         list[Any]       # list[ClassifiedError]
     prev_hash:      Optional[str]
+    last_repair_noop: bool          # previous repair changed no unit params
 
     # ── Accumulating across nodes (operator.add reducer) ─────────────────────
     warnings:       Annotated[list[str], operator.add]
@@ -199,7 +200,7 @@ def _route_thermo(state: PipelineState) -> str:
 
 
 def _route_execute(state: PipelineState) -> str:
-    return END if state["outcome"] in ("PASS", "HUMAN", "MAX_ITER") else "repair"
+    return END if state["outcome"] in ("PASS", "HUMAN", "MAX_ITER", "STALLED") else "repair"
 
 
 # ── Deterministic topology-repair helpers (no LLM, pure, unit-testable) ────────
@@ -811,6 +812,8 @@ def compute_variant_b_ladder(state: PipelineState) -> dict:
         failure_stage = "ir_build"
     elif outcome == "MAX_ITER":
         failure_stage = "max_iter"
+    elif outcome == "STALLED":
+        failure_stage = "repair_stalled"
     elif not converged:
         failure_stage = "dwsim_no_converge"
     else:
@@ -1038,6 +1041,7 @@ class GraphPipeline:
             "execution":      None,
             "errors":         [],
             "prev_hash":      None,
+            "last_repair_noop": False,
             "warnings":       [],
             "iterations_log": [],
             "outcome":        "MAX_ITER",
@@ -1689,6 +1693,28 @@ class GraphPipeline:
         print(f"[GP] iteration={iteration} flowsheet_hash={_cur_hash} ({_note})",
               flush=True, file=sys.stderr)
 
+        # ── Stall termination ──────────────────────────────────────────────────
+        # The previous repair produced BOTH an identical flowsheet (unchanged hash)
+        # AND no unit-param change — it was a genuine no-op, so re-solving would
+        # give the identical result and the loop is a fixpoint. Terminate as a
+        # DISTINCT 'STALLED' outcome (not HUMAN — an unactionable repair is not the
+        # same as a terminal error, and the two must be distinguishable in results)
+        # rather than burning the remaining iteration budget. Requires both signals
+        # so a repair that changes the topology but not params (or vice-versa) is
+        # never mistaken for a stall.
+        if (iteration > 0 and _cur_hash == _prev
+                and state.get("last_repair_noop")):
+            print(f"[GP] STALLED: iteration={iteration} flowsheet unchanged "
+                  f"(hash={_cur_hash}) and previous repair changed no unit params "
+                  f"— terminating (repair has no applicable action)",
+                  flush=True, file=sys.stderr)
+            return {
+                "outcome":  "STALLED",
+                "warnings": [f"repair stalled at iteration {iteration}: "
+                             "unchanged flowsheet + no param change "
+                             "(no applicable repair action)"],
+            }
+
         print(f"[GP] step: executor.run iteration={iteration} START", flush=True)
         execution = self._executor.run(state["dwsim_json"])
         print(f"[GP] step: executor.run iteration={iteration} END  "
@@ -1855,6 +1881,7 @@ class GraphPipeline:
                 "dwsim_json":     dwsim_json,
                 "tried_packages": tried_pkgs,
                 "iteration":      iteration + 1,
+                "last_repair_noop": (not _param_diffs),
                 "warnings":       new_warns,
                 "iterations_log": [iter_record],
                 "outcome":        "CONTINUE",

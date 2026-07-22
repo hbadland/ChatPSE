@@ -76,7 +76,7 @@ _COUPLING_TYPES = frozenset({"unit_type_present", "n_units_of_type",
 _FAILURE_OUTCOMES = [
     "EXCEPTION", "INVALID_IR", "INVALID_JSON", "PHYSICS_VIOLATION",
     "MISSING_PARAMS", "REPAIR_EXHAUSTED", "ESCALATED",
-    "NO_CONVERGENCE", "MAX_ITER",
+    "NO_CONVERGENCE", "MAX_ITER", "STALLED",
 ]
 
 
@@ -1300,7 +1300,8 @@ def interpret(report: DiagnosticReport) -> str:
     ]
 
     # Categorise failure source
-    search_dominated   = non_pass.get("REPAIR_EXHAUSTED", 0) + non_pass.get("MAX_ITER", 0)
+    search_dominated   = (non_pass.get("REPAIR_EXHAUSTED", 0) + non_pass.get("MAX_ITER", 0)
+                           + non_pass.get("STALLED", 0))
     physics_dominated  = non_pass.get("PHYSICS_VIOLATION", 0) + non_pass.get("MISSING_PARAMS", 0)
     ir_dominated       = non_pass.get("INVALID_IR", 0) + non_pass.get("INVALID_JSON", 0)
 
