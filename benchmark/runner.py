@@ -550,6 +550,8 @@ class BenchmarkRunner:
         ref_match_pass = False
         _ref_checks: list = []
         _ref_n_matched  = 0
+        _n_ref          = 0       # reference stream count; stays 0 on the exclusion
+                                  # branch, where the matching block never runs
         _ref_sufficient = False   # >= _MIN_MATCH_FOR_MAPE streams matched
         has_reference  = bool(getattr(case, "reference_file", None))
 
