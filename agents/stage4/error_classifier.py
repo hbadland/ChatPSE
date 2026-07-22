@@ -213,8 +213,46 @@ def _reactor_missing_reaction(graph) -> list[SimError]:
     return out
 
 
+_DEGENERATE_TOKENS = ("near-degenerate split", "not separable by a shortcut")
+
+
+def _degenerate_split_error(execution) -> Optional[SimError]:
+    """A shortcut column with relative volatility ≈ 1 cannot separate its keys —
+    no reflux, condition, or topology change fixes it (the FUG equations divide by
+    ~0). The DWSIM wrapper flags it explicitly. Classify it as INFEASIBLE → HUMAN
+    (terminal) so the repair loop stops on iteration 0 with the physical cause
+    named, instead of re-normalising to no effect until MAX_ITER."""
+    texts: list[str] = []
+    cr = getattr(execution, "_critic_report", None)
+    if cr:
+        texts += [str(getattr(s, "evidence", "")) for s in getattr(cr, "signals", [])]
+    texts += [str(e) for e in getattr(execution, "solver_errors", [])]
+    texts += [str(e) for e in getattr(execution, "errors", [])]
+    for t in texts:
+        if any(tok in t.lower() for tok in _DEGENERATE_TOKENS):
+            tag = t.split(":", 1)[0].strip()
+            target = (_infer_target(tag)
+                      if tag and " " not in tag and 0 < len(tag) <= 16
+                      else ErrorTarget.global_())
+            return SimError(
+                error_type      = ErrorType.INFEASIBLE,
+                target          = target,
+                evidence        = t,      # already names the physical cause
+                repair_strategy = RepairStrategy.HUMAN,
+                severity        = ErrorSeverity.CRITICAL,
+            )
+    return None
+
+
 def _deterministic_classify(execution) -> list[SimError]:
     errors: list[SimError] = []
+
+    # A near-degenerate column split (relative volatility ≈ 1) is thermodynamically
+    # infeasible: no repair separates the keys. Terminal → HUMAN, ahead of any
+    # other signal (which would otherwise route it to a no-op TOPOLOGY_FIX).
+    _deg = _degenerate_split_error(execution)
+    if _deg is not None:
+        return [_deg]
 
     critic_report = getattr(execution, "_critic_report", None)
     if critic_report:
