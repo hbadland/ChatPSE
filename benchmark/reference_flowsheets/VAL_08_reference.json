@@ -2,6 +2,8 @@
   "case_id": "VAL_08",
   "case_name": "Extractive Distillation Acetonitrile Isopropanol Water Ethylene Glycol",
   "source_file": "Extractive_Distillation_Acetonitrile_Water_Isopropanol_EG.dwxmz",
+  "reference_validity": "incomplete-unconfirmed",
+  "reference_validity_reason": "Audit (Task 0 element balance): no conserving subset present; residual is one-signed only under S-04 + S-11 as feeds (S-11 is pure ethylene glycol solvent). A missing product stream is implied and the feed/product identity is ambiguous. Not demonstrably wrong, but consistency cannot be confirmed without reconstruction and a re-solve (Tier-2). Marked, not fixed; not scored-excluded.",
   "compounds": ["Acetonitrile", "Isopropanol", "Water", "Ethylene glycol"],
   "property_package": "NRTL",
   "solved": true,

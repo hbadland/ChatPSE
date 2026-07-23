@@ -97,6 +97,12 @@ Rules:
 - A distillation / fractionation / rectification column is ONE Column unit (shortcut model):
   do NOT expand it into condenser + reboiler + vessel. Emit one Column per column in the process
   (a two-column sequence = two Column units).
+- A stated COUNT of repeated stages means that many units of that type — the same principle as the
+  column rule above. "N stages of compression / cooling / heating / reaction" = N units of that
+  type. E.g. "compressed in three sequential stages with intercooling between the stages" = 3
+  Compressor units plus an intercooler (Cooler) between consecutive stages; "two reactors in
+  series" = 2 ConversionReactor units. Expand the stated count into separate tagged units — never
+  collapse "N stages" to a single unit.
 - A decanter / liquid-liquid settler that splits two liquid phases is ONE Decanter unit.
 - A Vessel performs a single flash separation (vapour + liquid); use it for simple flashes only
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed

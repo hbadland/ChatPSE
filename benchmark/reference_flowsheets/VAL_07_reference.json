@@ -2,6 +2,8 @@
   "case_id": "VAL_07",
   "case_name": "Extractive Distillation CO2 Ethane EOR NGL Separation",
   "source_file": "Extractive_Distillation_CO2_Ethane_EOR.dwxmz",
+  "reference_validity": "incomplete-unconfirmed",
+  "reference_validity_reason": "Audit (Task 0 element balance): no conserving stream subset present; residual is one-signed (no atom creation) but the external solvent feed and a CO2-rich product are missing (99% of feed O absent from the named products; S-03 at 5172 mol/s exceeds the 4000 mol/s feed, so it is a solvent-laden internal stream). Not demonstrably wrong, but consistency cannot be confirmed without reconstructing the missing streams and re-solving (Tier-2). Marked, not fixed; not scored-excluded.",
   "compounds": [
     "Ethane", "Propane", "Isobutane", "N-butane",
     "Isopentane", "N-pentane", "Carbon Dioxide"

@@ -21,7 +21,7 @@ from collections import Counter
 from benchmark.runner import BenchmarkRunner
 from benchmark.case_schema import load_tier
 
-VAL_TIERS = ["val_3_5", "val_6_9", "val_10_14", "val_15plus"]
+VAL_TIERS = ["val_3_5", "val_6_9", "val_10_14", "val_15plus", "val_specified"]
 
 
 def main():
