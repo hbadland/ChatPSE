@@ -31,6 +31,7 @@ TIERS = [
     # CORRECTED material-unit count into complexity bins (replaces the flat
     # "validation" tier).  Default "<tier>.json" filename pattern applies.
     "val_3_5", "val_6_9", "val_10_14", "val_15plus",
+    "val_specified",
 ]
 
 # The validation family — real-sourced reference cases that need the large
