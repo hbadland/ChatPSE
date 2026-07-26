@@ -241,15 +241,18 @@ class FailureRuleStore:
 
                 # Provenance guard: a synthesized rule must NOT overwrite a value
                 # that came from the description. Overwrite ONLY genuinely-estimated
-                # / absent values — whitelist {computed, default_fallback}, or
-                # untagged and not the description sentinel. specified/extracted
-                # (description) and inherited/template are protected by construction.
-                # Applies to temperature (T_out/temperature_K) AND pressure (P_out).
-                # Log the suppression so this bug's blast radius is measurable per run.
+                # / absent / untrusted values — whitelist {computed, default_fallback,
+                # fallback}, or untagged and not the description sentinel. 'fallback'
+                # is a pooled desc-list guess (structured attribution absent), so it
+                # is untrusted and overwritable like an estimate. 'specified' (flat
+                # description) and 'extracted' (structured per-unit attribution) and
+                # inherited/template are protected by construction. Applies to
+                # temperature (T_out/temperature_K) AND pressure (P_out). Log the
+                # suppression so this bug's blast radius is measurable per run.
                 _prov = _PROV_FIELDS.get(rule.param)   # (source_field, desc_sentinel)
                 if _prov is not None:
                     _src = node.params.get(_prov[0])
-                    _overwritable = (_src in ("computed", "default_fallback")
+                    _overwritable = (_src in ("computed", "default_fallback", "fallback")
                                      or (_src is None
                                          and not node.params.get(_prov[1])))
                     if not _overwritable:
