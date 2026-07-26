@@ -82,7 +82,8 @@ Schema:
       "tag": "HT-01",
       "type": "<one of: Heater Cooler Vessel Mixer Splitter Pump Compressor Expander ConversionReactor Column Decanter>",
       "role": "<one-line purpose, e.g. 'heat feed to flash temperature'>",
-      "reaction": "<ONLY for ConversionReactor: 'reactants -> products', else omit>"
+      "reaction": "<ONLY for ConversionReactor: 'reactants -> products', else omit>",
+      "setpoint": "<this unit's OWN stated operating condition, verbatim with its unit — e.g. '5 bar' for a compressor, '70 C' or '279.95 K' for a heater/cooler; OMIT if the description states none for this unit>"
     }
   ]
 }
@@ -103,6 +104,12 @@ Rules:
   Compressor units plus an intercooler (Cooler) between consecutive stages; "two reactors in
   series" = 2 ConversionReactor units. Expand the stated count into separate tagged units — never
   collapse "N stages" to a single unit.
+- Attach each unit's OWN operating condition to that unit via "setpoint", verbatim with its unit.
+  When repeated units of a type have DIFFERENT stated values, each unit gets its own: "compressed
+  to 5 bar, then to 25 bar, then to 100 bar" -> CP-01 setpoint "5 bar", CP-02 "25 bar", CP-03
+  "100 bar". When several units SHARE one stated value, each repeats it: "intercoolers returning
+  the gas to 279.95 K" -> both intercoolers get setpoint "279.95 K". Never pool the values or give
+  them all the first one. Omit "setpoint" for a unit whose condition is not stated.
 - A decanter / liquid-liquid settler that splits two liquid phases is ONE Decanter unit.
 - A Vessel performs a single flash separation (vapour + liquid); use it for simple flashes only
 - A Vessel performs flash separation (vapour + liquid); use it when phase separation is needed
@@ -194,6 +201,16 @@ Output:
   {"tag": "COL-01", "type": "Column",   "role": "extractive column recovering pyridine with toluene entrainer"},
   {"tag": "DEC-01", "type": "Decanter", "role": "decanter splitting toluene-rich and water-rich liquid phases"},
   {"tag": "COL-02", "type": "Column",   "role": "entrainer recovery column, toluene overhead recycled"}
+]}
+
+Input: "Methane is compressed in two stages, to 5 bar then to 25 bar, with an intercooler returning the gas to 40 C between the stages, then flashed."
+Compounds: Methane
+Output:
+{"units": [
+  {"tag": "CP-01", "type": "Compressor", "role": "first-stage compression", "setpoint": "5 bar"},
+  {"tag": "CL-01", "type": "Cooler",     "role": "intercooler between stages", "setpoint": "40 C"},
+  {"tag": "CP-02", "type": "Compressor", "role": "second-stage compression", "setpoint": "25 bar"},
+  {"tag": "V-01",  "type": "Vessel",     "role": "flash separation"}
 ]}"""
 
 
@@ -252,6 +269,12 @@ class SemanticUnit:
     # Empty for all other unit types.  Without it, to_dwsim emits reaction="" and
     # DWSIM performs no conversion (the reactor does nothing).
     reaction: str = ""
+    # This unit's OWN governing operating condition, verbatim from the clause that
+    # governs it, with the stated unit — e.g. "5 bar", "279.95 K", "40 C".  For
+    # repeated units of a type each carries ITS OWN value (stage 1 -> "5 bar",
+    # stage 2 -> "25 bar"), so ParamMapper binds per-unit setpoints instead of
+    # re-picking from a pooled flat list.  Empty when no condition is stated.
+    setpoint: str = ""
 
     def validate(self) -> list[str]:
         errors = []
@@ -347,7 +370,8 @@ class UnitExtractor:
                 data = _parse_json(raw)
                 units = [
                     SemanticUnit(tag=u["tag"], type=u["type"], role=u.get("role", ""),
-                                 reaction=u.get("reaction", ""))
+                                 reaction=u.get("reaction", ""),
+                                 setpoint=str(u.get("setpoint", "") or ""))
                     for u in data.get("units", [])
                 ]
                 result = SemanticUnits(units=units, raw_json=data)

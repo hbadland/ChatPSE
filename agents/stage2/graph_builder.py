@@ -43,7 +43,8 @@ class GraphBuilder:
                 unit_type = sem_unit.type,
                 tag       = sem_unit.tag,
                 params    = _params,
-                metadata  = {"role": sem_unit.role},
+                metadata  = {"role": sem_unit.role,
+                             "setpoint": getattr(sem_unit, "setpoint", "")},
             )
             graph.add_unit(node)
 
