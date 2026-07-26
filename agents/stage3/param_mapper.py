@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import re
+import sys
 from typing import Optional
 
 import networkx as nx
@@ -29,6 +30,30 @@ _REQUIRES_ASSIGNMENT = {"Heater", "Cooler", "Pump", "Compressor", "Expander",
                         "ConversionReactor"}
 # Units that are fully handled by defaults + normaliser
 _DEFAULTS_ONLY       = {"Vessel", "Mixer", "Splitter", "Decanter"}
+
+# The single setpoint field each type's structured "setpoint" governs.
+_SETPOINT_FIELD = {
+    "Heater": "T_out", "Cooler": "T_out",
+    "Pump": "P_out", "Compressor": "P_out", "Expander": "P_out",
+}
+
+
+def _structured_setpoint_params(node: NodeIR) -> dict:
+    """Parse this unit's OWN attributed setpoint (from structured extraction,
+    carried in node.metadata['setpoint'] as e.g. '25 bar' / '279.95 K' / '40 C').
+    Returns {field: value} for the unit's setpoint field, or {} if none/unparseable.
+    Reuses the proven text parsers, so only ATTRIBUTION is new — not parsing."""
+    field = _SETPOINT_FIELD.get(node.unit_type)
+    if field is None:
+        return {}
+    sp = str((node.metadata or {}).get("setpoint", "") or "").strip()
+    if not sp:
+        return {}
+    if field == "T_out":
+        vals = _extract_temperatures(sp)
+    else:
+        vals = _extract_pressures(sp)
+    return {field: vals[0]} if vals else {}
 
 # ── LLM system prompt (minimal — only invoked when deterministic fails) ────────
 
@@ -163,11 +188,37 @@ class ParamMapper:
             params.update(node.params)
             return params
 
-        # ── Step 1: Description parser ─────────────────────────────────────────
+        # ── Step 0: Structured per-unit setpoint (primary, option b) ───────────
+        # A setpoint attributed to THIS unit at extraction time is authoritative:
+        # it binds the correct value per unit and needs no inlet-relative filter.
+        struct  = _structured_setpoint_params(node)
+        _spf    = _SETPOINT_FIELD.get(node.unit_type)          # "T_out"|"P_out"|None
+        _srcf   = "_temperature_source" if _spf == "T_out" else "_pressure_source"
+        _sentf  = "_desc_T_out"        if _spf == "T_out" else "_desc_P_out"
+
+        # ── Step 1: Description parser (flat-list FALLBACK for the setpoint) ────
         parsed = _parse_params_from_description(
             node.unit_type, description, desc_temps, desc_pressures, feed_T, feed_P,
             inlet_T=inlet_T)
-        params.update(parsed)
+
+        if _spf and _spf in struct:
+            # Structured attribution wins; tag 'extracted' (protected, trustworthy).
+            params[_spf]   = struct[_spf]
+            params[_srcf]  = "extracted"
+            params[_sentf] = True
+        elif _spf and _spf in parsed:
+            # Fallback fired: pooled-list guess, may be collapsed/mis-attributed on
+            # repeated units. Log it (addition 1) and tag 'fallback' — NOT
+            # 'specified', and NO desc sentinel (addition 2), so it stays
+            # overwritable by consistency/rules.
+            params[_spf]  = parsed[_spf]
+            params[_srcf] = "fallback"
+            print(f"[PARAM_MAP] FALLBACK: {node.tag}.{_spf}={parsed[_spf]} "
+                  f"(pooled desc-list guess — no structured setpoint attributed)",
+                  flush=True, file=sys.stderr)
+        else:
+            # Non-setpoint unit, or nothing stated: keep the parser's output as-is.
+            params.update(parsed)
 
         # ── Step 2: Physical estimator (constraint-aware) ──────────────────────
         estimated = _estimate_params(
