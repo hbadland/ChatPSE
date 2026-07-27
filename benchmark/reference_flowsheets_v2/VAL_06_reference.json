@@ -1,0 +1,519 @@
+{
+  "case_id": "VAL_06",
+  "case_name": "Natural Gas Dehydration TEG Absorption Regeneration",
+  "source_file": "VAL 06",
+  "reference_validity": "reconstructed-v2-from-converged-dwxmz",
+  "provenance": {
+    "source_dwxmz": "VAL 06",
+    "dwsim_build": "5.5.6886.34470",
+    "sim_name": null,
+    "note": "re-extracted from the converged .dwxmz with connectivity and is_feed/is_product recovered from the GraphicObject connector graph; no hand-edited values"
+  },
+  "compounds": [
+    "Carbon dioxide",
+    "Ethane",
+    "Hydrogen sulfide",
+    "Isobutane",
+    "Isopentane",
+    "Methane",
+    "N-butane",
+    "N-pentane",
+    "Nitrogen",
+    "Propane",
+    "Triethylene glycol",
+    "Water"
+  ],
+  "property_package": "Nitrogen",
+  "solved": true,
+  "units": [
+    {
+      "tag": "Contactor",
+      "type": "Column",
+      "params": {
+        "_dwsim_type": "CapeOpenUO"
+      }
+    },
+    {
+      "tag": "VALV-009",
+      "type": "Expander",
+      "params": {
+        "_dwsim_type": "Valve"
+      }
+    },
+    {
+      "tag": "HE-012",
+      "type": "Heater",
+      "params": {
+        "_dwsim_type": "HeatExchanger"
+      }
+    },
+    {
+      "tag": "Regenerator",
+      "type": "Column",
+      "params": {
+        "_dwsim_type": "CapeOpenUO"
+      }
+    },
+    {
+      "tag": "PUMP-019",
+      "type": "Pump",
+      "params": {
+        "_dwsim_type": "Pump"
+      }
+    },
+    {
+      "tag": "HE-022",
+      "type": "Heater",
+      "params": {
+        "_dwsim_type": "HeatExchanger"
+      }
+    },
+    {
+      "tag": "COOL-025",
+      "type": "Cooler",
+      "params": {
+        "_dwsim_type": "Cooler"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "Contactor",
+      "Rich TEG"
+    ],
+    [
+      "Rich TEG",
+      "VALV-009"
+    ],
+    [
+      "Contactor",
+      "Dry gas"
+    ],
+    [
+      "Dry gas",
+      "HE-022"
+    ],
+    [
+      "VALV-009",
+      "LP TEG"
+    ],
+    [
+      "LP TEG",
+      "HE-012"
+    ],
+    [
+      "Inlet gas",
+      "Contactor"
+    ],
+    [
+      "HE-012",
+      "MSTR-013"
+    ],
+    [
+      "MSTR-013",
+      "Regenerator"
+    ],
+    [
+      "HE-012",
+      "MSTR-014"
+    ],
+    [
+      "MSTR-014",
+      "PUMP-019"
+    ],
+    [
+      "Regenerator",
+      "Sour gas"
+    ],
+    [
+      "Regenerator",
+      "Regeneration bottom"
+    ],
+    [
+      "Regeneration bottom",
+      "REC-018"
+    ],
+    [
+      "REC-018",
+      "MSTR-019"
+    ],
+    [
+      "MSTR-019",
+      "HE-012"
+    ],
+    [
+      "PUMP-019",
+      "MSTR-020"
+    ],
+    [
+      "MSTR-020",
+      "HE-022"
+    ],
+    [
+      "HE-022",
+      "Sales Gas"
+    ],
+    [
+      "HE-022",
+      "MSTR-024"
+    ],
+    [
+      "MSTR-024",
+      "COOL-025"
+    ],
+    [
+      "COOL-025",
+      "TEG Recycle"
+    ],
+    [
+      "TEG Recycle",
+      "REC-028"
+    ],
+    [
+      "REC-028",
+      "MSTR-029"
+    ],
+    [
+      "MSTR-029",
+      "Contactor"
+    ]
+  ],
+  "streams": {
+    "Rich TEG": {
+      "T_K": 306.306,
+      "T_C": 33.156,
+      "P_Pa": 6200000.0,
+      "P_bar": 62.0,
+      "flow_mol_s": 18.0103,
+      "vapor_fraction": 0.1217,
+      "composition": {
+        "Nitrogen": 8.2e-05,
+        "Hydrogen sulfide": 0.03858,
+        "Carbon dioxide": 0.025309,
+        "Methane": 0.182483,
+        "Ethane": 0.036571,
+        "Propane": 0.036955,
+        "Isobutane": 0.025956,
+        "N-butane": 0.01755,
+        "Isopentane": 0.007608,
+        "N-pentane": 0.003849,
+        "Water": 0.008153,
+        "Triethylene glycol": 0.616903
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "Dry gas": {
+      "T_K": 306.706,
+      "T_C": 33.556,
+      "P_Pa": 6200000.0,
+      "P_bar": 62.0,
+      "flow_mol_s": 131.9974,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Nitrogen": 0.001041,
+        "Hydrogen sulfide": 0.011045,
+        "Carbon dioxide": 0.02643,
+        "Methane": 0.91988,
+        "Ethane": 0.027629,
+        "Propane": 0.01053,
+        "Isobutane": 0.002667,
+        "N-butane": 0.000762,
+        "Isopentane": 1.5e-05,
+        "N-pentane": 2e-06,
+        "Water": 0.0,
+        "Triethylene glycol": 0.0
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "LP TEG": {
+      "T_K": 296.263,
+      "T_C": 23.113,
+      "P_Pa": 179999.81,
+      "P_bar": 1.8,
+      "flow_mol_s": 18.0103,
+      "vapor_fraction": 0.3378,
+      "composition": {
+        "Nitrogen": 8.2e-05,
+        "Hydrogen sulfide": 0.03858,
+        "Carbon dioxide": 0.025309,
+        "Methane": 0.182483,
+        "Ethane": 0.036571,
+        "Propane": 0.036955,
+        "Isobutane": 0.025956,
+        "N-butane": 0.01755,
+        "Isopentane": 0.007608,
+        "N-pentane": 0.003849,
+        "Water": 0.008153,
+        "Triethylene glycol": 0.616903
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "Inlet gas": {
+      "T_K": 303.15,
+      "T_C": 30.0,
+      "P_Pa": 6199995.69,
+      "P_bar": 61.99996,
+      "flow_mol_s": 138.8889,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Nitrogen": 0.001,
+        "Hydrogen sulfide": 0.0155,
+        "Carbon dioxide": 0.0284,
+        "Methane": 0.8979,
+        "Ethane": 0.031,
+        "Propane": 0.0148,
+        "Isobutane": 0.0059,
+        "N-butane": 0.003,
+        "Isopentane": 0.001,
+        "N-pentane": 0.0005,
+        "Water": 0.001,
+        "Triethylene glycol": 0.0
+      },
+      "is_feed": true,
+      "is_product": false
+    },
+    "MSTR-013": {
+      "T_K": 378.15,
+      "T_C": 105.0,
+      "P_Pa": 109999.81,
+      "P_bar": 1.1,
+      "flow_mol_s": 18.0103,
+      "vapor_fraction": 0.3746,
+      "composition": {
+        "Nitrogen": 8.2e-05,
+        "Hydrogen sulfide": 0.03858,
+        "Carbon dioxide": 0.025309,
+        "Methane": 0.182483,
+        "Ethane": 0.036571,
+        "Propane": 0.036955,
+        "Isobutane": 0.025956,
+        "N-butane": 0.01755,
+        "Isopentane": 0.007608,
+        "N-pentane": 0.003849,
+        "Water": 0.008153,
+        "Triethylene glycol": 0.616903
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "MSTR-014": {
+      "T_K": 480.325,
+      "T_C": 207.175,
+      "P_Pa": 31325.0,
+      "P_bar": 0.31325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "Sour gas": {
+      "T_K": 293.554,
+      "T_C": 20.404,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 6.8915,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Nitrogen": 0.000214,
+        "Hydrogen sulfide": 0.100824,
+        "Carbon dioxide": 0.066142,
+        "Methane": 0.476906,
+        "Ethane": 0.095576,
+        "Propane": 0.096578,
+        "Isobutane": 0.067831,
+        "N-butane": 0.045862,
+        "Isopentane": 0.019869,
+        "N-pentane": 0.010047,
+        "Water": 0.020151,
+        "Triethylene glycol": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "Regeneration bottom": {
+      "T_K": 556.385,
+      "T_C": 283.235,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "MSTR-019": {
+      "T_K": 556.385,
+      "T_C": 283.235,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "MSTR-020": {
+      "T_K": 481.662,
+      "T_C": 208.512,
+      "P_Pa": 6498325.0,
+      "P_bar": 64.98325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "Sales Gas": {
+      "T_K": 403.614,
+      "T_C": 130.464,
+      "P_Pa": 6165000.0,
+      "P_bar": 61.65,
+      "flow_mol_s": 131.9974,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Nitrogen": 0.001041,
+        "Hydrogen sulfide": 0.011045,
+        "Carbon dioxide": 0.02643,
+        "Methane": 0.91988,
+        "Ethane": 0.027629,
+        "Propane": 0.01053,
+        "Isobutane": 0.002667,
+        "N-butane": 0.000762,
+        "Isopentane": 1.5e-05,
+        "N-pentane": 2e-06,
+        "Water": 0.0,
+        "Triethylene glycol": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "MSTR-024": {
+      "T_K": 323.15,
+      "T_C": 50.0,
+      "P_Pa": 6428325.0,
+      "P_bar": 64.28325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "TEG Recycle": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 6358325.0,
+      "P_bar": 63.58325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "MSTR-029": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 6358325.0,
+      "P_bar": 63.58325,
+      "flow_mol_s": 11.1188,
+      "vapor_fraction": null,
+      "composition": {
+        "Nitrogen": 0.0,
+        "Hydrogen sulfide": 0.0,
+        "Carbon dioxide": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Isobutane": 2e-06,
+        "N-butane": 3e-06,
+        "Isopentane": 9e-06,
+        "N-pentane": 8e-06,
+        "Water": 0.000717,
+        "Triethylene glycol": 0.999261
+      },
+      "is_feed": false,
+      "is_product": false
+    }
+  }
+}
