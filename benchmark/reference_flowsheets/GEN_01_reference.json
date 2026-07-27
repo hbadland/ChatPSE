@@ -1,7 +1,7 @@
 {
   "case_id": "GEN_01",
   "case_name": "Heat then flash hexane-heptane",
-  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
   "reference_validity": "expert-constructed",
   "compounds": [
     "N-hexane",
@@ -59,7 +59,8 @@
       "composition": {
         "N-hexane": 0.5,
         "N-heptane": 0.5
-      }
+      },
+      "is_feed": true
     },
     "HOT": {
       "T_K": 358.15,
@@ -71,7 +72,8 @@
       "composition": {
         "N-hexane": 0.5,
         "N-heptane": 0.5
-      }
+      },
+      "is_feed": false
     },
     "VAP": {
       "T_K": 358.15,
@@ -83,7 +85,8 @@
       "composition": {
         "N-hexane": 0.5900519159557538,
         "N-heptane": 0.40994808404424615
-      }
+      },
+      "is_feed": false
     },
     "LIQ": {
       "T_K": 358.15,
@@ -95,13 +98,14 @@
       "composition": {
         "N-hexane": 0.38540331120988497,
         "N-heptane": 0.6145966887901151
-      }
+      },
+      "is_feed": false
     }
   },
   "vf_sensitivity": {
     "dvf_max_per_2C_flashT": 0.343,
     "dvf_per_2C_feedT": 0.0,
     "precise_to_0.05_tol": false,
-    "note": "close-boiling flash: vf swings > tolerance under a small flash-T perturbation — score vf LOOSELY / as SECONDARY (it is a non-gating WARNING); T and composition are the reliable signals"
+    "note": "close-boiling flash: vf swings > tolerance under a small flash-T perturbation \u2014 score vf LOOSELY / as SECONDARY (it is a non-gating WARNING); T and composition are the reliable signals"
   }
 }

@@ -1,7 +1,7 @@
 {
   "case_id": "F3",
   "case_name": "Heat then flash acetone/toluene",
-  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
   "reference_validity": "expert-constructed",
   "compounds": [
     "Acetone",
@@ -59,7 +59,8 @@
       "composition": {
         "Acetone": 0.5,
         "Toluene": 0.5
-      }
+      },
+      "is_feed": true
     },
     "HOT": {
       "T_K": 349.15,
@@ -71,7 +72,8 @@
       "composition": {
         "Acetone": 0.5,
         "Toluene": 0.5
-      }
+      },
+      "is_feed": false
     },
     "VAP": {
       "T_K": 349.15,
@@ -83,7 +85,8 @@
       "composition": {
         "Acetone": 0.7595665758694887,
         "Toluene": 0.24043342413051136
-      }
+      },
+      "is_feed": false
     },
     "LIQ": {
       "T_K": 349.15,
@@ -95,7 +98,8 @@
       "composition": {
         "Acetone": 0.32356744357972955,
         "Toluene": 0.6764325564202704
-      }
+      },
+      "is_feed": false
     }
   },
   "vf_sensitivity": {

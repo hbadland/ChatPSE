@@ -54,7 +54,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Methane": 1.0
-      }
+      },
+      "is_feed": true
     },
     "COMP": {
       "T_K": 659.264,
@@ -65,7 +66,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Methane": 1.0
-      }
+      },
+      "is_feed": false
     },
     "PROD": {
       "T_K": 313.15,
@@ -76,7 +78,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Methane": 1.0
-      }
+      },
+      "is_feed": false
     }
   }
 }

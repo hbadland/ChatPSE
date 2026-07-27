@@ -54,7 +54,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Propane": 1.0
-      }
+      },
+      "is_feed": true
     },
     "COOL": {
       "T_K": 293.15,
@@ -65,7 +66,8 @@
       "vapor_fraction": 0.0,
       "composition": {
         "Propane": 1.0
-      }
+      },
+      "is_feed": false
     },
     "PROD": {
       "T_K": 294.226,
@@ -76,7 +78,8 @@
       "vapor_fraction": 0.0,
       "composition": {
         "Propane": 1.0
-      }
+      },
+      "is_feed": false
     }
   }
 }

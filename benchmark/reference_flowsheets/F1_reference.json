@@ -1,7 +1,7 @@
 {
   "case_id": "F1",
   "case_name": "Heat then flash n-pentane/n-octane",
-  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
   "reference_validity": "expert-constructed",
   "compounds": [
     "N-pentane",
@@ -59,7 +59,8 @@
       "composition": {
         "N-pentane": 0.5,
         "N-octane": 0.5
-      }
+      },
+      "is_feed": true
     },
     "HOT": {
       "T_K": 348.15,
@@ -71,7 +72,8 @@
       "composition": {
         "N-pentane": 0.5,
         "N-octane": 0.5
-      }
+      },
+      "is_feed": false
     },
     "VAP": {
       "T_K": 348.15,
@@ -83,7 +85,8 @@
       "composition": {
         "N-pentane": 0.8507509523939899,
         "N-octane": 0.1492490476060101
-      }
+      },
+      "is_feed": false
     },
     "LIQ": {
       "T_K": 348.15,
@@ -95,7 +98,8 @@
       "composition": {
         "N-pentane": 0.2814015969855847,
         "N-octane": 0.7185984030144154
-      }
+      },
+      "is_feed": false
     }
   },
   "vf_sensitivity": {

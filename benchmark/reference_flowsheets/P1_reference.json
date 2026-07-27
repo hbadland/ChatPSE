@@ -86,7 +86,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Nitrogen": 1.0
-      }
+      },
+      "is_feed": true
     },
     "INT1": {
       "T_K": 528.085,
@@ -97,7 +98,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Nitrogen": 1.0
-      }
+      },
+      "is_feed": false
     },
     "COOLED": {
       "T_K": 313.15,
@@ -108,7 +110,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Nitrogen": 1.0
-      }
+      },
+      "is_feed": false
     },
     "INT2": {
       "T_K": 554.308,
@@ -119,7 +122,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Nitrogen": 1.0
-      }
+      },
+      "is_feed": false
     },
     "PROD": {
       "T_K": 313.15,
@@ -130,7 +134,8 @@
       "vapor_fraction": 1.0,
       "composition": {
         "Nitrogen": 1.0
-      }
+      },
+      "is_feed": false
     }
   }
 }

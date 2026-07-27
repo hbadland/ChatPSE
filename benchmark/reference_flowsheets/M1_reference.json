@@ -41,7 +41,8 @@
       "composition": {
         "N-hexane": 1.0,
         "N-heptane": 0.0
-      }
+      },
+      "is_feed": true
     },
     "FEED-B": {
       "T_K": 353.15,
@@ -53,7 +54,8 @@
       "composition": {
         "N-hexane": 0.0,
         "N-heptane": 1.0
-      }
+      },
+      "is_feed": true
     },
     "MIXED": {
       "T_K": 323.379,
@@ -65,7 +67,8 @@
       "composition": {
         "N-hexane": 0.5999999999999999,
         "N-heptane": 0.4
-      }
+      },
+      "is_feed": false
     }
   }
 }

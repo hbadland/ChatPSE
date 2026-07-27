@@ -49,7 +49,8 @@
       "composition": {
         "Benzene": 0.5,
         "Toluene": 0.5
-      }
+      },
+      "is_feed": true
     },
     "DIST": {
       "T_K": 353.224,
@@ -61,7 +62,8 @@
       "composition": {
         "Benzene": 0.98,
         "Toluene": 0.02
-      }
+      },
+      "is_feed": false
     },
     "BOT": {
       "T_K": 382.892,
@@ -73,7 +75,8 @@
       "composition": {
         "Benzene": 0.02,
         "Toluene": 0.98
-      }
+      },
+      "is_feed": false
     }
   }
 }

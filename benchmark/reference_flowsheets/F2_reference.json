@@ -1,7 +1,7 @@
 {
   "case_id": "F2",
   "case_name": "Heat then flash methanol/water",
-  "source_file": "expert-specified (independent reference — built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
+  "source_file": "expert-specified (independent reference \u2014 built directly via DWSIM wrapper, NOT the pipeline extraction/IR)",
   "reference_validity": "expert-constructed",
   "compounds": [
     "Methanol",
@@ -59,7 +59,8 @@
       "composition": {
         "Methanol": 0.5,
         "Water": 0.5
-      }
+      },
+      "is_feed": true
     },
     "HOT": {
       "T_K": 350.15,
@@ -71,7 +72,8 @@
       "composition": {
         "Methanol": 0.5,
         "Water": 0.5
-      }
+      },
+      "is_feed": false
     },
     "VAP": {
       "T_K": 350.15,
@@ -83,7 +85,8 @@
       "composition": {
         "Methanol": 0.692367366917208,
         "Water": 0.30763263308279204
-      }
+      },
+      "is_feed": false
     },
     "LIQ": {
       "T_K": 350.15,
@@ -95,7 +98,8 @@
       "composition": {
         "Methanol": 0.33000609074552695,
         "Water": 0.669993909254473
-      }
+      },
+      "is_feed": false
     }
   },
   "vf_sensitivity": {

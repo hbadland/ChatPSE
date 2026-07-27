@@ -38,7 +38,8 @@
       "vapor_fraction": 0.0,
       "composition": {
         "Water": 1.0
-      }
+      },
+      "is_feed": true
     },
     "PROD": {
       "T_K": 353.15,
@@ -49,7 +50,8 @@
       "vapor_fraction": 0.0,
       "composition": {
         "Water": 1.0
-      }
+      },
+      "is_feed": false
     }
   }
 }

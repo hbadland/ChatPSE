@@ -518,6 +518,15 @@ def build_case(case_id: str, write: bool = False) -> dict:
     res = fs.solve(timeout=120)
     streams = {tag: _stream_record(res[tag])
                for tag in meta["material_streams"] if tag in res}
+    # is_feed: a boundary feed enters a unit but is produced by none — derived from
+    # the flowsheet topology so the stream matcher's feed-anchoring tie-breaker is
+    # live. Emitted here so a rebuild never drops it.
+    _units    = {u["tag"] for u in meta["units"]}
+    _produced = {b for a, b in meta["connections"] if a in _units and b not in _units}
+    _fed      = {a for a, b in meta["connections"] if a not in _units and b in _units}
+    _feeds    = {s for s in _fed if s not in _produced}
+    for _t, _s in streams.items():
+        _s["is_feed"] = (_t in _feeds)
     ref = {
         "case_id": meta["case_id"],
         "case_name": meta["case_name"],
