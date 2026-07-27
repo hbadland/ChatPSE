@@ -105,8 +105,12 @@ def extract(path):
 
 
 def _property_package(path):
+    # The thermo package name is the ComponentName on the <PropertyPackage> whose
+    # <Type> is a DWSIM.Thermodynamics.PropertyPackages.* class — NOT the first
+    # <Name> under <PropertyPackages>, which is a compound.
     blob = load_xml(path).decode("utf-8", "ignore")
-    m = re.search(r"<PropertyPackages>.*?<Name>([^<]+)</Name>", blob, re.S)
+    m = re.search(r"<Type>[^<]*PropertyPackages\.[^<]*</Type>\s*"
+                  r"<ComponentName>([^<]+)</ComponentName>", blob, re.S)
     return m.group(1) if m else None
 
 
