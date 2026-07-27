@@ -245,5 +245,13 @@
         "Biphenyl": 0.0
       }
     }
+  },
+  "reference_validity": "incomplete-purge-not-modelled",
+  "reference_validity_reason": "Source re-extraction (file 'VAL 03', sim 'HYDRODEALKYLATION OF TOLUENE TO BENZENE', DWSIM 5.2) recovers connectivity + the H2 makeup feed and its 8 stream values match this reference, but the boundary element balance fails (C 24.5%, H 55.5%). Cause: the source has NO explicit gas purge stream - the recycle loop is non-conservative (MSTR-016 6616.1 -> REC-017 -> MSTR-018 6551.9 mol/s, a 64.2 mol/s deficit); that ~64 mol/s of H2/methane recycle gas (~52 mol C, = the missing 53) is the implicit purge, absorbed as a recycle-tear loss rather than a product. The 'Dummy stream' product is an empty unused reactor outlet port (flow -inf), not the purge. NOT adopted as balance-valid: closing it needs an explicit purge splitter modelled on the source (a flowsheet edit), not an extraction fix.",
+  "provenance": {
+    "source_dwxmz": "VAL 03",
+    "dwsim_build": "5.2.6731.26495",
+    "sim_name": "HYDRODEALKYLATION OF TOLUENE TO BENZENE",
+    "note": "connectivity recoverable and 8/8 values match source, but purge not modelled -> boundary balance fails; NOT adopted as balance-valid"
   }
 }
