@@ -93,6 +93,50 @@ def _pair_confidence(sys_s: dict, ref_s: dict,
     return conf, dT, dP, dvf, comp
 
 
+def _assign_greedy(rts, sts, detail, threshold):
+    """Highest-confidence-first, each stream used once (the historical matcher).
+    Retained as the fallback when SciPy is unavailable."""
+    scored = sorted(
+        ((detail[(rt, st)][0], rt, st) for rt in rts for st in sts),
+        key=lambda x: x[0], reverse=True)
+    used_ref: set = set()
+    used_sys: set = set()
+    out = []
+    for conf, rt, st in scored:
+        if conf < threshold:
+            break
+        if rt in used_ref or st in used_sys:
+            continue
+        used_ref.add(rt)
+        used_sys.add(st)
+        _c, dT, dP, dvf, comp = detail[(rt, st)]
+        out.append((_c, rt, st, dT, dP, dvf, comp))
+    return out
+
+
+def _assign_global(rts, sts, detail, threshold):
+    """Hungarian global assignment maximising total confidence (SciPy
+    linear_sum_assignment). Sub-threshold assignments are dropped, so the result
+    is never a forced match. Falls back to greedy if SciPy is missing — never
+    worse than the historical behaviour."""
+    if not rts or not sts:
+        return []
+    try:
+        import numpy as np
+        from scipy.optimize import linear_sum_assignment
+    except ImportError:
+        return _assign_greedy(rts, sts, detail, threshold)
+    cost = np.array([[-detail[(rt, st)][0] for st in sts] for rt in rts])
+    ri, ci = linear_sum_assignment(cost)
+    out = []
+    for i, j in zip(ri, ci):
+        conf, dT, dP, dvf, comp = detail[(rts[i], sts[j])]
+        if conf < threshold:
+            continue
+        out.append((conf, rts[i], sts[j], dT, dP, dvf, comp))
+    return out
+
+
 def match_streams(
     sys_streams: dict,
     ref_streams: dict,
@@ -113,22 +157,28 @@ def match_streams(
     sys_depths = sys_depths or {}
     ref_depths = ref_depths or {}
 
-    scored = []
-    for rt, rs in ref_streams.items():
-        for st, ss in sys_streams.items():
-            conf, dT, dP, dvf, comp = _pair_confidence(
-                ss, rs, sys_depths.get(st), ref_depths.get(rt))
-            scored.append((conf, rt, st, dT, dP, dvf, comp))
-    scored.sort(key=lambda x: x[0], reverse=True)   # highest confidence first
+    # Score every (ref, sys) pair once; both assignment strategies read this cache.
+    rts = list(ref_streams)
+    sts = list(sys_streams)
+    detail = {
+        (rt, st): _pair_confidence(sys_streams[st], ref_streams[rt],
+                                   sys_depths.get(st), ref_depths.get(rt))
+        for rt in rts for st in sts
+    }
+
+    # GLOBAL assignment (Hungarian): maximise total match confidence, so a small
+    # local gain never forces a large loss elsewhere — the greedy matcher's crossed
+    # pairings (identical-composition streams matched by the wrong T/P) are avoided.
+    # Conservative: assignments below `threshold` are dropped (left UNMATCHED).
+    raw = _assign_global(rts, sts, detail, threshold)
+    # Confidence-descending order — identical to the greedy output ordering, so a
+    # case with no crossing (same pair set) serialises byte-for-byte as before.
+    raw.sort(key=lambda x: x[0], reverse=True)
 
     used_ref: set = set()
     used_sys: set = set()
     pairs: list = []
-    for conf, rt, st, dT, dP, dvf, comp in scored:
-        if conf < threshold:
-            break                       # remaining are all below threshold
-        if rt in used_ref or st in used_sys:
-            continue
+    for conf, rt, st, dT, dP, dvf, comp in raw:
         used_ref.add(rt)
         used_sys.add(st)
         pairs.append({
