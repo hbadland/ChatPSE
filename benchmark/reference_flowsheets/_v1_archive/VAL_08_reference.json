@@ -1,0 +1,75 @@
+{
+  "case_id": "VAL_08",
+  "case_name": "Extractive Distillation Acetonitrile Isopropanol Water Ethylene Glycol",
+  "source_file": "Extractive_Distillation_Acetonitrile_Water_Isopropanol_EG.dwxmz",
+  "reference_validity": "incomplete-unconfirmed",
+  "reference_validity_reason": "Audit (Task 0 element balance): no conserving subset present; residual is one-signed only under S-04 + S-11 as feeds (S-11 is pure ethylene glycol solvent). A missing product stream is implied and the feed/product identity is ambiguous. Not demonstrably wrong, but consistency cannot be confirmed without reconstruction and a re-solve (Tier-2). Marked, not fixed; not scored-excluded.",
+  "compounds": ["Acetonitrile", "Isopropanol", "Water", "Ethylene glycol"],
+  "property_package": "NRTL",
+  "solved": true,
+  "units": [
+    {"tag": "V-01",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-02",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-03",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "MX-01", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "MX-02", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-02", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-03", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-04", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": 318.15, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "CO-02", "type": "Cooler",   "params": {"T_out": 348.15, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}}
+  ],
+  "connections": [],
+  "streams": {
+    "S-04": {
+      "T_K": 323.57, "T_C": 50.42,
+      "P_Pa": 35000.00, "P_bar": 0.35000,
+      "flow_mol_s": 8.222222,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Acetonitrile":    0.998000,
+        "Isopropanol":     0.002000,
+        "Water":           0.000000,
+        "Ethylene glycol": 0.000000
+      }
+    },
+    "S-08": {
+      "T_K": 355.57, "T_C": 82.42,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 8.722222,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Acetonitrile":    0.014000,
+        "Isopropanol":     0.952000,
+        "Water":           0.034000,
+        "Ethylene glycol": 0.000000
+      }
+    },
+    "S-10": {
+      "T_K": 373.15, "T_C": 100.00,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 11.000000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Acetonitrile":    0.000116,
+        "Isopropanol":     0.001000,
+        "Water":           0.983884,
+        "Ethylene glycol": 0.015000
+      }
+    },
+    "S-11": {
+      "T_K": 469.65, "T_C": 196.50,
+      "P_Pa": 100000.00, "P_bar": 1.00000,
+      "flow_mol_s": 54.000000,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Acetonitrile":    0.000000,
+        "Isopropanol":     0.000000,
+        "Water":           0.000000,
+        "Ethylene glycol": 1.000000
+      }
+    }
+  }
+}

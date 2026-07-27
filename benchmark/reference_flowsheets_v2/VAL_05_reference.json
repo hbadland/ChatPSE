@@ -2,12 +2,12 @@
   "case_id": "VAL_05",
   "case_name": "Vinyl Chloride Production EDC Chlorination Pyrolysis",
   "source_file": "VAL 05",
-  "reference_validity": "reconstructed-v2-balance-verified",
+  "reference_validity": "reconstructed-v2-from-converged-dwxmz",
   "provenance": {
     "source_dwxmz": "VAL 05",
     "dwsim_build": "5.2.6716.19699",
     "sim_name": null,
-    "note": "re-extracted from source with connectivity, balance-verified",
+    "note": "re-extracted from the converged .dwxmz with connectivity and is_feed/is_product recovered from the GraphicObject connector graph; no hand-edited values",
     "property_package_note": "label carried from human-verified v1 (source XML defines multiple/ambiguous packages; VAL_01/02/05 source choices differ from v1's vetted model); stream values are as-parsed from source"
   },
   "compounds": [

@@ -1,58 +1,351 @@
 {
   "case_id": "VAL_02",
   "case_name": "Heterogeneous Azeotropic Separation Pyridine Water Toluene",
-  "source_file": "Heterogeneous_Azeotropic_Separation_of_Pyridine_and_Water.dwxmz",
-  "compounds": ["Toluene", "Water", "Pyridine"],
+  "source_file": "VAL 02",
+  "reference_validity": "reconstructed-v2-balance-verified",
+  "provenance": {
+    "source_dwxmz": "VAL 02",
+    "dwsim_build": "6.0.7473.20506",
+    "sim_name": "MySimulation_2",
+    "note": "re-extracted from source with connectivity, balance-verified",
+    "property_package_note": "label carried from human-verified v1 (source XML defines multiple/ambiguous packages; VAL_01/02/05 source choices differ from v1's vetted model); stream values are as-parsed from source"
+  },
+  "compounds": [
+    "Pyridine",
+    "Toluene",
+    "Water"
+  ],
   "property_package": "NRTL",
   "solved": true,
   "units": [
-    {"tag": "V-01",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "V-02",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "V-03",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "HT-02", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "MX-01", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "MX-02", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
-    {"tag": "SP-02", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}}
+    {
+      "tag": "MIX-02",
+      "type": "Mixer",
+      "params": {
+        "_dwsim_type": "NodeIn"
+      }
+    },
+    {
+      "tag": "DC-02",
+      "type": "Column",
+      "params": {
+        "_dwsim_type": "CapeOpenUO"
+      }
+    },
+    {
+      "tag": "DC-01",
+      "type": "Column",
+      "params": {
+        "_dwsim_type": "CapeOpenUO"
+      }
+    },
+    {
+      "tag": "COOL-01",
+      "type": "Cooler",
+      "params": {
+        "_dwsim_type": "Cooler"
+      }
+    },
+    {
+      "tag": "MIX-01",
+      "type": "Mixer",
+      "params": {
+        "_dwsim_type": "NodeIn"
+      }
+    },
+    {
+      "tag": "Decanter",
+      "type": "Vessel",
+      "params": {
+        "_dwsim_type": "ComponentSeparator"
+      }
+    }
   ],
-  "connections": [],
+  "connections": [
+    [
+      "Decanter",
+      "S-07"
+    ],
+    [
+      "S-07",
+      "REC-01"
+    ],
+    [
+      "DC-02",
+      "S-13"
+    ],
+    [
+      "DC-02",
+      "S-12"
+    ],
+    [
+      "S-12",
+      "REC-02"
+    ],
+    [
+      "MIX-02",
+      "S-11"
+    ],
+    [
+      "S-11",
+      "DC-02"
+    ],
+    [
+      "REC-02",
+      "S-01"
+    ],
+    [
+      "S-01",
+      "DC-01"
+    ],
+    [
+      "S-10",
+      "MIX-02"
+    ],
+    [
+      "DC-01",
+      "S-03"
+    ],
+    [
+      "S-03",
+      "COOL-01"
+    ],
+    [
+      "Decanter",
+      "S-09"
+    ],
+    [
+      "S-09",
+      "MIX-02"
+    ],
+    [
+      "COOL-01",
+      "S-04"
+    ],
+    [
+      "S-04",
+      "MIX-01"
+    ],
+    [
+      "S-05",
+      "MIX-01"
+    ],
+    [
+      "MIX-01",
+      "S-06"
+    ],
+    [
+      "S-06",
+      "Decanter"
+    ],
+    [
+      "REC-01",
+      "S-08"
+    ],
+    [
+      "S-08",
+      "DC-01"
+    ],
+    [
+      "DC-01",
+      "S-02"
+    ]
+  ],
   "streams": {
-    "S-01": {
-      "T_K": 368.00, "T_C": 94.80,
-      "P_Pa": 101325.00, "P_bar": 1.01325,
-      "flow_mol_s": 136.222222,
+    "S-07": {
+      "T_K": 298.153,
+      "T_C": 25.003,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 102.7457,
       "vapor_fraction": null,
-      "composition": {"Toluene": 0.000144, "Water": 0.789848, "Pyridine": 0.210008}
-    },
-    "S-02": {
-      "T_K": 391.25, "T_C": 118.10,
-      "P_Pa": 111458.00, "P_bar": 1.11458,
-      "flow_mol_s": 27.555556,
-      "vapor_fraction": 0.0,
-      "composition": {"Toluene": 0.000004, "Water": 0.000437, "Pyridine": 0.999559}
-    },
-    "S-03": {
-      "T_K": 376.49, "T_C": 103.34,
-      "P_Pa": 111458.00, "P_bar": 1.11458,
-      "flow_mol_s": 211.410000,
-      "vapor_fraction": null,
-      "composition": {"Toluene": 0.074977, "Water": 0.508946, "Pyridine": 0.416077}
-    },
-    "S-11": {
-      "T_K": 298.04, "T_C": 24.89,
-      "P_Pa": 101325.00, "P_bar": 1.01325,
-      "flow_mol_s": 386.447222,
-      "vapor_fraction": 0.0,
-      "composition": {"Toluene": 0.000051, "Water": 0.925274, "Pyridine": 0.074675}
+      "composition": {
+        "Toluene": 0.154126,
+        "Water": 0.000265,
+        "Pyridine": 0.845609
+      },
+      "is_feed": false,
+      "is_product": false
     },
     "S-13": {
-      "T_K": 373.09, "T_C": 99.94,
-      "P_Pa": 101325.00, "P_bar": 1.01325,
-      "flow_mol_s": 250.224722,
-      "vapor_fraction": 0.0,
-      "composition": {"Toluene": 0.000000, "Water": 0.999000, "Pyridine": 0.001000}
+      "T_K": 372.986,
+      "T_C": 99.836,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 250.2246,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 0.0,
+        "Water": 0.999,
+        "Pyridine": 0.001
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "S-12": {
+      "T_K": 367.948,
+      "T_C": 94.798,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 136.222,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Toluene": 0.000144,
+        "Water": 0.789848,
+        "Pyridine": 0.210008
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-11": {
+      "T_K": 298.038,
+      "T_C": 24.888,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 386.4466,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 5.1e-05,
+        "Water": 0.925274,
+        "Pyridine": 0.074675
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-01": {
+      "T_K": 367.948,
+      "T_C": 94.798,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 136.222,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Toluene": 0.000144,
+        "Water": 0.789848,
+        "Pyridine": 0.210008
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-10": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 277.7778,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 0.0,
+        "Water": 0.9,
+        "Pyridine": 0.1
+      },
+      "is_feed": true,
+      "is_product": false
+    },
+    "S-03": {
+      "T_K": 376.494,
+      "T_C": 103.344,
+      "P_Pa": 111457.5,
+      "P_bar": 1.11458,
+      "flow_mol_s": 211.4101,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Toluene": 0.074977,
+        "Water": 0.508946,
+        "Pyridine": 0.416077
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-09": {
+      "T_K": 298.153,
+      "T_C": 25.003,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 108.6688,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 0.00018,
+        "Water": 0.98988,
+        "Pyridine": 0.00994
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-04": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 111457.5,
+      "P_bar": 1.11458,
+      "flow_mol_s": 211.4101,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 0.074977,
+        "Water": 0.508946,
+        "Pyridine": 0.416077
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-05": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0044,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 1.0,
+        "Water": 0.0,
+        "Pyridine": 0.0
+      },
+      "is_feed": true,
+      "is_product": false
+    },
+    "S-06": {
+      "T_K": 298.153,
+      "T_C": 25.003,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 211.4145,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 0.074997,
+        "Water": 0.508935,
+        "Pyridine": 0.416068
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-08": {
+      "T_K": 298.153,
+      "T_C": 25.003,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 102.7457,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 0.154126,
+        "Water": 0.000265,
+        "Pyridine": 0.845609
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "S-02": {
+      "T_K": 391.248,
+      "T_C": 118.098,
+      "P_Pa": 111457.5,
+      "P_bar": 1.11458,
+      "flow_mol_s": 27.5555,
+      "vapor_fraction": null,
+      "composition": {
+        "Toluene": 4e-06,
+        "Water": 0.000437,
+        "Pyridine": 0.999559
+      },
+      "is_feed": false,
+      "is_product": true
     }
   }
 }

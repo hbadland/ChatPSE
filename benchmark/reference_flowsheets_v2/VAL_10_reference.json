@@ -7,7 +7,8 @@
     "source_dwxmz": "VAL 10",
     "dwsim_build": "5.8.7235.16731",
     "sim_name": "MySimulation_45",
-    "note": "re-extracted from the converged .dwxmz with connectivity and is_feed/is_product recovered from the GraphicObject connector graph; no hand-edited values"
+    "note": "re-extracted from the converged .dwxmz with connectivity and is_feed/is_product recovered from the GraphicObject connector graph; no hand-edited values",
+    "property_package_note": "label carried from human-verified v1 (source XML defines multiple/ambiguous packages; VAL_01/02/05 source choices differ from v1's vetted model); stream values are as-parsed from source"
   },
   "compounds": [
     "Carbon dioxide",
@@ -18,7 +19,7 @@
     "Oxygen",
     "Water"
   ],
-  "property_package": "Water",
+  "property_package": "Peng-Robinson",
   "solved": true,
   "units": [
     {

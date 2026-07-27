@@ -1,0 +1,111 @@
+{
+  "case_id": "VAL_05",
+  "case_name": "Vinyl Chloride Production EDC Chlorination Pyrolysis",
+  "source_file": "Vinyl_Chloride_Production.dwxmz",
+  "compounds": [
+    "Ethylene", "Chlorine", "1,2-dichloroethane",
+    "Hydrogen chloride", "Vinyl chloride"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {"tag": "MX-01", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "MX-02", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-01",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-02",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-03",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-04",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-02", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-03", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "CO-02", "type": "Cooler",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "P-01",  "type": "Pump",     "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "EX-01", "type": "Expander", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "EX-02", "type": "Expander", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "RX-01", "type": "ConversionReactor", "params": {"temperature_K": 363.15, "pressure_Pa": 151988.0, "conversion": 1.0, "reaction": "Ethylene + Chlorine -> 1,2-dichloroethane"}},
+    {"tag": "RX-02", "type": "ConversionReactor", "params": {"temperature_K": 773.15, "pressure_Pa": 2634450.0, "conversion": 0.6, "reaction": "1,2-dichloroethane -> Vinyl chloride + Hydrogen chloride"}}
+  ],
+  "connections": [],
+  "streams": {
+    "S-10": {
+      "T_K": 279.15, "T_C": 6.00,
+      "P_Pa": 1215900.00, "P_bar": 12.15900,
+      "flow_mol_s": 537.680,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Ethylene":           0.000000,
+        "Chlorine":           0.000000,
+        "1,2-dichloroethane": 0.250000,
+        "Hydrogen chloride":  0.375000,
+        "Vinyl chloride":     0.375000
+      }
+    },
+    "S-04": {
+      "T_K": 363.15, "T_C": 90.00,
+      "P_Pa": 151988.00, "P_bar": 1.51988,
+      "flow_mol_s": 260.440,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Ethylene":           0.000000,
+        "Chlorine":           0.000000,
+        "1,2-dichloroethane": 1.000000,
+        "Hydrogen chloride":  0.000000,
+        "Vinyl chloride":     0.000000
+      }
+    },
+    "S-07": {
+      "T_K": 773.15, "T_C": 500.00,
+      "P_Pa": 2634450.00, "P_bar": 26.00000,
+      "flow_mol_s": 537.680,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Ethylene":           0.000000,
+        "Chlorine":           0.000000,
+        "1,2-dichloroethane": 0.250000,
+        "Hydrogen chloride":  0.375000,
+        "Vinyl chloride":     0.375000
+      }
+    },
+    "S-11-HCL": {
+      "T_K": 248.85, "T_C": -24.30,
+      "P_Pa": 1215900.00, "P_bar": 12.15900,
+      "flow_mol_s": 201.603,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Ethylene":           0.000000,
+        "Chlorine":           0.000000,
+        "1,2-dichloroethane": 0.000000,
+        "Hydrogen chloride":  1.000000,
+        "Vinyl chloride":     0.000000
+      }
+    },
+    "S-14-VC": {
+      "T_K": 305.33, "T_C": 32.18,
+      "P_Pa": 486360.00, "P_bar": 4.80000,
+      "flow_mol_s": 201.655,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Ethylene":           0.000000,
+        "Chlorine":           0.000000,
+        "1,2-dichloroethane": 0.000000,
+        "Hydrogen chloride":  0.000000,
+        "Vinyl chloride":     1.000000
+      }
+    },
+    "Recycle": {
+      "T_K": 363.15, "T_C": 90.00,
+      "P_Pa": 151988.00, "P_bar": 1.51988,
+      "flow_mol_s": 134.433,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Ethylene":           0.000000,
+        "Chlorine":           0.000000,
+        "1,2-dichloroethane": 1.000000,
+        "Hydrogen chloride":  0.000000,
+        "Vinyl chloride":     0.000000
+      }
+    }
+  }
+}

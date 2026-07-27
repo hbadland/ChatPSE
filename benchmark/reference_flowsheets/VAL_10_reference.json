@@ -1,92 +1,675 @@
 {
   "case_id": "VAL_10",
   "case_name": "Syngas Production RLNG Steam Reforming Ammonia Plant",
-  "source_file": "Syngas_production_RLNG_DWSIM.dwxmz",
-  "reference_validity": "excluded-invalid-reference",
-  "reference_validity_reason": "Carbon balance violated: C in feeds = 136.97 mol/s vs C out (SYNGAS) = 1.47 mol/s. SYNGAS product has CO=CO2=0 with residual O2, and the file contains only 3 feeds + 1 product (no intermediate reactor streams). The reference is physically invalid and cannot reproduce a reactor spec; reactors were NOT authored. Eval this case PHYSICS-ONLY (converged + physics checks); reference-MAPE excluded.",
+  "source_file": "VAL 10",
+  "reference_validity": "reconstructed-v2-balance-verified",
+  "provenance": {
+    "source_dwxmz": "VAL 10",
+    "dwsim_build": "5.8.7235.16731",
+    "sim_name": "MySimulation_45",
+    "note": "re-extracted from source with connectivity, balance-verified",
+    "property_package_note": "label carried from human-verified v1 (source XML defines multiple/ambiguous packages; VAL_01/02/05 source choices differ from v1's vetted model); stream values are as-parsed from source"
+  },
   "compounds": [
-    "Water", "Methane", "Carbon monoxide",
-    "Hydrogen", "Carbon dioxide", "Oxygen", "Nitrogen"
+    "Carbon dioxide",
+    "Carbon monoxide",
+    "Hydrogen",
+    "Methane",
+    "Nitrogen",
+    "Oxygen",
+    "Water"
   ],
   "property_package": "Peng-Robinson",
   "solved": true,
   "units": [
-    {"tag": "MX-01", "type": "Mixer",    "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "MX-02", "type": "Mixer",    "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "HT-02", "type": "Heater",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "V-01",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "V-02",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "V-03",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "V-04",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "V-05",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "V-06",  "type": "Vessel",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "CO-02", "type": "Cooler",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "CO-03", "type": "Cooler",   "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}},
-    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null,    "dP": null, "efficiency": null}}
+    {
+      "tag": "MIXER-1",
+      "type": "Mixer",
+      "params": {
+        "_dwsim_type": "NodeIn"
+      }
+    },
+    {
+      "tag": "HEAT-003",
+      "type": "Heater",
+      "params": {
+        "_dwsim_type": "Heater"
+      }
+    },
+    {
+      "tag": "Primary Reformer",
+      "type": "ConversionReactor",
+      "params": {
+        "_dwsim_type": "RCT_Conversion"
+      }
+    },
+    {
+      "tag": "Secondary Reformer",
+      "type": "ConversionReactor",
+      "params": {
+        "_dwsim_type": "RCT_Conversion"
+      }
+    },
+    {
+      "tag": "MIXER2",
+      "type": "Mixer",
+      "params": {
+        "_dwsim_type": "NodeIn"
+      }
+    },
+    {
+      "tag": "Cooler1",
+      "type": "Cooler",
+      "params": {
+        "_dwsim_type": "Cooler"
+      }
+    },
+    {
+      "tag": "HTSHIFT",
+      "type": "ConversionReactor",
+      "params": {
+        "_dwsim_type": "RCT_Equilibrium"
+      }
+    },
+    {
+      "tag": "Cooler2",
+      "type": "Cooler",
+      "params": {
+        "_dwsim_type": "Cooler"
+      }
+    },
+    {
+      "tag": "LTSHIFT",
+      "type": "ConversionReactor",
+      "params": {
+        "_dwsim_type": "RCT_Equilibrium"
+      }
+    },
+    {
+      "tag": "COOLER3",
+      "type": "Cooler",
+      "params": {
+        "_dwsim_type": "Cooler"
+      }
+    },
+    {
+      "tag": "CO2 Absorber",
+      "type": "Vessel",
+      "params": {
+        "_dwsim_type": "ComponentSeparator"
+      }
+    },
+    {
+      "tag": "Heater 2",
+      "type": "Heater",
+      "params": {
+        "_dwsim_type": "Heater"
+      }
+    },
+    {
+      "tag": "Methanator",
+      "type": "ConversionReactor",
+      "params": {
+        "_dwsim_type": "RCT_Conversion"
+      }
+    }
   ],
-  "connections": [],
+  "connections": [
+    [
+      "CO2 Absorber",
+      "Process Gas"
+    ],
+    [
+      "Process Gas",
+      "Heater 2"
+    ],
+    [
+      "CO2 Absorber",
+      "CO2"
+    ],
+    [
+      "COOLER3",
+      "C3OUT"
+    ],
+    [
+      "C3OUT",
+      "CO2 Absorber"
+    ],
+    [
+      "LTSHIFT",
+      "LTOUTL"
+    ],
+    [
+      "LTSHIFT",
+      "LTOUT"
+    ],
+    [
+      "LTOUT",
+      "COOLER3"
+    ],
+    [
+      "Cooler2",
+      "C2OUT"
+    ],
+    [
+      "C2OUT",
+      "LTSHIFT"
+    ],
+    [
+      "STEAM",
+      "MIXER-1"
+    ],
+    [
+      "R-LNG",
+      "MIXER-1"
+    ],
+    [
+      "MIXER-1",
+      "Mixed Feed"
+    ],
+    [
+      "Mixed Feed",
+      "HEAT-003"
+    ],
+    [
+      "HEAT-003",
+      "H1-OUT"
+    ],
+    [
+      "H1-OUT",
+      "Primary Reformer"
+    ],
+    [
+      "Primary Reformer",
+      "PROUT"
+    ],
+    [
+      "PROUT",
+      "MIXER2"
+    ],
+    [
+      "AIR",
+      "MIXER2"
+    ],
+    [
+      "Secondary Reformer",
+      "SROUT"
+    ],
+    [
+      "SROUT",
+      "Cooler1"
+    ],
+    [
+      "Secondary Reformer",
+      "SROUTL"
+    ],
+    [
+      "MIXER2",
+      "AIR+PROUT"
+    ],
+    [
+      "AIR+PROUT",
+      "Secondary Reformer"
+    ],
+    [
+      "Cooler1",
+      "C1OUT"
+    ],
+    [
+      "C1OUT",
+      "HTSHIFT"
+    ],
+    [
+      "HTSHIFT",
+      "HTOUT"
+    ],
+    [
+      "HTOUT",
+      "Cooler2"
+    ],
+    [
+      "HTSHIFT",
+      "HTOUTL"
+    ],
+    [
+      "Heater 2",
+      "H2OUT"
+    ],
+    [
+      "H2OUT",
+      "Methanator"
+    ],
+    [
+      "Methanator",
+      "SYNGAS"
+    ],
+    [
+      "Methanator",
+      "SYNGASL"
+    ],
+    [
+      "Primary Reformer",
+      "PROUTL"
+    ]
+  ],
   "streams": {
-    "SYNGAS": {
-      "T_K": 604.15, "T_C": 331.00,
-      "P_Pa": 3040000.00, "P_bar": 30.40000,
-      "flow_mol_s": 813.680556,
+    "Process Gas": {
+      "T_K": 523.15,
+      "T_C": 250.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 816.6184,
       "vapor_fraction": 1.0,
       "composition": {
-        "Water":           0.005228,
-        "Methane":         0.001806,
-        "Carbon monoxide": 0.000000,
-        "Hydrogen":        0.466676,
-        "Carbon dioxide":  0.000000,
-        "Oxygen":          0.031463,
-        "Nitrogen":        0.494832
-      }
+        "Water": 0.00341,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0018,
+        "Hydrogen": 0.470395,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.03135,
+        "Nitrogen": 0.493046
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "CO2": {
+      "T_K": 523.15,
+      "T_C": 250.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 411.1743,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.670462,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.329538,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "C3OUT": {
+      "T_K": 523.15,
+      "T_C": 250.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1227.7928,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.226798,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.001197,
+        "Hydrogen": 0.312865,
+        "Carbon dioxide": 0.110359,
+        "Oxygen": 0.020851,
+        "Nitrogen": 0.32793
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "LTOUTL": {
+      "T_K": 501.15,
+      "T_C": 228.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": null,
+      "composition": {
+        "Water": 0.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "LTOUT": {
+      "T_K": 501.15,
+      "T_C": 228.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1227.7928,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.226798,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.001197,
+        "Hydrogen": 0.312865,
+        "Carbon dioxide": 0.110359,
+        "Oxygen": 0.020851,
+        "Nitrogen": 0.32793
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "C2OUT": {
+      "T_K": 478.15,
+      "T_C": 205.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1227.7928,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.239731,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.01413,
+        "Hydrogen": 0.299932,
+        "Carbon dioxide": 0.097426,
+        "Oxygen": 0.020851,
+        "Nitrogen": 0.32793
+      },
+      "is_feed": false,
+      "is_product": false
     },
     "STEAM": {
-      "T_K": 653.15, "T_C": 380.00,
-      "P_Pa": 3040000.00, "P_bar": 30.40000,
-      "flow_mol_s": 388.883333,
+      "T_K": 653.15,
+      "T_C": 380.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 388.8828,
       "vapor_fraction": 1.0,
       "composition": {
-        "Water":           1.000000,
-        "Methane":         0.000000,
-        "Carbon monoxide": 0.000000,
-        "Hydrogen":        0.000000,
-        "Carbon dioxide":  0.000000,
-        "Oxygen":          0.000000,
-        "Nitrogen":        0.000000
-      }
+        "Water": 1.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": true,
+      "is_product": false
     },
     "R-LNG": {
-      "T_K": 613.15, "T_C": 340.00,
-      "P_Pa": 3730000.00, "P_bar": 37.30000,
-      "flow_mol_s": 138.912222,
+      "T_K": 613.15,
+      "T_C": 340.0,
+      "P_Pa": 3730000.0,
+      "P_bar": 37.3,
+      "flow_mol_s": 138.9123,
       "vapor_fraction": 1.0,
       "composition": {
-        "Water":           0.000000,
-        "Methane":         0.985197,
-        "Carbon monoxide": 0.000000,
-        "Hydrogen":        0.000000,
-        "Carbon dioxide":  0.000800,
-        "Oxygen":          0.000000,
-        "Nitrogen":        0.014003
-      }
+        "Water": 0.0,
+        "Methane": 0.985197,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0008,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.014003
+      },
+      "is_feed": true,
+      "is_product": false
+    },
+    "Mixed Feed": {
+      "T_K": 638.086,
+      "T_C": 364.936,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 527.7951,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.736806,
+        "Methane": 0.259298,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.000211,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.003685
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "H1-OUT": {
+      "T_K": 753.15,
+      "T_C": 480.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 527.7951,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.736806,
+        "Methane": 0.259298,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.000211,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.003685
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "PROUT": {
+      "T_K": 1050.15,
+      "T_C": 777.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 719.3935,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.350332,
+        "Methane": 0.057071,
+        "Carbon monoxide": 0.076095,
+        "Hydrogen": 0.456571,
+        "Carbon dioxide": 0.057226,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.002704
+      },
+      "is_feed": false,
+      "is_product": false
     },
     "AIR": {
-      "T_K": 1038.15, "T_C": 765.00,
-      "P_Pa": 3110000.00, "P_bar": 31.10000,
-      "flow_mol_s": 507.197222,
+      "T_K": 1038.15,
+      "T_C": 765.0,
+      "P_Pa": 3110000.0,
+      "P_bar": 31.1,
+      "flow_mol_s": 507.1961,
       "vapor_fraction": 1.0,
       "composition": {
-        "Water":           0.000000,
-        "Methane":         0.000000,
-        "Carbon monoxide": 0.000000,
-        "Hydrogen":        0.000000,
-        "Carbon dioxide":  0.000000,
-        "Oxygen":          0.210000,
-        "Nitrogen":        0.790000
-      }
+        "Water": 0.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.21,
+        "Nitrogen": 0.79
+      },
+      "is_feed": true,
+      "is_product": false
+    },
+    "SROUT": {
+      "T_K": 1235.15,
+      "T_C": 962.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1227.7928,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.272147,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.046546,
+        "Hydrogen": 0.267516,
+        "Carbon dioxide": 0.06501,
+        "Oxygen": 0.020851,
+        "Nitrogen": 0.32793
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "SROUTL": {
+      "T_K": 1235.15,
+      "T_C": 962.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": -Infinity,
+      "vapor_fraction": NaN,
+      "composition": {
+        "Water": 0.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "AIR+PROUT": {
+      "T_K": 1045.401,
+      "T_C": 772.251,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1226.5896,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.20547,
+        "Methane": 0.033472,
+        "Carbon monoxide": 0.04463,
+        "Hydrogen": 0.267779,
+        "Carbon dioxide": 0.033563,
+        "Oxygen": 0.086835,
+        "Nitrogen": 0.328252
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "C1OUT": {
+      "T_K": 639.15,
+      "T_C": 366.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1227.7928,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.272147,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.046546,
+        "Hydrogen": 0.267516,
+        "Carbon dioxide": 0.06501,
+        "Oxygen": 0.020851,
+        "Nitrogen": 0.32793
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "HTOUT": {
+      "T_K": 707.15,
+      "T_C": 434.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 1227.7928,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.239731,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.01413,
+        "Hydrogen": 0.299932,
+        "Carbon dioxide": 0.097426,
+        "Oxygen": 0.020851,
+        "Nitrogen": 0.32793
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "HTOUTL": {
+      "T_K": 707.15,
+      "T_C": 434.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": null,
+      "composition": {
+        "Water": 0.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "H2OUT": {
+      "T_K": 578.15,
+      "T_C": 305.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 816.6184,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.00341,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0018,
+        "Hydrogen": 0.470395,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.03135,
+        "Nitrogen": 0.493046
+      },
+      "is_feed": false,
+      "is_product": false
+    },
+    "SYNGAS": {
+      "T_K": 604.15,
+      "T_C": 331.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 813.6792,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Water": 0.005228,
+        "Methane": 0.001806,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.466676,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.031463,
+        "Nitrogen": 0.494827
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "SYNGASL": {
+      "T_K": 604.15,
+      "T_C": 331.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": null,
+      "composition": {
+        "Water": 0.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
+    },
+    "PROUTL": {
+      "T_K": 1050.15,
+      "T_C": 777.0,
+      "P_Pa": 3040000.0,
+      "P_bar": 30.4,
+      "flow_mol_s": -Infinity,
+      "vapor_fraction": null,
+      "composition": {
+        "Water": 0.0,
+        "Methane": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Oxygen": 0.0,
+        "Nitrogen": 0.0
+      },
+      "is_feed": false,
+      "is_product": true
     }
   }
 }

@@ -7,7 +7,8 @@
     "source_dwxmz": "VAL 06",
     "dwsim_build": "5.5.6886.34470",
     "sim_name": null,
-    "note": "re-extracted from the converged .dwxmz with connectivity and is_feed/is_product recovered from the GraphicObject connector graph; no hand-edited values"
+    "note": "re-extracted from the converged .dwxmz with connectivity and is_feed/is_product recovered from the GraphicObject connector graph; no hand-edited values",
+    "property_package_note": "label carried from human-verified v1 (source XML defines multiple/ambiguous packages; VAL_01/02/05 source choices differ from v1's vetted model); stream values are as-parsed from source"
   },
   "compounds": [
     "Carbon dioxide",
@@ -23,7 +24,7 @@
     "Triethylene glycol",
     "Water"
   ],
-  "property_package": "Nitrogen",
+  "property_package": "Peng-Robinson",
   "solved": true,
   "units": [
     {

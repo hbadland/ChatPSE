@@ -1,0 +1,87 @@
+{
+  "case_id": "VAL_07",
+  "case_name": "Extractive Distillation CO2 Ethane EOR NGL Separation",
+  "source_file": "Extractive_Distillation_CO2_Ethane_EOR.dwxmz",
+  "reference_validity": "incomplete-unconfirmed",
+  "reference_validity_reason": "Audit (Task 0 element balance): no conserving stream subset present; residual is one-signed (no atom creation) but the external solvent feed and a CO2-rich product are missing (99% of feed O absent from the named products; S-03 at 5172 mol/s exceeds the 4000 mol/s feed, so it is a solvent-laden internal stream). Not demonstrably wrong, but consistency cannot be confirmed without reconstructing the missing streams and re-solving (Tier-2). Marked, not fixed; not scored-excluded.",
+  "compounds": [
+    "Ethane", "Propane", "Isobutane", "N-butane",
+    "Isopentane", "N-pentane", "Carbon Dioxide"
+  ],
+  "property_package": "Peng-Robinson",
+  "solved": true,
+  "units": [
+    {"tag": "V-01",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "V-02",  "type": "Vessel",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-01", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-02", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "HT-03", "type": "Heater",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "CO-01", "type": "Cooler",   "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "MX-01", "type": "Mixer",    "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "SP-01", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}},
+    {"tag": "SP-02", "type": "Splitter", "params": {"T_out": null, "P_out": null, "dP": null, "efficiency": null}}
+  ],
+  "connections": [],
+  "streams": {
+    "feed": {
+      "T_K": 320.00, "T_C": 46.85,
+      "P_Pa": 2533130.00, "P_bar": 25.33130,
+      "flow_mol_s": 4000.000000,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Ethane":         0.462300,
+        "Propane":        0.075200,
+        "Isobutane":      0.075300,
+        "N-butane":       0.032300,
+        "Isopentane":     0.021500,
+        "N-pentane":      0.010900,
+        "Carbon Dioxide": 0.322500
+      }
+    },
+    "S-03": {
+      "T_K": 324.60, "T_C": 51.45,
+      "P_Pa": 2400390.00, "P_bar": 24.00390,
+      "flow_mol_s": 5172.222222,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Ethane":         0.346800,
+        "Propane":        0.217900,
+        "Isobutane":      0.232600,
+        "N-butane":       0.099800,
+        "Isopentane":     0.066500,
+        "N-pentane":      0.033700,
+        "Carbon Dioxide": 0.002700
+      }
+    },
+    "S-05": {
+      "T_K": 272.94, "T_C": -0.06,
+      "P_Pa": 2400390.00, "P_bar": 24.00390,
+      "flow_mol_s": 1810.280556,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Ethane":         0.989937,
+        "Propane":        0.002254,
+        "Isobutane":      0.000000,
+        "N-butane":       0.000000,
+        "Isopentane":     0.000000,
+        "N-pentane":      0.000000,
+        "Carbon Dioxide": 0.007809
+      }
+    },
+    "S-08": {
+      "T_K": 374.96, "T_C": 101.81,
+      "P_Pa": 2400390.00, "P_bar": 24.00390,
+      "flow_mol_s": 840.486111,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Ethane":         0.000004,
+        "Propane":        0.334146,
+        "Isobutane":      0.357988,
+        "N-butane":       0.153680,
+        "Isopentane":     0.102312,
+        "N-pentane":      0.051871,
+        "Carbon Dioxide": 0.000000
+      }
+    }
+  }
+}
