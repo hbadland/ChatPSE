@@ -252,6 +252,6 @@
     "source_dwxmz": "VAL 03",
     "dwsim_build": "5.2.6731.26495",
     "sim_name": "HYDRODEALKYLATION OF TOLUENE TO BENZENE",
-    "note": "connectivity recoverable and 8/8 values match source, but purge not modelled -> boundary balance fails; NOT adopted as balance-valid"
+    "note": "connectivity recoverable and 8/8 values match source, but the boundary element balance cannot close from the source as-built. Trace: the ~64 mol/s light-gas gap is the REC-017 recycle-tear convergence residual (MSTR-016 6616.11 -> MSTR-018 6551.88 mol/s), not a boundary purge; the source flowsheet models no purge splitter, so the light gases (reactor-generated methane, excess hydrogen) have no boundary exit. 'Dummy stream' is RC-007's unconnected second outlet port (F=-inf, empty composition), not a real stream. Extraction is faithful; the omission is in the source. NOT adopted as balance-valid."
   }
 }
