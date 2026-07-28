@@ -4,6 +4,7 @@ Tests for cross-tag reference stream matching.
 Run: PYTHONPATH=. python3.9 benchmark/test_stream_matcher.py
 """
 import json
+import math
 from benchmark.stream_matcher import match_streams
 from benchmark.physics_eval import _do_reference_comparison
 from agents.executor import StreamResult
@@ -57,30 +58,41 @@ def test_end_to_end_against_real_reference():
     """_do_reference_comparison computes MAPE + emits matching detail on VAL_04 ref."""
     ref_file = "benchmark/reference_flowsheets/VAL_04_reference.json"
     ref = json.load(open(ref_file))
-    # Build system streams from 3 reference streams: copy composition, perturb T/P.
-    picks = list(ref["streams"].items())[:3]
+    # Build system streams from every FINITE reference stream (copy composition,
+    # perturb T +3 K / P +1%). DWSIM dead-end ports (S-022: flow=-inf, vf=NaN) are
+    # skipped as system streams but remain in the reference — so this exercises the
+    # non-finite-cost path the matcher must survive.
+    def _fin(v):
+        return isinstance(v, (int, float)) and math.isfinite(v)
     sys_sr = {}
-    for i, (rtag, rs) in enumerate(picks):
+    i = 0
+    for rtag, rs in ref["streams"].items():
+        T = rs.get("T_K")
+        P = rs.get("P_Pa") or (rs.get("P_bar") or 0) * 1e5
+        comp = {k: v for k, v in (rs.get("composition") or {}).items()
+                if _fin(v) and v > 0}
+        if not _fin(T) or not P or not comp:
+            continue
+        vf = rs.get("vapor_fraction")
         sys_sr[f"UNITTAG-{i}"] = StreamResult(
             tag=f"UNITTAG-{i}",
-            T_K=float(rs["T_K"]) + 3.0,                      # +3 K perturbation
-            P_Pa=float(rs.get("P_Pa") or rs["P_bar"]*1e5) * 1.01,  # +1% P
+            T_K=float(T) + 3.0,
+            P_Pa=float(P) * 1.01,
             flow_mol_s=rs.get("flow_mol_s"),
-            composition=dict(rs["composition"]),
-            vapor_fraction=rs.get("vapor_fraction") or 0.0,
-            is_feed=(i == 0))
+            composition=dict(comp),
+            vapor_fraction=vf if _fin(vf) else 0.0,
+            is_feed=bool(rs.get("is_feed")))
+        i += 1
 
     class MockPR:
         class final_execution:
             stream_results = sys_sr
     checks, mape_T, mape_P, mape_vf = _do_reference_comparison(ref_file, MockPR())
     detail = next(c for c in checks if c["check"] == "reference_stream_matching")
-    # The current v2 VAL_04 reference has many streams sharing the same 7-component
-    # composition and vf=None, so this 3-stream probe yields 2 confident matches (the
-    # third stays below threshold — conservatively unmatched, not forced). The point
-    # of this test is that the matcher COMPLETES on a reference containing a DWSIM
-    # dead-end port (S-022: flow=-inf, vf=NaN) instead of throwing on the NaN cost.
-    assert detail["n_matched"] >= 2, detail
+    # The matcher COMPLETES on a reference containing a DWSIM dead-end port
+    # (S-022: flow=-inf, vf=NaN) instead of throwing on the NaN cost, and matches the
+    # finite streams (each perturbed stream to its identical-composition source/twin).
+    assert detail["n_matched"] >= 3, detail
     assert mape_T > 0.0, mape_T            # +3 K → non-zero T MAPE
     assert any(c["check"] == "reference_match_T" for c in checks)
     print(f"OK end-to-end: n_matched={detail['n_matched']} "
