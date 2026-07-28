@@ -13,6 +13,7 @@ LLMs must not invent packages; the allowed list is injected explicitly.
 """
 from __future__ import annotations
 
+import os
 from typing import Optional
 
 from ir.graph import FlowsheetGraph
@@ -55,7 +56,13 @@ class ThermoMapper:
             print(f"[PARAM_MISSING] coverage-guard escalation: {exc}", flush=True)
             raise
 
+        # CHANGE 5: config-gated tiebreak. THERMO_TIEBREAK=deterministic skips the LLM
+        # entirely and takes candidates[0] (candidate GENERATION is untouched). Default
+        # 'llm' is byte-identical to prior behaviour.
+        _tiebreak = os.environ.get("THERMO_TIEBREAK", "llm").strip().lower()
         if self._selector.is_unambiguous(candidates):
+            pkg = candidates[0]
+        elif _tiebreak == "deterministic":
             pkg = candidates[0]
         else:
             pkg = self._llm.select(g, description, candidates, max_retries) \
