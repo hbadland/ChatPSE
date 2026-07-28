@@ -159,6 +159,28 @@ class BIPRetriever:
         return len(missing) == 0
 
 
+# ── Coverage guard (CHANGE 1) ───────────────────────────────────────────────────
+# Config switch: export THERMO_COVERAGE_GUARD=1 to enable. Default (unset/0) keeps
+# the pre-existing behaviour exactly, so this change is revertible by env flag.
+def _coverage_guard_enabled() -> bool:
+    return os.environ.get("THERMO_COVERAGE_GUARD", "").strip() in ("1", "true", "True")
+
+
+class ThermoCoverageGuard(Exception):
+    """Raised when a system classified is_polar or has_azeo has NO NRTL/UNIQUAC
+    coverage and the coverage guard is enabled — instead of falling through to
+    Raoult's Law (ideal). Carries the specific uncovered pairs for the message."""
+
+    def __init__(self, compounds, uncovered_pairs):
+        self.compounds = list(compounds)
+        self.uncovered_pairs = [tuple(p) for p in uncovered_pairs]
+        _p = ", ".join(f"{a}/{b}" for a, b in self.uncovered_pairs) or "unknown"
+        super().__init__(
+            f"PARAM_MISSING: activity model required for {self.compounds} but no "
+            f"NRTL/UNIQUAC coverage for pair(s): {_p}. Refusing Raoult's Law "
+            f"fallback (THERMO_COVERAGE_GUARD on).")
+
+
 # ── Thermo model retrieval ─────────────────────────────────────────────────────
 
 class ThermoRetriever:
@@ -322,6 +344,21 @@ class ThermoRetriever:
                 has_uniquac = bip_retriever.has_full_coverage(compounds, "UNIQUAC")
             else:
                 has_nrtl = has_uniquac = False  # unknown — try anyway
+
+            # ── CHANGE 1: coverage guard ──────────────────────────────────────
+            # Polar/azeotropic system with no activity-model coverage: without the
+            # guard this falls through to Raoult's Law (ideal) below. With the guard
+            # enabled, escalate PARAM_MISSING instead of silently shipping ideal.
+            # (Raoult's Law stays reachable for near-ideal systems — this branch is
+            # only entered when is_polar or has_azeo.)
+            if (_coverage_guard_enabled() and bip_retriever
+                    and not has_nrtl and not has_uniquac):
+                _n_miss = {frozenset(p) for p in
+                           bip_retriever.query(compounds, "NRTL")[1]}
+                _u_miss = {frozenset(p) for p in
+                           bip_retriever.query(compounds, "UNIQUAC")[1]}
+                _uncovered = [tuple(sorted(fs)) for fs in (_n_miss & _u_miss)]
+                raise ThermoCoverageGuard(compounds, sorted(_uncovered))
 
             if has_nrtl or not bip_retriever:
                 candidates.append("NRTL")

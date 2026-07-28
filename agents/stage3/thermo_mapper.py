@@ -21,7 +21,7 @@ from agents.stage3.thermo_components import (
     PackageSelector, BIPInjector, ThermoLLMFallback,
     _feed_temperature,
 )
-from rag.retriever import Retriever
+from rag.retriever import Retriever, ThermoCoverageGuard
 
 
 class ThermoMapper:
@@ -45,7 +45,15 @@ class ThermoMapper:
         g      = graph.copy()
         exclude = exclude or set()
 
-        candidates = self._selector.select(g, description, exclude)
+        # CHANGE 1: the selector raises ThermoCoverageGuard when the coverage guard
+        # is enabled and a polar/azeotropic system has no NRTL/UNIQUAC coverage.
+        # Re-raise so the Stage-3 handler terminates the run (PARAM_MISSING → human)
+        # rather than falling through to Raoult's Law (ideal).
+        try:
+            candidates = self._selector.select(g, description, exclude)
+        except ThermoCoverageGuard as exc:
+            print(f"[PARAM_MISSING] coverage-guard escalation: {exc}", flush=True)
+            raise
 
         if self._selector.is_unambiguous(candidates):
             pkg = candidates[0]
