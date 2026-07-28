@@ -21,7 +21,9 @@
     "T_max_K": 340,
     "source": "DECHEMA VLE Vol 3, p.184",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "67-66-3"
   },
   {
     "compound_a": "Acetone",
@@ -44,7 +46,9 @@
     "T_max_K": 340,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Acetone",
@@ -66,7 +70,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Benzene",
@@ -87,7 +93,9 @@
     "T_max_K": 353,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "Benzene",
@@ -109,7 +117,9 @@
     "T_max_K": 368,
     "source": "DECHEMA VLE Vol 1, p.236",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Benzene",
@@ -131,7 +141,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Diethyl Ether",
@@ -155,7 +167,9 @@
     "T_max_K": 340,
     "source": "DECHEMA VLE Vol 2, p.118",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "60-29-7",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Ethanol",
@@ -177,7 +191,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Ethanol",
@@ -200,7 +216,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Ethanol",
@@ -222,7 +240,9 @@
     "T_max_K": 373,
     "source": "Gmehling et al. 1977, Vapor-Liquid Equilibrium Data Collection",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methanol",
@@ -245,7 +265,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Methanol",
@@ -267,7 +289,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1-Propanol",
@@ -289,7 +313,9 @@
     "T_max_K": 383,
     "source": "DECHEMA VLE Vol 1, p.162",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "2-Propanol",
@@ -312,7 +338,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1-Butanol",
@@ -334,7 +362,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 1, p.183",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-36-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetonitrile",
@@ -356,7 +386,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetic Acid",
@@ -378,7 +410,9 @@
     "T_max_K": 393,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-19-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -400,7 +434,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -421,7 +457,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 1, p.342",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetone",
@@ -444,7 +482,9 @@
     "T_max_K": 340,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Benzene",
@@ -466,7 +506,9 @@
     "T_max_K": 383,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Benzene",
@@ -487,7 +529,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "71-43-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "n-Hexane",
@@ -509,7 +553,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-54-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Hexane",
@@ -531,7 +577,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-54-3",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "n-Heptane",
@@ -553,7 +601,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "142-82-5",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Heptane",
@@ -575,7 +625,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "142-82-5",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Cyclohexane",
@@ -597,7 +649,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 2, p.297",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-82-7",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Cyclohexane",
@@ -619,7 +673,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-82-7",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Toluene",
@@ -641,7 +697,9 @@
     "T_max_K": 393,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-88-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "2-Butanone",
@@ -663,7 +721,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 3, p.201",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Diethyl Ether",
@@ -687,7 +747,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "60-29-7",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Diethyl Ether",
@@ -710,7 +772,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "60-29-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Chloroform",
@@ -732,7 +796,9 @@
     "T_max_K": 348,
     "source": "DECHEMA VLE Vol 3, p.193",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-66-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Chloroform",
@@ -754,7 +820,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-66-3",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Acetonitrile",
@@ -776,7 +844,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 3, p.412",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Acetonitrile",
@@ -799,7 +869,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "1-Propanol",
@@ -822,7 +894,9 @@
     "T_max_K": 388,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "2-Propanol",
@@ -845,7 +919,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 1, p.198",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Formic Acid",
@@ -866,7 +942,9 @@
     "T_max_K": 393,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "64-18-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Propionic Acid",
@@ -887,7 +965,9 @@
     "T_max_K": 413,
     "source": "DECHEMA VLE Vol 1, p.388",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "79-09-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Dimethyl Sulfoxide",
@@ -909,7 +989,9 @@
     "T_max_K": 423,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "67-68-5",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -931,7 +1013,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 3, p.517",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-99-9",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -954,7 +1038,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-99-9",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -977,7 +1063,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-99-9",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Dimethylformamide",
@@ -998,7 +1086,9 @@
     "T_max_K": 433,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "68-12-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetone",
@@ -1020,7 +1110,9 @@
     "T_max_K": 338,
     "source": "DECHEMA VLE Vol 3, p.217",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Acetone",
@@ -1042,7 +1134,9 @@
     "T_max_K": 340,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Carbon Tetrachloride",
@@ -1063,7 +1157,9 @@
     "T_max_K": 353,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "56-23-5",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Carbon Tetrachloride",
@@ -1085,7 +1181,9 @@
     "T_max_K": 348,
     "source": "DECHEMA VLE Vol 3, p.327",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "56-23-5",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Carbon Tetrachloride",
@@ -1107,7 +1205,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 3, p.329",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "56-23-5",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Diisopropyl Ether",
@@ -1130,7 +1230,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-20-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Methyl Acetate",
@@ -1152,7 +1254,9 @@
     "T_max_K": 340,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "79-20-9",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Methyl Acetate",
@@ -1173,7 +1277,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 1, p.298",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "79-20-9",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Propyl Acetate",
@@ -1195,7 +1301,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "109-60-4",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Pyridine",
@@ -1216,7 +1324,9 @@
     "T_max_K": 388,
     "source": "DECHEMA VLE Vol 3, p.481",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-86-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Furfural",
@@ -1238,7 +1348,9 @@
     "T_max_K": 433,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "98-01-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Glycerol",
@@ -1260,7 +1372,9 @@
     "T_max_K": 473,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "56-81-5",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -1282,7 +1396,9 @@
     "T_max_K": 473,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "107-21-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Hydrogen Chloride",
@@ -1303,7 +1419,9 @@
     "T_max_K": 383,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "7647-01-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ammonia",
@@ -1324,7 +1442,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "7664-41-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methanol",
@@ -1346,7 +1466,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "Ethanol",
@@ -1368,7 +1490,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 2, p.297",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "Acetone",
@@ -1391,7 +1515,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "1-Butanol",
@@ -1413,7 +1539,9 @@
     "T_max_K": 368,
     "source": "DECHEMA VLE Vol 1, p.191",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-36-3",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Acetaldehyde",
@@ -1434,7 +1562,9 @@
     "T_max_K": 333,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "75-07-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methyl Ethyl Ketone",
@@ -1457,7 +1587,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Methyl Ethyl Ketone",
@@ -1480,7 +1612,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Methyl Ethyl Ketone",
@@ -1502,7 +1636,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 3, p.219",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "n-Propanol",
@@ -1524,7 +1660,9 @@
     "T_max_K": 378,
     "source": "DECHEMA VLE Vol 1, p.176",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "n-Butanol",
@@ -1546,7 +1684,9 @@
     "T_max_K": 388,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-36-3",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Sulfolane",
@@ -1568,7 +1708,9 @@
     "T_max_K": 423,
     "source": "DECHEMA LLE Vol 2, p.187",
     "fit_data": "LLE",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "126-33-0",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "Sulfolane",
@@ -1591,7 +1733,9 @@
     "T_max_K": 423,
     "source": "DECHEMA LLE Vol 2, p.189",
     "fit_data": "LLE",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "126-33-0",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Water",
@@ -1613,7 +1757,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 1, p.183 (duplicate for reverse key order compatibility)",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "7732-18-5",
+    "cas_b": "71-36-3"
   },
   {
     "compound_a": "Phenol",
@@ -1634,7 +1780,9 @@
     "T_max_K": 453,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-95-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Aniline",
@@ -1656,7 +1804,9 @@
     "T_max_K": 453,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "62-53-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methanol",
@@ -1678,7 +1828,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "Butyl Acetate",
@@ -1700,7 +1852,9 @@
     "T_max_K": 398,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "123-86-4",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Butyl Acetate",
@@ -1721,7 +1875,9 @@
     "T_max_K": 398,
     "source": "DECHEMA VLE Vol 1, p.365",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "123-86-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Dioxane",
@@ -1743,7 +1899,9 @@
     "T_max_K": 378,
     "source": "DECHEMA VLE Vol 3, p.467",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "123-91-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methyl tert-Butyl Ether",
@@ -1766,7 +1924,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "1634-04-4",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Methyl tert-Butyl Ether",
@@ -1788,7 +1948,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "1634-04-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "n-Octane",
@@ -1810,7 +1972,9 @@
     "T_max_K": 398,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "111-65-9",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Dimethyl Ether",
@@ -1833,7 +1997,9 @@
     "T_max_K": 313,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "115-10-6",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Formaldehyde",
@@ -1855,7 +2021,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "50-00-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acrylic Acid",
@@ -1877,7 +2045,9 @@
     "T_max_K": 418,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "79-10-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Caprolactam",
@@ -1899,7 +2069,9 @@
     "T_max_K": 473,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "105-60-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Cyclohexanone",
@@ -1920,7 +2092,9 @@
     "T_max_K": 433,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-94-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Isopropyl Acetate",
@@ -1941,7 +2115,9 @@
     "T_max_K": 393,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-21-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methanol",
@@ -1963,7 +2139,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Ethanol",
@@ -1985,7 +2163,9 @@
     "T_max_K": 368,
     "source": "DECHEMA VLE Vol 1, p.236",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Ethanol",
@@ -2006,7 +2186,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 1, p.146",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methanol",
@@ -2027,7 +2209,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 1, p.118",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetone",
@@ -2048,7 +2232,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 3, p.184",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetone",
@@ -2070,7 +2256,9 @@
     "T_max_K": 340,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Benzene",
@@ -2091,7 +2279,9 @@
     "T_max_K": 368,
     "source": "DECHEMA VLE Vol 1, p.236",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Benzene",
@@ -2112,7 +2302,9 @@
     "T_max_K": 368,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Ethanol",
@@ -2133,7 +2325,9 @@
     "T_max_K": 358,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "2-Propanol",
@@ -2155,7 +2349,9 @@
     "T_max_K": 373,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -2176,7 +2372,9 @@
     "T_max_K": 358,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "1-Propanol",
@@ -2197,7 +2395,9 @@
     "T_max_K": 383,
     "source": "DECHEMA VLE Vol 1, p.162",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetic Acid",
@@ -2218,7 +2418,9 @@
     "T_max_K": 393,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-19-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Cyclohexane",
@@ -2239,7 +2441,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 2, p.297",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-82-7",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Diethyl Ether",
@@ -2262,7 +2466,9 @@
     "T_max_K": 338,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "60-29-7",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -2283,7 +2489,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 3, p.517",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-99-9",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetonitrile",
@@ -2304,7 +2512,9 @@
     "T_max_K": 368,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -2325,7 +2535,9 @@
     "T_max_K": 473,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "107-21-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Propylene Glycol",
@@ -2346,7 +2558,9 @@
     "T_max_K": 473,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "57-55-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methyl Acetate",
@@ -2367,7 +2581,9 @@
     "T_max_K": 340,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "79-20-9",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Toluene",
@@ -2389,7 +2605,9 @@
     "T_max_K": 378,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-88-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Pentane",
@@ -2411,7 +2629,9 @@
     "T_max_K": 333,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-66-0",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Pentane",
@@ -2433,7 +2653,9 @@
     "T_max_K": 338,
     "source": "DECHEMA VLE Vol 1, p.205",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-66-0",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "n-Octane",
@@ -2455,7 +2677,9 @@
     "T_max_K": 388,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "111-65-9",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Nonane",
@@ -2477,7 +2701,9 @@
     "T_max_K": 418,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "111-84-2",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Isooctane",
@@ -2500,7 +2726,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "540-84-1",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Isooctane",
@@ -2523,7 +2751,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "540-84-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "2-Butanol",
@@ -2545,7 +2775,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 1, p.193",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-92-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "tert-Butanol",
@@ -2568,7 +2800,9 @@
     "T_max_K": 368,
     "source": "DECHEMA VLE Vol 1, p.196",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-65-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1-Pentanol",
@@ -2591,7 +2825,9 @@
     "T_max_K": 413,
     "source": "DECHEMA VLE Vol 1, p.202",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-41-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "2-Methyl-1-propanol",
@@ -2613,7 +2849,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 1, p.188",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-83-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Methanol",
@@ -2636,7 +2874,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Ethanol",
@@ -2659,7 +2899,9 @@
     "T_max_K": 383,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "71-23-8"
   },
   {
     "compound_a": "Methanol",
@@ -2682,7 +2924,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-56-1",
+    "cas_b": "71-23-8"
   },
   {
     "compound_a": "2-Propanol",
@@ -2705,7 +2949,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 1, p.201",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "2-Propanol",
@@ -2729,7 +2975,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "2-Propanol",
@@ -2752,7 +3000,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 1, p.199",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "1-Propanol",
@@ -2774,7 +3024,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "1-Propanol",
@@ -2796,7 +3048,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 2, p.302",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "1-Butanol",
@@ -2819,7 +3073,9 @@
     "T_max_K": 408,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-36-3",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "n-Hexane",
@@ -2841,7 +3097,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-54-3",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "n-Heptane",
@@ -2863,7 +3121,9 @@
     "T_max_K": 388,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "142-82-5",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "n-Heptane",
@@ -2884,7 +3144,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "142-82-5",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "n-Octane",
@@ -2906,7 +3168,9 @@
     "T_max_K": 403,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "111-65-9",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "n-Octane",
@@ -2927,7 +3191,9 @@
     "T_max_K": 413,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "111-65-9",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "n-Hexane",
@@ -2948,7 +3214,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 2, p.408",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-54-3",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "n-Pentane",
@@ -2969,7 +3237,9 @@
     "T_max_K": 333,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-66-0",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "n-Pentane",
@@ -2991,7 +3261,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "109-66-0",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Cyclohexane",
@@ -3013,7 +3285,9 @@
     "T_max_K": 383,
     "source": "DECHEMA VLE Vol 2, p.320",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-82-7",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Cyclohexane",
@@ -3034,7 +3308,9 @@
     "T_max_K": 363,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-82-7",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "o-Xylene",
@@ -3055,7 +3331,9 @@
     "T_max_K": 423,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "95-47-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "p-Xylene",
@@ -3076,7 +3354,9 @@
     "T_max_K": 413,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "106-42-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ethylbenzene",
@@ -3098,7 +3378,9 @@
     "T_max_K": 418,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "100-41-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Styrene",
@@ -3121,7 +3403,9 @@
     "T_max_K": 448,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "100-42-5",
+    "cas_b": "100-41-4"
   },
   {
     "compound_a": "Chlorobenzene",
@@ -3143,7 +3427,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-90-7",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Chlorobenzene",
@@ -3165,7 +3451,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 3, p.347",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-90-7",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Chlorobenzene",
@@ -3186,7 +3474,9 @@
     "T_max_K": 413,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-90-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1,2-Dichloroethane",
@@ -3208,7 +3498,9 @@
     "T_max_K": 368,
     "source": "DECHEMA VLE Vol 3, p.338",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "107-06-2",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "1,2-Dichloroethane",
@@ -3231,7 +3523,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-06-2",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "1,2-Dichloroethane",
@@ -3253,7 +3547,9 @@
     "T_max_K": 383,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-06-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Dichloromethane",
@@ -3276,7 +3572,9 @@
     "T_max_K": 333,
     "source": "DECHEMA VLE Vol 3, p.331",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-09-2",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Dichloromethane",
@@ -3299,7 +3597,9 @@
     "T_max_K": 333,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "75-09-2",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Nitromethane",
@@ -3320,7 +3620,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "75-52-5",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Nitromethane",
@@ -3341,7 +3643,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 3, p.445",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "75-52-5",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Carbon Disulfide",
@@ -3363,7 +3667,9 @@
     "T_max_K": 338,
     "source": "DECHEMA VLE Vol 3, p.283",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-15-0",
+    "cas_b": "67-64-1"
   },
   {
     "compound_a": "Carbon Disulfide",
@@ -3384,7 +3690,9 @@
     "T_max_K": 353,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-15-0",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -3406,7 +3714,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -3427,7 +3737,9 @@
     "T_max_K": 358,
     "source": "DECHEMA VLE Vol 1, p.346",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -3448,7 +3760,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Methyl Acetate",
@@ -3470,7 +3784,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "79-20-9",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Methyl Acetate",
@@ -3491,7 +3807,9 @@
     "T_max_K": 348,
     "source": "DECHEMA VLE Vol 1, p.302",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "79-20-9",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Methyl Acetate",
@@ -3513,7 +3831,9 @@
     "T_max_K": 368,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "79-20-9",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Butyl Acetate",
@@ -3535,7 +3855,9 @@
     "T_max_K": 393,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "123-86-4",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Propyl Acetate",
@@ -3557,7 +3879,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "109-60-4",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Propyl Acetate",
@@ -3578,7 +3902,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 1, p.358",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "109-60-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetic Acid",
@@ -3600,7 +3926,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 1, p.379",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-19-7",
+    "cas_b": "141-78-6"
   },
   {
     "compound_a": "Acetic Acid",
@@ -3623,7 +3951,9 @@
     "T_max_K": 413,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "64-19-7",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Acetic Acid",
@@ -3645,7 +3975,9 @@
     "T_max_K": 393,
     "source": "DECHEMA VLE Vol 1, p.375",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "64-19-7",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Acetic Acid",
@@ -3668,7 +4000,9 @@
     "T_max_K": 393,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-19-7",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Butyric Acid",
@@ -3690,7 +4024,9 @@
     "T_max_K": 433,
     "source": "DECHEMA VLE Vol 1, p.394",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-92-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "2-Butanone",
@@ -3713,7 +4049,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "2-Butanone",
@@ -3735,7 +4073,9 @@
     "T_max_K": 378,
     "source": "DECHEMA VLE Vol 3, p.204",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Acetone",
@@ -3757,7 +4097,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "Acetone",
@@ -3779,7 +4121,9 @@
     "T_max_K": 348,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "Acetonitrile",
@@ -3802,7 +4146,9 @@
     "T_max_K": 358,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Acetonitrile",
@@ -3825,7 +4171,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 3, p.415",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Diethyl Ether",
@@ -3848,7 +4196,9 @@
     "T_max_K": 333,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "60-29-7",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Diethyl Ether",
@@ -3871,7 +4221,9 @@
     "T_max_K": 333,
     "source": "DECHEMA VLE Vol 2, p.124",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "60-29-7",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -3893,7 +4245,9 @@
     "T_max_K": 343,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-99-9",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -3916,7 +4270,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "109-99-9",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Dioxane",
@@ -3939,7 +4295,9 @@
     "T_max_K": 378,
     "source": "DECHEMA VLE Vol 3, p.472",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "123-91-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Dioxane",
@@ -3962,7 +4320,9 @@
     "T_max_K": 378,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "123-91-1",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -3985,7 +4345,9 @@
     "T_max_K": 413,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-21-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -4008,7 +4370,9 @@
     "T_max_K": 423,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-21-1",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Propylene Glycol",
@@ -4031,7 +4395,9 @@
     "T_max_K": 413,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "57-55-6",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Methyl Formate",
@@ -4053,7 +4419,9 @@
     "T_max_K": 338,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "107-31-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Methyl Formate",
@@ -4074,7 +4442,9 @@
     "T_max_K": 363,
     "source": "DECHEMA VLE Vol 1, p.288",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-31-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Diethylamine",
@@ -4096,7 +4466,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Vol 3, p.494",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "109-89-7",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Triethylamine",
@@ -4118,7 +4490,9 @@
     "T_max_K": 373,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "121-44-8",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Morpholine",
@@ -4139,7 +4513,9 @@
     "T_max_K": 443,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "110-91-8",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "N-Methyl-2-pyrrolidone",
@@ -4161,7 +4537,9 @@
     "T_max_K": 463,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "872-50-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "N-Methyl-2-pyrrolidone",
@@ -4184,7 +4562,9 @@
     "T_max_K": 443,
     "source": "DECHEMA LLE Vol 2, p.212",
     "fit_data": "LLE",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "872-50-4",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Sulfolane",
@@ -4206,7 +4586,9 @@
     "T_max_K": 423,
     "source": "DECHEMA LLE Vol 2, p.183",
     "fit_data": "LLE",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "126-33-0",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Furfuryl Alcohol",
@@ -4227,7 +4609,9 @@
     "T_max_K": 453,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "98-00-0",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1-Butanol",
@@ -4249,7 +4633,9 @@
     "T_max_K": 393,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-36-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "n-Hexane",
@@ -4271,7 +4657,9 @@
     "T_max_K": 338,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-54-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Heptane",
@@ -4293,7 +4681,9 @@
     "T_max_K": 378,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "142-82-5",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "n-Heptane",
@@ -4315,7 +4705,9 @@
     "T_max_K": 378,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "142-82-5",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Benzene",
@@ -4336,7 +4728,9 @@
     "T_max_K": 353,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-43-2",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "Benzene",
@@ -4357,7 +4751,9 @@
     "T_max_K": 373,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "71-43-2",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Toluene",
@@ -4379,7 +4775,9 @@
     "T_max_K": 393,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "108-88-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Toluene",
@@ -4402,7 +4800,9 @@
     "T_max_K": 378,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-88-3",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Acetonitrile",
@@ -4425,7 +4825,9 @@
     "T_max_K": 338,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Tetrahydrofuran",
@@ -4448,7 +4850,9 @@
     "T_max_K": 338,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "109-99-9",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Dioxane",
@@ -4470,7 +4874,9 @@
     "T_max_K": 378,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "123-91-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Chloroform",
@@ -4492,7 +4898,9 @@
     "T_max_K": 348,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-66-3",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Chloroform",
@@ -4514,7 +4922,9 @@
     "T_max_K": 358,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-66-3",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Acetone",
@@ -4537,7 +4947,9 @@
     "T_max_K": 340,
     "source": "DECHEMA VLE Vol 3, p.184",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "67-66-3"
   },
   {
     "compound_a": "Ethyl Acetate",
@@ -4558,7 +4970,9 @@
     "T_max_K": 373,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "141-78-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "2-Propanol",
@@ -4581,7 +4995,9 @@
     "T_max_K": 358,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Pyridine",
@@ -4602,7 +5018,9 @@
     "T_max_K": 388,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-86-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Glycerol",
@@ -4624,7 +5042,9 @@
     "T_max_K": 473,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "56-81-5",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -4647,7 +5067,9 @@
     "T_max_K": 413,
     "source": "ChemSep UNIQUAC database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-21-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Acetic Acid",
@@ -4673,7 +5095,9 @@
     "T_max_K": 374,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-19-7",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Aniline",
@@ -4696,7 +5120,9 @@
     "T_max_K": 458,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "62-53-3",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Aniline",
@@ -4719,7 +5145,9 @@
     "T_max_K": 468,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "62-53-3",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Chlorobenzene",
@@ -4742,7 +5170,9 @@
     "T_max_K": 404,
     "source": "DECHEMA VLE Data Series Vol. 2",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-90-7",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Chlorobenzene",
@@ -4765,7 +5195,9 @@
     "T_max_K": 405,
     "source": "DECHEMA VLE Data Series Vol. 2",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-90-7",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "Chlorobenzene",
@@ -4788,7 +5220,9 @@
     "T_max_K": 405,
     "source": "DECHEMA VLE Data Series Vol. 2",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-90-7",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Cyclohexanone",
@@ -4811,7 +5245,9 @@
     "T_max_K": 430,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-94-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Dichloromethane",
@@ -4836,7 +5272,9 @@
     "T_max_K": 355,
     "source": "DECHEMA VLE Data Series Vol. 3",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-09-2",
+    "cas_b": "67-64-1"
   },
   {
     "compound_a": "Dichloromethane",
@@ -4859,7 +5297,9 @@
     "T_max_K": 400,
     "source": "DECHEMA VLE Data Series Vol. 3",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-09-2",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Dimethyl Sulfoxide",
@@ -4882,7 +5322,9 @@
     "T_max_K": 353,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-68-5",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Dimethyl Sulfoxide",
@@ -4905,7 +5347,9 @@
     "T_max_K": 383,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-68-5",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Dimethyl Sulfoxide",
@@ -4928,7 +5372,9 @@
     "T_max_K": 371,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "67-68-5",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "Dimethylformamide",
@@ -4951,7 +5397,9 @@
     "T_max_K": 348,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "68-12-2",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Dimethylformamide",
@@ -4975,7 +5423,9 @@
     "T_max_K": 383,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "68-12-2",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -4999,7 +5449,9 @@
     "T_max_K": 353,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-21-1",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Ethylene Glycol",
@@ -5024,7 +5476,9 @@
     "T_max_K": 383,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "107-21-1",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Formic Acid",
@@ -5048,7 +5502,9 @@
     "T_max_K": 350,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-18-6",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Formic Acid",
@@ -5072,7 +5528,9 @@
     "T_max_K": 338,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-18-6",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Furfural",
@@ -5095,7 +5553,9 @@
     "T_max_K": 428,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "98-01-1",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Furfural",
@@ -5119,7 +5579,9 @@
     "T_max_K": 428,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "98-01-1",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "N-Methyl-2-pyrrolidone",
@@ -5143,7 +5605,9 @@
     "T_max_K": 453,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "872-50-4",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "N-Methyl-2-pyrrolidone",
@@ -5167,7 +5631,9 @@
     "T_max_K": 453,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 4",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "872-50-4",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Propionic Acid",
@@ -5191,7 +5657,9 @@
     "T_max_K": 413,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "79-09-4",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "Propionic Acid",
@@ -5215,7 +5683,9 @@
     "T_max_K": 413,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "79-09-4",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Propionic Acid",
@@ -5237,7 +5707,9 @@
     "T_max_K": 413,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "79-09-4",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Propylene Glycol",
@@ -5261,7 +5733,9 @@
     "T_max_K": 460,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "57-55-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Pyridine",
@@ -5283,7 +5757,9 @@
     "T_max_K": 388,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 5",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-86-1",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Pyridine",
@@ -5307,7 +5783,9 @@
     "T_max_K": 388,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 5",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-86-1",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Pyridine",
@@ -5329,7 +5807,9 @@
     "T_max_K": 388,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 5",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "110-86-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1-Butanol",
@@ -5353,7 +5833,9 @@
     "T_max_K": 400,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-36-3",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "1-Propanol",
@@ -5377,7 +5859,9 @@
     "T_max_K": 399,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "111-65-9"
   },
   {
     "compound_a": "2-Propanol",
@@ -5402,7 +5886,9 @@
     "T_max_K": 372,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-63-0",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "2-Butanol",
@@ -5425,7 +5911,9 @@
     "T_max_K": 390,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "78-92-2",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "2-Butanol",
@@ -5449,7 +5937,9 @@
     "T_max_K": 384,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Pxy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "78-92-2",
+    "cas_b": "108-88-3"
   },
   {
     "compound_a": "Acetic Acid",
@@ -5474,7 +5964,9 @@
     "T_max_K": 345,
     "source": "DECHEMA VLE Data Series Vol. 1 Part 3a",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-19-7",
+    "cas_b": "141-78-6"
   },
   {
     "compound_a": "Acetonitrile",
@@ -5499,7 +5991,9 @@
     "T_max_K": 354,
     "source": "DECHEMA VLE Data Series Vol. 2",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "110-54-3"
   },
   {
     "compound_a": "Acetonitrile",
@@ -5523,7 +6017,9 @@
     "T_max_K": 371,
     "source": "DECHEMA VLE Data Series Vol. 2",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "75-05-8",
+    "cas_b": "142-82-5"
   },
   {
     "compound_a": "1,2-Dichloroethane",
@@ -5548,7 +6044,9 @@
     "T_max_K": 356,
     "source": "DECHEMA VLE Data Series Vol. 3",
     "fit_data": "VLE-Pxy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "107-06-2",
+    "cas_b": "67-64-1"
   },
   {
     "compound_a": "Methyl Isobutyl Ketone",
@@ -5571,7 +6069,9 @@
     "T_max_K": 390,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-10-1",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Propylene Glycol",
@@ -5596,7 +6096,9 @@
     "T_max_K": 460,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "57-55-6",
+    "cas_b": "67-56-1"
   },
   {
     "compound_a": "Sulfolane",
@@ -5619,7 +6121,9 @@
     "T_max_K": 453,
     "source": "DECHEMA VLE Data Series Vol. 2",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "126-33-0",
+    "cas_b": "110-82-7"
   },
   {
     "compound_a": "Triethylene Glycol",
@@ -5642,7 +6146,9 @@
     "T_max_K": 480,
     "source": "DECHEMA VLE Data Series Vol. 1",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "112-27-6",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetic Acid",
@@ -5666,7 +6172,9 @@
     "T_max_K": 400,
     "source": "DECHEMA VLE Data Series Vol. 1, Part 5 (Gmehling et al.)",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "64-19-7",
+    "cas_b": "123-86-4"
   },
   {
     "compound_a": "1-Butanol",
@@ -5691,7 +6199,9 @@
     "T_max_K": 392,
     "source": "ChemSep NRTL database",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "71-36-3",
+    "cas_b": "64-17-5"
   },
   {
     "compound_a": "1-Butanol",
@@ -5715,7 +6225,9 @@
     "T_max_K": 400,
     "source": "DECHEMA VLE Data Series Vol. 1, Part 5 (Gmehling et al.)",
     "fit_data": "VLE-Txy",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "71-36-3",
+    "cas_b": "123-86-4"
   },
   {
     "compound_a": "n-Hexane",
@@ -5736,9 +6248,11 @@
     "alpha12": 0.2,
     "T_min_K": 280,
     "T_max_K": 320,
-    "source": "DECHEMA LLE Data Series Vol. 1 (S\u00f8rensen & Arlt, 1979)",
+    "source": "DECHEMA LLE Data Series Vol. 1 (Sørensen & Arlt, 1979)",
     "fit_data": "LLE",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "110-54-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "1-Propanol",
@@ -5761,7 +6275,9 @@
     "T_max_K": 373,
     "source": "DECHEMA VLE Series Vol. 2c, Gmehling & Onken (1977)",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "71-23-8",
+    "cas_b": "71-43-2"
   },
   {
     "compound_a": "Methyl Ethyl Ketone",
@@ -5784,7 +6300,9 @@
     "T_max_K": 375,
     "source": "ChemSep NRTL database; DECHEMA VLE Vol. 3",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "78-93-3",
+    "cas_b": "7732-18-5"
   },
   {
     "compound_a": "Acetone",
@@ -5807,7 +6325,9 @@
     "T_max_K": 350,
     "source": "ChemSep NRTL database; DECHEMA VLE Vol. 3, p.206",
     "fit_data": "VLE-Txy",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "67-64-1",
+    "cas_b": "141-78-6"
   },
   {
     "compound_a": "Benzene",
@@ -5829,7 +6349,9 @@
     "T_max_K": 413,
     "source": "Ideal-solution approximation (NOT a regressed fit): benzene and p-xylene are near-identical nonpolar aromatics with activity coefficients ~1; UNIFAC group parameters give ~0 interaction and measured VLE deviations from Raoult are negligible. NRTL A12=A21=0.",
     "fit_data": "ideal-approximation",
-    "confidence": "medium"
+    "confidence": "medium",
+    "cas_a": "71-43-2",
+    "cas_b": "106-42-3"
   },
   {
     "compound_a": "Toluene",
@@ -5852,7 +6374,9 @@
     "T_max_K": 450,
     "source": "DWSIM built-in database (DWSIM.Thermodynamics NRTL); temperature-independent (B12=B21=0), nominal range.",
     "fit_data": "DWSIM-builtin-NRTL",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "108-88-3",
+    "cas_b": "110-86-1"
   },
   {
     "compound_a": "Ethanol",
@@ -5878,6 +6402,8 @@
     "T_max_K": 450,
     "source": "DWSIM built-in database (DWSIM.Thermodynamics NRTL); temperature-independent (B12=B21=0), nominal range.",
     "fit_data": "DWSIM-builtin-NRTL",
-    "confidence": "high"
+    "confidence": "high",
+    "cas_a": "64-17-5",
+    "cas_b": "106-42-3"
   }
 ]
