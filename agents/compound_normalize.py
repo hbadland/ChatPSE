@@ -53,6 +53,27 @@ SYNONYM_MAP: dict[str, str] = {
     "meta-xylene":        "m-Xylene",
     "p-xylene":           "p-Xylene",
     "para-xylene":        "p-Xylene",
+    # STEP 2: corpus BIP-record spellings → DWSIM 9.0.4 keys, verified by CAS against
+    # the runtime compound DB. DWSIM stores many common solvents under machine-
+    # generated names; without these the corpus name no-ops at BIP injection AND
+    # fails at compound addition. All targets verified present in dwsim_compounds.txt.
+    "hexane":             "n-Hexane",              # 110-54-3
+    "2-propanol":         "Isopropanol",           # 67-63-0
+    "dimethylformamide":  "N,n-dimethylformamide", # 68-12-2
+    "propyl acetate":     "N-propyl acetate",      # 109-60-4
+    "n-butanol":          "1-butanol",             # 71-36-3
+    "butyl acetate":      "N-butyl acetate",       # 123-86-4
+    "n-butyl acetate":    "N-butyl acetate",       # 123-86-4
+    "dioxane":            "1,4-dioxane",           # 123-91-1
+    "caprolactam":        "Azepan-2-One",          # 105-60-2
+    "propylene glycol":   "1,2-propylene glycol",  # 57-55-6
+    "isooctane":          "2,2,4-trimethylpentane",# 540-84-1
+    "tert-butanol":       "2-methyl-2-propanol",   # 75-65-0
+    "chlorobenzene":      "Monochlorobenzene",     # 108-90-7
+    "dichloromethane":    "Bis(Chloranyl)Methane", # 75-09-2
+    "butyric acid":       "N-butyric acid",        # 107-92-6
+    # Morpholine (110-91-8) and Furfuryl alcohol (98-00-0) are genuinely absent from
+    # DWSIM 9.0.4's compound DB — no mapping possible; their BIP records are dead.
 }
 
 # Bare 'xylene' is ambiguous; default to m-Xylene (dominant isomer in mixed

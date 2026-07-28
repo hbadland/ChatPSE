@@ -207,6 +207,32 @@ class DWSIMFlowsheet:
 
     # ── Binary interaction parameter injection ────────────────────────────────
 
+    def _resolve_injection_name(self, name: str) -> str:
+        """Map a BIP-record compound name (corpus spelling) to the EXACT key present
+        in this flowsheet's SelectedCompounds — the name DWSIM's flash actually looks
+        up. Reuses the same deterministic normaliser used at compound ADDITION
+        (agents.compound_normalize.canonicalize_compound), then verifies the result
+        against the flowsheet's real compound keys (authoritative at runtime).
+
+        Fails LOUDLY rather than writing to a key DWSIM never reads — a mismatch would
+        otherwise silently no-op the injection and run the pair effectively ideal.
+        """
+        selected = list(self._sim.SelectedCompounds.Keys)
+        if name in selected:
+            return name
+        from agents.compound_normalize import canonicalize_compound
+        canon = canonicalize_compound(name)[0]
+        if canon in selected:
+            return canon
+        low = {k.lower(): k for k in selected}
+        for cand in (name, canon):
+            if cand and cand.lower() in low:
+                return low[cand.lower()]
+        raise ValueError(
+            f"BIP injection: compound '{name}' does not resolve to any compound in "
+            f"the flowsheet {selected}. Refusing to write to an unresolved key "
+            f"(would silently no-op at the flash).")
+
     def set_nrtl_parameters(
         self,
         compound_a: str,
@@ -230,6 +256,10 @@ class DWSIMFlowsheet:
         pkg = self._property_packages.get("NRTL")
         if pkg is None:
             raise ValueError("NRTL property package not initialised — call set_property_package('NRTL') first")
+
+        # STEP 2: key on the names DWSIM uses at runtime, not the corpus spelling.
+        compound_a = self._resolve_injection_name(compound_a)
+        compound_b = self._resolve_injection_name(compound_b)
 
         t = pkg.GetType()
         t.GetProperty("AutoEstimateMissingNRTLUNIQUACParameters").SetValue(pkg, System.Boolean(False))
@@ -277,6 +307,10 @@ class DWSIMFlowsheet:
         pkg = self._property_packages.get("UNIQUAC")
         if pkg is None:
             raise ValueError("UNIQUAC property package not initialised — call set_property_package('UNIQUAC') first")
+
+        # STEP 2: key on the names DWSIM uses at runtime, not the corpus spelling.
+        compound_a = self._resolve_injection_name(compound_a)
+        compound_b = self._resolve_injection_name(compound_b)
 
         t = pkg.GetType()
         t.GetProperty("AutoEstimateMissingNRTLUNIQUACParameters").SetValue(pkg, System.Boolean(False))
