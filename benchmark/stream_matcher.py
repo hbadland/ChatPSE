@@ -126,12 +126,28 @@ def _assign_global(rts, sts, detail, threshold):
         from scipy.optimize import linear_sum_assignment
     except ImportError:
         return _assign_greedy(rts, sts, detail, threshold)
-    cost = np.array([[-detail[(rt, st)][0] for st in sts] for rt in rts])
+    cost = np.array([[-detail[(rt, st)][0] for st in sts] for rt in rts], dtype=float)
+    # Sanitise before the solve: a reference stream with null/NaN T, P or vapour
+    # fraction (e.g. a DWSIM dead-end port carrying flow=-inf, vf=NaN) yields a
+    # non-finite confidence and hence a non-finite cost, which linear_sum_assignment
+    # rejects outright ("matrix contains invalid numeric entries"). Replace any
+    # non-finite cost with a large finite penalty so those pairings are maximally
+    # unlikely but the assignment still completes.
+    bad = ~np.isfinite(cost)
+    if bad.any():
+        import sys as _sys
+        bad_refs = sorted({rts[i] for i in range(len(rts)) if bad[i].any()})
+        print(f"[stream_matcher] non-finite match cost from reference stream(s) "
+              f"{bad_refs} (null/NaN T, P or vapour_fraction) — penalised to 1e9; "
+              f"they will not be matched.", file=_sys.stderr, flush=True)
+        cost = np.where(bad, 1e9, cost)
     ri, ci = linear_sum_assignment(cost)
     out = []
     for i, j in zip(ri, ci):
         conf, dT, dP, dvf, comp = detail[(rts[i], sts[j])]
-        if conf < threshold:
+        # Drop a penalised pairing if the solver still had to pick it (no finite
+        # alternative) — its confidence is non-finite, never a real match.
+        if not math.isfinite(conf) or conf < threshold:
             continue
         out.append((conf, rts[i], sts[j], dT, dP, dvf, comp))
     return out
