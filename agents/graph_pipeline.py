@@ -64,6 +64,7 @@ from agents.compound_normalize import (
     canonicalize_compound, canonicalize_list, canonicalize_reaction)
 from benchmark.case_schema import is_validation_tier
 from agents.stage3 import ThermoMapper, ParamMapper
+from rag.retriever import ThermoCoverageGuard
 # Reuse ParamMapper's description parsers so the topology_repair phase guard reads
 # the SAME temperature/pressure signal ParamMapper will later use for T_out — the
 # unit params themselves are not populated until _thermo_node (after this node).
@@ -196,7 +197,11 @@ def _route_topology_repair(state: PipelineState) -> str:
 def _route_thermo(state: PipelineState) -> str:
     # INVALID_IR (validate #2 failure) must dead-end, not route to execute — an
     # invalid graph must never be solved. (Was labelled INVALID_JSON here.)
-    return END if state["outcome"] in ("PLAN_FAILED", "INVALID_JSON", "INVALID_IR") else "execute"
+    # PARAM_MISSING is the coverage-guard's principled refusal (CHANGE 1): a valid
+    # IR that we decline to solve because no activity-model coverage exists. It must
+    # dead-end like the other terminal outcomes — NOT route to execute.
+    return END if state["outcome"] in (
+        "PLAN_FAILED", "INVALID_JSON", "INVALID_IR", "PARAM_MISSING") else "execute"
 
 
 def _route_execute(state: PipelineState) -> str:
@@ -806,6 +811,11 @@ def compute_variant_b_ladder(state: PipelineState) -> dict:
 
     if outcome == "PASS":
         failure_stage = None
+    elif outcome == "PARAM_MISSING":
+        # Coverage-guard escalation (CHANGE 1): a principled refusal, NOT a build
+        # failure. Its own bucket so the ablation table never misreads these as the
+        # IR builder breaking. Distinct from every failure_stage below.
+        failure_stage = "param_missing_escalation"
     elif not built_valid_ir:
         failure_stage = "ir_build"
     elif not reached_dwsim:
@@ -1591,6 +1601,13 @@ class GraphPipeline:
                   f"changes={len(rule_changes)}", flush=True)
             new_warns += [f"[rule] {c}" for c in rule_changes]
 
+        except ThermoCoverageGuard as exc:
+            # CHANGE 1 labelling: dedicated terminal outcome, distinct from any
+            # failure bucket, so guard escalations read as principled refusals
+            # rather than IR-build failures in the ablation table.
+            print(f"[GP] Stage 3 PARAM_MISSING escalation: {exc}", flush=True)
+            return {"outcome": "PARAM_MISSING",
+                    "warnings": [f"[PARAM_MISSING] coverage-guard: {exc}"]}
         except Exception as exc:
             print(f"[GP] Stage 3 EXCEPTION: {type(exc).__name__}: {exc}", flush=True)
             return {"outcome": "PLAN_FAILED", "warnings": [f"Stage 3 failed: {exc}"]}
