@@ -150,9 +150,12 @@ class ThermoLLMFallback:
             try:
                 data = _parse_json(raw)
                 pkg  = data.get("package", "").strip()
-                if pkg in _ALLOWED_PACKAGES:
+                # CHANGE 2: validate against the coverage-gated candidate list, not
+                # the full allowed set, so the tiebreak cannot re-introduce a package
+                # (e.g. NRTL/UNIQUAC) that coverage exclusion removed from candidates.
+                if pkg in candidates:
                     return pkg
-                last_error = f"'{pkg}' is not an allowed package name"
+                last_error = f"'{pkg}' is not among the candidate packages {candidates}"
             except (json.JSONDecodeError, KeyError) as e:
                 last_error = str(e)
         return None
