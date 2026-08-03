@@ -17,7 +17,46 @@ from __future__ import annotations
 
 import copy
 from dataclasses import dataclass, field
+from enum import IntEnum
 from typing import Optional, ClassVar
+
+
+# ── Value provenance ─────────────────────────────────────────────────────────
+class Source(IntEnum):
+    """Provenance authority of a parameter value; higher = more authoritative.
+
+    A priority-guarded merge (`NodeIR.set_param`) refuses to overwrite a value with
+    one of equal-or-lower authority (no silent downgrade). A sanctioned physical
+    correction (`NodeIR.correct_param`) may override regardless of authority, but
+    re-tags the provenance so the record stays truthful — the two channels are the
+    ONLY ways a tracked value changes, and both are caller-logged.
+    """
+    DEFAULT   = 0   # bare default fill
+    FALLBACK  = 1   # pooled description-list guess (no structured attribution)
+    COMPUTED  = 2   # deterministic estimator / physical correction (bubble point …)
+    RULE      = 3   # cross-run learned median rule
+    INHERITED = 4   # propagated from a real upstream/feed value
+    EXTRACTED = 5   # structured per-unit attribution from the description
+    SPECIFIED = 6   # explicit setpoint stated in the description
+
+
+# Backward-compatible string tags <-> Source (params dict keeps the legacy strings).
+_SOURCE_TO_STR: dict = {
+    Source.DEFAULT: "default_fallback", Source.FALLBACK: "fallback",
+    Source.COMPUTED: "computed", Source.RULE: "rule", Source.INHERITED: "inherited",
+    Source.EXTRACTED: "extracted", Source.SPECIFIED: "specified",
+}
+_STR_TO_SOURCE: dict = {v: k for k, v in _SOURCE_TO_STR.items()}
+
+# Which source-tag field and description sentinel guard each tracked parameter.
+_PARAM_SOURCE_FIELD: dict = {
+    "T_out": "_temperature_source", "temperature_K": "_temperature_source",
+    "P_out": "_pressure_source", "pressure_Pa": "_pressure_source",
+}
+_PARAM_SENTINEL: dict = {
+    "T_out": "_desc_T_out", "temperature_K": "_desc_T_out",
+    "P_out": "_desc_P_out", "pressure_Pa": "_desc_P_out",
+}
 
 import networkx as nx
 
@@ -65,6 +104,53 @@ class NodeIR:
         self.params           = params or {}
         self.property_package = property_package
         self.metadata         = metadata or {}
+
+    # ── Provenance-tracked parameter access (Phase 1: additive, not yet wired) ──
+    def _param_source(self, name: str) -> Optional["Source"]:
+        """Current provenance of a tracked param, or None if untracked/untagged.
+        A description sentinel with no explicit tag is read as SPECIFIED — this
+        reproduces the legacy overwrite guard exactly."""
+        field_name = _PARAM_SOURCE_FIELD.get(name)
+        if field_name is None:
+            return None
+        tag = self.params.get(field_name)
+        if tag in _STR_TO_SOURCE:
+            return _STR_TO_SOURCE[tag]
+        sentinel = _PARAM_SENTINEL.get(name)
+        if sentinel and self.params.get(sentinel):
+            return Source.SPECIFIED
+        return None
+
+    def set_param(self, name: str, value, source: "Source") -> bool:
+        """Priority-guarded merge. Writes value + provenance tag IFF `source` STRICTLY
+        outranks the incumbent (or there is none). Returns True if written, False if
+        rejected as an equal-or-lower-authority downgrade. Never silent: the caller
+        logs both outcomes. Params outside the provenance map are written
+        unconditionally (no provenance to protect)."""
+        field_name = _PARAM_SOURCE_FIELD.get(name)
+        if field_name is None:
+            self.params[name] = value
+            return True
+        cur = self._param_source(name)
+        if cur is not None and source <= cur:
+            return False
+        self.params[name] = value
+        self.params[field_name] = _SOURCE_TO_STR[source]
+        return True
+
+    def correct_param(self, name: str, value, source: "Source" = Source.COMPUTED) -> None:
+        """Sanctioned physical correction: overrides regardless of incumbent authority
+        (a physically-implausible value must be fixable even if user-specified) but
+        RE-TAGS provenance to `source` and clears any description sentinel, so the
+        record stays truthful — the value is no longer what it was. Distinct from a
+        silent overwrite: the caller records the physical reason in the change log."""
+        self.params[name] = value
+        field_name = _PARAM_SOURCE_FIELD.get(name)
+        if field_name is not None:
+            self.params[field_name] = _SOURCE_TO_STR[source]
+        sentinel = _PARAM_SENTINEL.get(name)
+        if sentinel:
+            self.params.pop(sentinel, None)
 
     # Called by FlowsheetGraph.add_unit() — subclasses may override
     def validate_construction(self) -> list[str]:
