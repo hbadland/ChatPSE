@@ -31,6 +31,8 @@ class Source(IntEnum):
     re-tags the provenance so the record stays truthful — the two channels are the
     ONLY ways a tracked value changes, and both are caller-logged.
     """
+    MISSING   = -1  # recorded gap: no value/coverage exists (lowest authority; a
+                    # marker that the data is absent, NOT a usable value)
     DEFAULT   = 0   # bare default fill
     FALLBACK  = 1   # pooled description-list guess (no structured attribution)
     COMPUTED  = 2   # deterministic estimator / physical correction (bubble point …)
@@ -42,6 +44,7 @@ class Source(IntEnum):
 
 # Backward-compatible string tags <-> Source (params dict keeps the legacy strings).
 _SOURCE_TO_STR: dict = {
+    Source.MISSING: "missing",
     Source.DEFAULT: "default_fallback", Source.FALLBACK: "fallback",
     Source.COMPUTED: "computed", Source.RULE: "rule", Source.INHERITED: "inherited",
     Source.EXTRACTED: "extracted", Source.SPECIFIED: "specified",

@@ -261,6 +261,11 @@ class ThermoRetriever:
         Applies hard rules in order; excludes already-tried packages.
         """
         exclude = exclude or set()
+        # Per-call coverage observation (Option B provenance marker). Reset each
+        # call; set to "MISSING"/"OK" only for polar/azeotropic systems below.
+        # Observation only — never changes which package is selected.
+        self.last_coverage_status:       Optional[str] = None
+        self.last_coverage_missing_pairs: list         = []
         classes = self._classify(compounds)
         has_azeo = self._has_azeotrope(compounds)
         is_polar = bool(classes & {"ALCOHOLS","KETONES","ESTERS","ETHERS",
@@ -351,14 +356,23 @@ class ThermoRetriever:
             # enabled, escalate PARAM_MISSING instead of silently shipping ideal.
             # (Raoult's Law stays reachable for near-ideal systems — this branch is
             # only entered when is_polar or has_azeo.)
-            if (_coverage_guard_enabled() and bip_retriever
-                    and not has_nrtl and not has_uniquac):
+            #
+            # Option B: record the coverage gap as a provenance observation whether
+            # or not the guard is enabled. This does NOT alter selection or the raise
+            # condition below — the substitute package is still chosen when the guard
+            # is off; we only tag that the value is served without BIP coverage.
+            if bip_retriever and not has_nrtl and not has_uniquac:
                 _n_miss = {frozenset(p) for p in
                            bip_retriever.query(compounds, "NRTL")[1]}
                 _u_miss = {frozenset(p) for p in
                            bip_retriever.query(compounds, "UNIQUAC")[1]}
                 _uncovered = [tuple(sorted(fs)) for fs in (_n_miss & _u_miss)]
-                raise ThermoCoverageGuard(compounds, sorted(_uncovered))
+                self.last_coverage_status        = "MISSING"
+                self.last_coverage_missing_pairs = sorted(_uncovered)
+                if _coverage_guard_enabled():
+                    raise ThermoCoverageGuard(compounds, sorted(_uncovered))
+            else:
+                self.last_coverage_status = "OK"
 
             if has_nrtl or not bip_retriever:
                 candidates.append("NRTL")

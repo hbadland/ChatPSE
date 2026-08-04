@@ -28,6 +28,7 @@ from rag.retriever import Retriever, ThermoCoverageGuard
 class ThermoMapper:
     def __init__(self, model: str = DEFAULT_MODEL, retriever: Optional[Retriever] = None):
         ret = retriever or Retriever()
+        self._ret       = ret
         self._selector  = PackageSelector(ret)
         self._injector  = BIPInjector(ret)
         self._llm       = ThermoLLMFallback(model, ret)
@@ -69,6 +70,23 @@ class ThermoMapper:
                   or candidates[0]
 
         g.property_package = pkg
+
+        # ── Option B: BIP-coverage provenance marker (no control-flow change) ──
+        # When the selector saw a polar/azeotropic system with NO activity-model
+        # coverage, the chosen package is a substitute served without BIPs. Record
+        # MISSING on the graph so downstream — and the methodology figure — can show
+        # Configuration writing a MISSING-tagged value, WITHOUT asserting an
+        # escalation the control flow does not perform: the run still proceeds.
+        # Inert to execution (to_dwsim ignores metadata); survives graph.copy().
+        if getattr(self._ret.thermo, "last_coverage_status", None) == "MISSING":
+            g.metadata["thermo_coverage"] = "MISSING"
+            g.metadata["thermo_coverage_missing_pairs"] = list(
+                getattr(self._ret.thermo, "last_coverage_missing_pairs", []))
+            print(
+                f"[THERMO] BIP coverage MISSING for "
+                f"{g.metadata['thermo_coverage_missing_pairs']} — proceeding with "
+                f"'{pkg}' (substitute, no BIPs); tagged MISSING, not escalated",
+                flush=True)
 
         if pkg in ("NRTL", "UNIQUAC"):
             # T_K=None: skip feed-temperature guard so cold-feed cases (e.g. 25°C
