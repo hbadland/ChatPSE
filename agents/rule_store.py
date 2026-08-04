@@ -26,6 +26,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
+from ir.graph import Source
+
 RULE_THRESHOLD = 3  # minimum occurrences before a rule is synthesized
 
 # Persistent rule store written after every repair; loaded at orchestrator init.
@@ -249,27 +251,23 @@ class FailureRuleStore:
                 # inherited/template are protected by construction. Applies to
                 # temperature (T_out/temperature_K) AND pressure (P_out). Log the
                 # suppression so this bug's blast radius is measurable per run.
-                _prov = _PROV_FIELDS.get(rule.param)   # (source_field, desc_sentinel)
-                if _prov is not None:
-                    _src = node.params.get(_prov[0])
-                    _overwritable = (_src in ("computed", "default_fallback", "fallback")
-                                     or (_src is None
-                                         and not node.params.get(_prov[1])))
-                    if not _overwritable:
-                        changes.append(
-                            f"[rule] SUPPRESSED RULE[{rule.unit_type}→"
-                            f"{rule.downstream_type or '*'}/{rule.error_code}]: "
-                            f"{node.tag}.{rule.param} {current} "
-                            f"({_src or 'desc-specified'}, would have set "
-                            f"{target_val:.2f})")
-                        continue
-
+                # Provenance guard, now enforced by the single chokepoint
+                # NodeIR.set_param(source=RULE): writes iff RULE strictly outranks the
+                # incumbent provenance (untagged / estimate / absent), and refuses
+                # description-specified, structured-extracted, inherited, or prior-rule
+                # values — and re-tags to 'rule' on success (no self-certifying stale
+                # tag). Proven equivalent to the legacy whitelist in ir/test_provenance.
+                _prov = _PROV_FIELDS.get(rule.param)   # for the suppression log only
                 old = node.params.get(rule.param, "?")
-                node.params[rule.param] = target_val
-                # Keep provenance truthful: the value is now a learned median, not
-                # whatever it was tagged before (fixes the self-certifying tag bug).
-                if _prov is not None:
-                    node.params[_prov[0]] = "rule"
+                if not node.set_param(rule.param, target_val, Source.RULE):
+                    _src = node.params.get(_prov[0]) if _prov else None
+                    changes.append(
+                        f"[rule] SUPPRESSED RULE[{rule.unit_type}→"
+                        f"{rule.downstream_type or '*'}/{rule.error_code}]: "
+                        f"{node.tag}.{rule.param} {current} "
+                        f"({_src or 'desc-specified'}, would have set "
+                        f"{target_val:.2f})")
+                    continue
                 changes.append(
                     f"RULE[{rule.unit_type}→{rule.downstream_type or '*'}/"
                     f"{rule.error_code}]: {node.tag}.{rule.param} "
