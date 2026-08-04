@@ -16,7 +16,7 @@ from typing import Optional
 import networkx as nx
 
 from ir.graph import (
-    FlowsheetGraph, NodeIR,
+    FlowsheetGraph, NodeIR, Source,
     HeaterNode, CoolerNode, SeparatorNode,
     PumpNode, CompressorNode, ExpanderNode, ConversionReactorNode,
     inlet_traces_to_pressure_raiser,
@@ -251,7 +251,7 @@ class GlobalConsistencyPass:
             # bubble-point correction and warn.
             bp    = bubble_point_K(compounds, in_P or 101_325.0)
             new_T = round((bp + 15.0) if (bp and bp > in_T) else (in_T + 30.0), 2)
-            node.params["T_out"] = new_T
+            node.correct_param("T_out", new_T, Source.COMPUTED)
             changes.append(
                 f"CONSISTENCY[desc_T_out overridden]: {node.tag} "
                 f"T_out {t_out}→{new_T} K "
@@ -262,7 +262,7 @@ class GlobalConsistencyPass:
             return
         bp    = bubble_point_K(compounds, in_P or 101_325.0)
         new_T = round((bp + 15.0) if (bp and bp > in_T) else (in_T + 30.0), 2)
-        node.params["T_out"] = new_T
+        node.correct_param("T_out", new_T, Source.COMPUTED)
         changes.append(
             f"CONSISTENCY[monotonic]: {node.tag} T_out {t_out}→{new_T} K "
             f"(must be > feed T={in_T:.1f} K)")
@@ -280,7 +280,7 @@ class GlobalConsistencyPass:
         if t_out < in_T:
             return
         new_T = max(round(in_T - 25.0, 2), 273.15)
-        node.params["T_out"] = new_T
+        node.correct_param("T_out", new_T, Source.COMPUTED)
         changes.append(
             f"CONSISTENCY[monotonic]: {node.tag} T_out {t_out}→{new_T} K "
             f"(must be < feed T={in_T:.1f} K)")
@@ -298,7 +298,7 @@ class GlobalConsistencyPass:
         if p_out > in_P:
             return
         new_P = round(in_P * 5.0, 0)
-        node.params["P_out"] = new_P
+        node.correct_param("P_out", new_P, Source.COMPUTED)
         changes.append(
             f"CONSISTENCY[monotonic]: {node.tag} P_out {p_out}→{new_P} Pa "
             f"(must be > feed P={in_P:.0f} Pa)")
@@ -316,7 +316,7 @@ class GlobalConsistencyPass:
         if p_out < in_P:
             return
         new_P = max(round(in_P / 3.0, 0), 101_325.0)
-        node.params["P_out"] = new_P
+        node.correct_param("P_out", new_P, Source.COMPUTED)
         changes.append(
             f"CONSISTENCY[monotonic]: {node.tag} P_out {p_out}→{new_P} Pa "
             f"(must be < feed P={in_P:.0f} Pa)")
@@ -339,27 +339,27 @@ class GlobalConsistencyPass:
             if isinstance(node, HeaterNode) and "T_out" not in node.params:
                 bp    = bubble_point_K(graph.compounds, in_P)
                 new_T = round((bp + 20.0) if bp else ((in_T or 298.15) + 50.0), 2)
-                node.params["T_out"] = new_T
+                node.correct_param("T_out", new_T, Source.COMPUTED)
                 changes.append(
                     f"CONSISTENCY[fill]: {node.tag} T_out={new_T} K (missing)")
 
             elif isinstance(node, CoolerNode) and "T_out" not in node.params:
                 new_T = max(round((in_T or 373.15) - 30.0, 2), 273.15)
-                node.params["T_out"] = new_T
+                node.correct_param("T_out", new_T, Source.COMPUTED)
                 changes.append(
                     f"CONSISTENCY[fill]: {node.tag} T_out={new_T} K (missing)")
 
             elif isinstance(node, (PumpNode, CompressorNode)) \
                     and "P_out" not in node.params:
                 new_P = round(in_P * 5.0, 0)
-                node.params["P_out"] = new_P
+                node.correct_param("P_out", new_P, Source.COMPUTED)
                 changes.append(
                     f"CONSISTENCY[fill]: {node.tag} P_out={new_P} Pa (missing)")
 
             elif isinstance(node, ExpanderNode) \
                     and "P_out" not in node.params:
                 new_P = max(round(in_P / 3.0, 0), 101_325.0)
-                node.params["P_out"] = new_P
+                node.correct_param("P_out", new_P, Source.COMPUTED)
                 changes.append(
                     f"CONSISTENCY[fill]: {node.tag} P_out={new_P} Pa (missing)")
 
@@ -423,7 +423,7 @@ class GlobalConsistencyPass:
                                 else:
                                     new_T = round(bp + 15.0, 2)
                                     old   = node.params["T_out"]
-                                    node.params["T_out"] = new_T
+                                    node.correct_param("T_out", new_T, Source.COMPUTED)
                                     feed_str = f"{in_T:.1f}" if in_T is not None else "unknown"
                                     changes.append(
                                         f"CONSISTENCY[desc_T_out overridden]: {node.tag}→{dst_tag}: "
@@ -443,7 +443,7 @@ class GlobalConsistencyPass:
                                 if abs(result.resolved_value - t_out_f) > 0.1:
                                     new_T = round(max(result.resolved_value, bp + 15.0), 2)
                                     old   = node.params["T_out"]
-                                    node.params["T_out"] = new_T
+                                    node.correct_param("T_out", new_T, Source.COMPUTED)
                                     tag_str = f"CONFLICT:{result.dropped_sources}" if result.conflict else "ok"
                                     changes.append(
                                         f"CONSISTENCY[backward/{tag_str}]: {node.tag}→{dst_tag}: "
@@ -468,7 +468,7 @@ class GlobalConsistencyPass:
                             if abs(result.resolved_value - float(t_out)) > 0.1:
                                 new_T = max(round(result.resolved_value, 2), 273.15)
                                 old   = node.params["T_out"]
-                                node.params["T_out"] = new_T
+                                node.correct_param("T_out", new_T, Source.COMPUTED)
                                 changes.append(
                                     f"CONSISTENCY[backward]: {node.tag}→{dst_tag}: "
                                     f"T_out {old}→{new_T} K "
@@ -523,7 +523,7 @@ class GlobalConsistencyPass:
                     if t_out < bp + 5.0:
                         new_T = round(bp + 15.0, 2)
                         old   = node.params["T_out"]
-                        node.params["T_out"] = new_T
+                        node.correct_param("T_out", new_T, Source.COMPUTED)
                         feed_str = f"{in_T:.1f}" if in_T is not None else "unknown"
                         changes.append(
                             f"CONSISTENCY[desc_T_out overridden]: {node.tag}→{dst_tag}: "
@@ -532,7 +532,7 @@ class GlobalConsistencyPass:
                 elif t_out < bp + 5.0:
                     new_T = round(bp + 15.0, 2)
                     old   = node.params["T_out"]
-                    node.params["T_out"] = new_T
+                    node.correct_param("T_out", new_T, Source.COMPUTED)
                     changes.append(
                         f"CONSISTENCY[coupling]: {node.tag}→{dst_tag}: "
                         f"T_out {old}→{new_T} K "
