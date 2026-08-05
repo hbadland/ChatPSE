@@ -160,7 +160,7 @@ class CoupledSettler:
         """
         from ir.graph import (
             PumpNode, CompressorNode, ExpanderNode,
-            HeaterNode, CoolerNode, SeparatorNode,
+            HeaterNode, CoolerNode, SeparatorNode, Source,
         )
         from ir.thermo_estimation import bubble_point_K
         from ir.margin_model import get_global_margin_model
@@ -204,7 +204,7 @@ class CoupledSettler:
                             target = max(new_bp - margin, 273.15)
                             if float(t_out) > target + 5.0:  # meaningful violation
                                 old = src.params["T_out"]
-                                src.params["T_out"] = round(target, 2)
+                                src.correct_param("T_out", round(target, 2), Source.COMPUTED)
                                 changes.append(
                                     f"COUPLED_SETTLE: {src_tag}.T_out "
                                     f"{old:.1f}→{target:.1f} K "
@@ -231,7 +231,7 @@ class CoupledSettler:
                                 target = new_bp + margin
                                 if float(t_out) < target - 5.0:  # below target
                                     old = src.params["T_out"]
-                                    src.params["T_out"] = round(target, 2)
+                                    src.correct_param("T_out", round(target, 2), Source.COMPUTED)
                                     changes.append(
                                         f"COUPLED_SETTLE: {src_tag}.T_out "
                                         f"{old:.1f}→{target:.1f} K "
@@ -264,7 +264,7 @@ class CoupledSettler:
                             # the new BP); 5 K deadband avoids thrashing.
                             if t_out is None or abs(float(t_out) - target) > 5.0:
                                 old = dst.params.get("T_out")
-                                dst.params["T_out"] = round(target, 2)
+                                dst.correct_param("T_out", round(target, 2), Source.COMPUTED)
                                 changes.append(
                                     f"COUPLED_SETTLE: {dst_tag}.T_out "
                                     f"{('%.1f' % old) if old is not None else 'None'}"
@@ -290,7 +290,7 @@ class CoupledSettler:
                                 target = new_bp + margin
                                 if t_out is None or abs(float(t_out) - target) > 5.0:
                                     old = dst.params.get("T_out")
-                                    dst.params["T_out"] = round(target, 2)
+                                    dst.correct_param("T_out", round(target, 2), Source.COMPUTED)
                                     changes.append(
                                         f"COUPLED_SETTLE: {dst_tag}.T_out "
                                         f"{('%.1f' % old) if old is not None else 'None'}"

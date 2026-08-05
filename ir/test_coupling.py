@@ -56,7 +56,33 @@ def test_upstream_cooler_still_settles_after_pump_pout():
     print("OK upstream-cooler still settles after Pump.P_out:", after, changes)
 
 
+def test_settle_retags_provenance_honestly():
+    """The settler applies via correct_param: a settled value that was description-
+    specified is retagged 'computed' and its sentinel cleared — no silent overwrite
+    (the universal-provenance property extended to the coupling settler)."""
+    g = _chain([("CP-01", "Compressor", {"P_out": 2_000_000.0}),
+                ("CL-01", "Cooler",     {"T_out": 350.0,
+                                         "_temperature_source": "specified",
+                                         "_desc_T_out": True}),
+                ("V-01",  "Vessel",     {})])
+    g.add_stream(EdgeIR(tag="FEED"), None, "CP-01")
+    g.add_stream(EdgeIR(tag="S1"), "CP-01", "CL-01")
+    g.add_stream(EdgeIR(tag="S2"), "CL-01", "V-01")
+    g.add_stream(EdgeIR(tag="VAP", phase="vapour", src_port=0), "V-01", None)
+    g.add_stream(EdgeIR(tag="LIQ", phase="liquid", src_port=1), "V-01", None)
+
+    g2, _ = CoupledSettler().settle(g, "CP-01", "P_out")
+    n = g2.unit("CL-01")
+    assert n.params["T_out"] < 350.0, "settler did not change the value"
+    assert n.params["_temperature_source"] == "computed", n.params   # honest retag
+    assert "_desc_T_out" not in n.params, "description sentinel must be cleared"
+    # input graph untouched (correct_param acts on the settler's copy)
+    assert g.unit("CL-01").params["_temperature_source"] == "specified"
+    print("OK settler retags specified→computed + clears sentinel:", n.params["T_out"])
+
+
 if __name__ == "__main__":
     test_downstream_cooler_settles_after_compressor_pout()
     test_upstream_cooler_still_settles_after_pump_pout()
+    test_settle_retags_provenance_honestly()
     print("\nALL COUPLING TESTS PASSED")

@@ -24,7 +24,7 @@ from ir.graph import (
     FlowsheetGraph,
     HeaterNode, CoolerNode,
     PumpNode, CompressorNode, ExpanderNode,
-    SeparatorNode,
+    SeparatorNode, Source,
 )
 from ir.validate import validate
 from ir.constraint_solver import ConstraintSolver, Constraint, ConstraintPriority
@@ -165,7 +165,8 @@ def _try_temperature(
                 continue  # constraint would require a large forced adjustment
 
             g2 = graph.copy()
-            g2.unit(tag).params["T_out"] = new_val
+            # Sanctioned physical correction: override + honest retag (no silent overwrite).
+            g2.unit(tag).correct_param("T_out", new_val, Source.COMPUTED)
 
             rep2 = validate(g2)
             mag  = abs(new_val - current) / max(abs(current), 1.0)
@@ -215,7 +216,8 @@ def _try_pressure(
                 continue
 
             g2 = graph.copy()
-            g2.unit(tag).params["P_out"] = candidate
+            # Sanctioned physical correction: override + honest retag (no silent overwrite).
+            g2.unit(tag).correct_param("P_out", candidate, Source.COMPUTED)
 
             rep2 = validate(g2)
             mag  = abs(candidate - current) / max(current, 1.0)
