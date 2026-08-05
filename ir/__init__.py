@@ -1,4 +1,7 @@
-from ir.graph import FlowsheetGraph, NodeIR, EdgeIR, PortSpec, PORT_SPECS, make_node
+from ir.graph import (
+    FlowsheetGraph, NodeIR, EdgeIR, PortSpec, PORT_SPECS, make_node,
+    Source, reference_provenance_tags, ReferenceProvenanceLeak,
+)
 from ir.validate import validate, ValidationReport, ValidationIssue, ValidationMetrics
 from ir.normalise import normalise
 from ir.to_dwsim import to_dwsim
@@ -19,6 +22,7 @@ from ir.state_cache import StateCache
 
 __all__ = [
     "FlowsheetGraph", "NodeIR", "EdgeIR", "PortSpec", "PORT_SPECS", "make_node",
+    "Source", "reference_provenance_tags", "ReferenceProvenanceLeak",
     "validate", "ValidationReport", "ValidationIssue", "ValidationMetrics",
     "normalise",
     "to_dwsim",

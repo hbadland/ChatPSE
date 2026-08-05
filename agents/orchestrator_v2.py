@@ -40,7 +40,10 @@ from ir.types import RepairStrategy as _RepairStrategy
 from agents.stage4.sim_hints import SimulationHints, EMPTY_HINTS
 from agents.rule_store import FailureRuleStore, RULES_PATH, _PROV_FIELDS
 
-from ir import FlowsheetGraph, normalise, validate, to_dwsim
+from ir import (
+    FlowsheetGraph, normalise, validate, to_dwsim,
+    Source, reference_provenance_tags, ReferenceProvenanceLeak,
+)
 from ir.margin_model import get_global_margin_model
 from ir.consistency import GlobalConsistencyPass
 from ir.validate import ValidationReport
@@ -238,7 +241,10 @@ def _reference_guided_refinement(
             f"[REF_REFINE] {node.tag}.T_out: solved={solved_sr.T_K:.1f} K "
             f"ref('{best_tag}')={ref_T:.1f} K  Δ={delta:.1f} K → correcting",
             flush=True, file=sys.stderr)
-        node.params["T_out"] = ref_T
+        # Reference-injected value (VARIANT_B ablation ONLY): sanctioned override,
+        # tagged 'reference' so the non-circularity invariant can prove that no
+        # scored run carries one.
+        node.correct_param("T_out", ref_T, Source.REFERENCE)
         adjustments.append(
             f"[ref_refine] {node.tag}.T_out "
             f"{solved_sr.T_K:.1f}→{ref_T:.1f} K "
@@ -902,6 +908,10 @@ class OrchestratorV2:
                 flowsheet=dwsim_json, execution=execution,
                 elapsed_s=time.time() - t_iter))
 
+        # Non-circularity invariant: a scored run (VARIANT_B off) must contain no
+        # reference-injected values. Prove it — a leak fails loudly, not silently.
+        _assert_scored_run_reference_free(result.final_graph, scored=not _vb)
+
         result.total_time_s  = time.time() - t_start
         result.margin_snapshot = get_global_margin_model().snapshot()
         return result
@@ -913,6 +923,20 @@ def _no_critic_failures(execution) -> bool:
     if report:
         return getattr(report, "passed", False)
     return not getattr(execution, "errors", [])
+
+
+def _assert_scored_run_reference_free(graph, scored: bool) -> None:
+    """Non-circularity invariant: a SCORED run's final graph must carry no
+    reference-injected (Source.REFERENCE) values. Reference-guided refinement is a
+    VARIANT_B ablation instrument; if any reference-tagged value survives into a
+    scored run, a reference answer leaked into the graph the system is scored on.
+    Raise ReferenceProvenanceLeak rather than report a contaminated score."""
+    if not scored or graph is None:
+        return
+    leak = reference_provenance_tags(graph)
+    if leak:
+        raise ReferenceProvenanceLeak(
+            f"reference-tagged provenance in a scored (VARIANT_B off) run: {leak}")
 
 
 def _record_repairs_in_store(

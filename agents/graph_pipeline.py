@@ -91,6 +91,7 @@ from agents.orchestrator_v2 import (
     _no_critic_failures,
     _record_repairs_in_store,
     _reference_guided_refinement,
+    _assert_scored_run_reference_free,
     _resolve_recycle_target,
     _summarise_for_unit_extraction,
     IterationRecord,
@@ -1088,6 +1089,10 @@ class GraphPipeline:
         )
         result.iterations      = list(state.get("iterations_log", []))
         result.final_graph     = state.get("ir_graph")
+        # Non-circularity invariant (same as OrchestratorV2): a scored run must
+        # carry no reference-injected values.
+        _assert_scored_run_reference_free(
+            result.final_graph, scored=not state.get("variant_b_active"))
         result.final_flowsheet = state.get("dwsim_json")
         result.final_execution = state.get("execution")
         result.margin_snapshot = get_global_margin_model().snapshot()

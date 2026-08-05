@@ -40,6 +40,12 @@ class Source(IntEnum):
     INHERITED = 4   # propagated from a real upstream/feed value
     EXTRACTED = 5   # structured per-unit attribution from the description
     SPECIFIED = 6   # explicit setpoint stated in the description
+    REFERENCE = 7   # value injected from the reference answer (VARIANT_B ablation
+                    # arm ONLY). MUST NOT appear in a scored run — enforced by the
+                    # orchestrator's non-circularity invariant. Ranked highest so a
+                    # merge never lets a lower source silently mask an injected value
+                    # in the ablation arm; the invariant, not the ordering, keeps it
+                    # out of scored runs.
 
 
 # Backward-compatible string tags <-> Source (params dict keeps the legacy strings).
@@ -48,6 +54,7 @@ _SOURCE_TO_STR: dict = {
     Source.DEFAULT: "default_fallback", Source.FALLBACK: "fallback",
     Source.COMPUTED: "computed", Source.RULE: "rule", Source.INHERITED: "inherited",
     Source.EXTRACTED: "extracted", Source.SPECIFIED: "specified",
+    Source.REFERENCE: "reference",
 }
 _STR_TO_SOURCE: dict = {v: k for k, v in _SOURCE_TO_STR.items()}
 
@@ -692,6 +699,30 @@ class FlowsheetGraph:
                 f"units={[u.tag for u in self.units()]}, "
                 f"streams={[s.tag for s in self.streams()]}, "
                 f"package={self.property_package!r})")
+
+
+# ── Non-circularity invariant ──────────────────────────────────────────────────
+
+class ReferenceProvenanceLeak(AssertionError):
+    """A reference-injected value (Source.REFERENCE) survived into a SCORED run.
+
+    Reference-guided refinement is a VARIANT_B ablation instrument; a scored run
+    must contain no reference-tagged values. Raising here fails the run loudly
+    rather than reporting a circularity-contaminated score."""
+
+
+def reference_provenance_tags(graph: "FlowsheetGraph") -> list:
+    """Return '<tag>.<field>' for every unit param carrying reference provenance.
+
+    A scored (VARIANT_B-off) run must contain none — this is the audit behind the
+    non-circularity guarantee: reference values are a distinct, labelled origin,
+    and their total absence from a scored graph is provable, not assumed."""
+    hits: list = []
+    for node in graph.units():
+        for field in ("_temperature_source", "_pressure_source"):
+            if node.params.get(field) == "reference":
+                hits.append(f"{node.tag}.{field}")
+    return hits
 
 
 def inlet_traces_to_pressure_raiser(graph: "FlowsheetGraph", unit_tag: str) -> bool:
