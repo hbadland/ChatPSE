@@ -870,7 +870,8 @@ class OrchestratorV2:
 
                 _record_repairs_in_store(
                     errors, changes, graph, self._rule_store,
-                    compounds=basis.dwsim_compounds)
+                    compounds=basis.dwsim_compounds,
+                    params_before=_params_before)
                 try:
                     self._rule_store.save(RULES_PATH)
                 except Exception as _save_exc:
@@ -920,6 +921,7 @@ def _record_repairs_in_store(
     graph,
     store:      "FailureRuleStore",
     compounds:  Optional[list[str]] = None,
+    params_before: Optional[dict] = None,
 ) -> None:
     """
     Parse applied CONDITION_FIX repairs from the change log and record
@@ -947,13 +949,25 @@ def _record_repairs_in_store(
         # overrode a DESCRIPTION-specified value. Such a repair is a case-specific
         # symptom (a stated setpoint that produced a thin/zero flash), not a general
         # rule; recording it re-accumulates exactly the pattern the application guard
-        # now blocks. Only synthesise from genuinely-estimated params. (The repair
-        # preserves the provenance tag, so the description origin is still readable.)
+        # now blocks. Only synthesise from genuinely-estimated params.
         # Covers temperature (T_out/temperature_K) AND pressure (P_out).
+        #
+        # Provenance is read from the PRE-REPAIR snapshot (params_before), not the
+        # live node: repair now applies values via NodeIR.correct_param, which
+        # honestly retags the origin to "computed" and clears the description
+        # sentinel. Reading the post-repair tag would mistake an overridden
+        # description value for an estimate and learn it as a rule — the exact bug
+        # this guard exists to prevent. Falls back to the live node when no snapshot
+        # is supplied (backward-compatible).
+        _orig = None
+        if params_before is not None:
+            _orig = params_before.get(unit_tag)
+        if _orig is None:
+            _orig = node.params
         _prov = _PROV_FIELDS.get(param)
         if _prov is not None:
-            _src = node.params.get(_prov[0])
-            if _src in ("specified", "extracted") or node.params.get(_prov[1]):
+            _src = _orig.get(_prov[0])
+            if _src in ("specified", "extracted") or _orig.get(_prov[1]):
                 continue
 
         downstream = _outlet_unit_types(graph, unit_tag)

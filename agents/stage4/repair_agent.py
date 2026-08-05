@@ -32,7 +32,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from ir.graph import FlowsheetGraph, HeaterNode, CoolerNode, SeparatorNode, PumpNode
+from ir.graph import FlowsheetGraph, HeaterNode, CoolerNode, SeparatorNode, PumpNode, Source
 from ir.thermo_estimation import bubble_point_K
 from ir.margin_model import get_global_margin_model
 from ir.repair import DeterministicRepair
@@ -531,7 +531,9 @@ class RepairAgent:
 
                 g2 = graph.copy()
                 n  = g2.unit(node.tag)
-                n.params[param_name] = value
+                # Sanctioned physical correction: override + honest retag (no silent
+                # overwrite); the merge order lives in NodeIR.correct_param.
+                n.correct_param(param_name, value, Source.COMPUTED)
                 return RepairCandidate(
                     graph  = g2,
                     action = RepairAction(
@@ -812,7 +814,8 @@ def _deterministic_candidates(
 
         g2 = graph.copy()
         n  = g2.unit(node.tag)
-        n.params[param_name] = value
+        # Sanctioned physical correction: override + honest retag (no silent overwrite).
+        n.correct_param(param_name, value, Source.COMPUTED)
         candidates.append(RepairCandidate(
             graph  = g2,
             action = RepairAction(

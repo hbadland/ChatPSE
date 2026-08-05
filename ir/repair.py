@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from ir.graph import FlowsheetGraph, SeparatorNode
+from ir.graph import FlowsheetGraph, SeparatorNode, Source
 from ir.normalise import normalise
 from ir.types import RepairStrategy, SimError
 
@@ -117,12 +117,14 @@ class DeterministicRepair:
             if node is not None:
                 if "T_out" in node.params and node.params["T_out"] < 100:
                     old = node.params["T_out"]
-                    node.params["T_out"] = round(old + 273.15, 2)
+                    # Sanctioned physical correction: override + honest retag.
+                    node.correct_param("T_out", round(old + 273.15, 2), Source.COMPUTED)
                     changes.append(
                         f"UNIT_CONVERSION: {node.tag} T_out {old}→{node.params['T_out']} K")
                 if "P_out" in node.params and node.params["P_out"] < 500:
                     old = node.params["P_out"]
-                    node.params["P_out"] = round(old * 1e5, 0)
+                    # Sanctioned physical correction: override + honest retag.
+                    node.correct_param("P_out", round(old * 1e5, 0), Source.COMPUTED)
                     changes.append(
                         f"UNIT_CONVERSION: {node.tag} P_out {old}→{node.params['P_out']} Pa")
 

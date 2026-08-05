@@ -1886,7 +1886,8 @@ class GraphPipeline:
 
             _record_repairs_in_store(
                 errors, changes, graph, self._rule_store,
-                compounds=state["compounds"])
+                compounds=state["compounds"],
+                params_before=_params_before)
             try:
                 self._rule_store.save(RULES_PATH)
             except Exception as _save_exc:
