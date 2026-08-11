@@ -268,6 +268,12 @@ def _graph_validate(graph: FlowsheetGraph) -> list[ValidationIssue]:
                                ErrorTarget.unit(node.tag),
                                f"{node.unit_type} needs ≥{req_in} inlet(s), has {actual_in}",
                                RepairStrategy.TOPOLOGY_FIX))
+        max_in = node.max_inlets()
+        if max_in > 0 and actual_in > max_in:
+            issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
+                               ErrorTarget.unit(node.tag),
+                               f"{node.unit_type} accepts ≤{max_in} inlet(s), has {actual_in}",
+                               RepairStrategy.TOPOLOGY_FIX))
         if actual_out < req_out:
             issues.append(_err("GRAPH", ErrorType.INVALID_TOPOLOGY,
                                ErrorTarget.unit(node.tag),
