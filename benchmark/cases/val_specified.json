@@ -58,5 +58,115 @@
     },
     "notes": "Fully-specified variant of VAL_01, constructed to isolate construction-at-scale (building the 3-stage compress + intercool + expand + recycle topology) from design inference (guessing unstated conditions) — VAL_01 leaves every operating condition unstated. Same flowsheet and same reference (benchmark/reference_flowsheets/VAL_01_reference.json), which is NOT modified. Every value in the description was read from that reference: feed 279.95 K / 1 bar / 0.0173 mol/s (S-01); three compression stages to 5/25/100 bar (K-01/02/03 P_out = 5e5/2.5e6/1e7 Pa); intercoolers after stages 1 and 2 to 279.95 K (CO-01/02 T_out); cryogenic cooler to 210 K (CO-03 T_out); expander outlet 1 bar (EX-01 P_out); vapour recycle to the first-stage compressor inlet (S-10). Additional reference facts NOT stated as conditions: (a) feed flow 0.0173 mol/s is extensive and does not enter the intensive T/P/vf reference-MAPE; (b) compressor discharge temperatures on K-01 (400.58 K) and K-03 (389.24 K) are captured OUTPUTS of P_out + efficiency, not design inputs (K-02 has none), so they are not stated — stating them would over-specify; (c) the reference additionally carries 8 regenerative heat exchangers (HT-01..08) that the process narrative does not describe, so the described chain is 8 units mapping onto the reference's 10-stream main path S-01..S-10. The reference cryo cooler reaches only 210 K (-63 C); the expander does the liquefaction to 111.47 K — the description states 210 K explicitly rather than the vague 'cryogenic'.",
     "reference_file": "benchmark/reference_flowsheets/VAL_01_reference.json"
+  },
+  {
+    "id": "VALS_03",
+    "name": "Hydrodealkylation Toluene to Benzene (fully-specified)",
+    "tier": "val_specified",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "A toluene feed at 373.15 K and 2 bar is mixed with hydrogen (hydrogen feed conditions are not available in the reference) and preheated to 873.15 K before entering a conversion reactor performing toluene hydrodealkylation at 873.15 K and 23.5 bar with 90.02% per-pass toluene conversion (reaction: Toluene + Hydrogen → Benzene + Methane). The hot reactor effluent is cooled to 353.15 K and passed to a vapour-liquid separator: the vapour phase (hydrogen and methane rich) is recycled to the reactor feed, and the liquid phase is reheated to 375.15 K and fed to a distillation column. The column produces a benzene-rich distillate and a toluene-rich bottoms stream that is recycled back to the feed.",
+    "compounds": [
+      "Hydrogen",
+      "Toluene",
+      "Benzene",
+      "Methane",
+      "Biphenyl"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_03_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 9,
+      "n_units_max": 13,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "ConversionReactor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Splitter"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT-"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CO-"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "P-"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "V-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "hydrocarbon"}
+      ]
+    },
+    "notes": "Fully-specified variant of VAL_03. Values read from benchmark/reference_flowsheets/VAL_03_reference.json. Reference fields: Toluene stream T_K=373.15/P_Pa=200000 (feed T and P); HT-01 params T_out=873.15 (preheat); RX-01 params temperature_K=873.15/pressure_Pa=2350000/conversion=0.9002; CO-01 params T_out=353.15; HT-02 params T_out=375.15. Structural gaps: reference connections=[] (no topology data); hydrogen feed stream absent from reference (feed T/P/flow unknown); all molar flows null. Anomalous reference flow magnitudes (recycled vapour appears orders-of-magnitude larger than toluene feed — likely a normalisation artefact in the source DWSIM file). Mass balance does not close in reference. Distillation column V-03 modelled as Vessel type in reference (not Column); description says 'distillation column' to direct the model to use Column."
+  },
+  {
+    "id": "VALS_04",
+    "name": "Hydrogen Production Biogas Reforming WGS PSA (fully-specified)",
+    "tier": "val_specified",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Biogas (methane, carbon dioxide) at 298.15 K and 1 bar is compressed to 16 bar (compressor outlet 589.818 K) and preheated in a heater; water at 298.15 K and 1 bar is pumped to 16 bar and then preheated to 1182.15 K. The two streams are mixed and fed to an equilibrium steam methane reformer operating at 1181.781 K and 16 bar. The reformer syngas is cooled to 623.15 K and passed through a first water-gas shift conversion reactor whose outlet reaches 740.978 K at 15.75 bar; the stream is cooled to 483.15 K before a second water-gas shift conversion reactor whose outlet is 514.575 K at 15.7 bar. The shifted gas is cooled to 311.15 K (two-phase, vapour fraction 0.8311) and separated in a vessel to knock out liquid water; the vapour is fed to a pressure swing adsorption unit that yields a high-purity hydrogen product at 311.15 K and 15.7 bar. The PSA tail gas is expanded to 1 bar (expander outlet 296.153 K), mixed with air at 298.15 K and 1 bar, preheated to 523.15 K, and combusted in a conversion reactor reaching 1550.034 K at 1 bar; the flue gas is cooled to 473.15 K and discharged.",
+    "compounds": [
+      "Methane",
+      "Carbon dioxide",
+      "Carbon monoxide",
+      "Hydrogen",
+      "Water",
+      "Nitrogen",
+      "Oxygen"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_04_reference.json",
+    "reference_structure": {
+      "n_units": 18,
+      "unit_types": [
+        "Compressor", "Pump",
+        "Heater", "Heater", "Cooler",
+        "Mixer",
+        "Heater",
+        "Cooler", "ConversionReactor",
+        "Cooler", "ConversionReactor",
+        "Cooler", "Vessel",
+        "Vessel",
+        "Expander", "Mixer",
+        "Heater", "ConversionReactor", "Cooler"
+      ],
+      "connections": [
+        ["BIOGAS", "COMP-1"], ["COMP-1", "HE-01"], ["HE-01", "MIX-1"],
+        ["WATER", "PUMP-1"], ["PUMP-1", "HE-02"], ["HE-02", "MIX-1"],
+        ["MIX-1", "RC-01"], ["RC-01", "HE-03"], ["HE-03", "RC-02"],
+        ["RC-02", "HE-04"], ["HE-04", "RC-03"], ["RC-03", "HE-05"],
+        ["HE-05", "CONDENSER"], ["CONDENSER", "PSA"],
+        ["PSA", "H2"], ["PSA", "VALVE"],
+        ["VALVE", "MIX-2"], ["AIR", "MIX-2"],
+        ["MIX-2", "HE-06"], ["HE-06", "RC-04"], ["RC-04", "HE-07"],
+        ["HE-07", "FLUE_GAS"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 16,
+      "n_units_max": 22,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "ConversionReactor"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "COMP"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "PUMP"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "HE-"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "COND"},
+        {"type": "separation_achieved", "unit_tag_pattern": "COND", "min_relative_diff": 0.1, "domain": "mixed"}
+      ]
+    },
+    "notes": "Fully-specified variant of VAL_04. Values read from benchmark/reference_flowsheets/VAL_04_reference.json. Reference fields: BIOGAS/WATER/AIR feed T_K=298.15/P_Pa=100000; S-01 T_K=589.818 (compressor outlet); S-05 T_K=1181.781/P_Pa=1600000 (reformer inlet); S-08 T_K=623.15 (HE-03 outlet); RC-02 outlet T_K=740.978/P_Pa=1575000; S-011 T_K=483.15 (HE-04 outlet); RC-03 outlet T_K=514.575/P_Pa=1570000; S-014 T_K=311.15/vapor_fraction=0.8311 (HE-05 outlet); H2 T_K=311.15/P_Pa=1570000; VALVE outlet T_K=296.153/P_Pa=100000; HE-06 outlet T_K=523.15; RC-04 outlet T_K=1550.034/P_Pa=100000; FLUE GAS T_K=473.15. Unit params absent from reference for all units (temperatures inferred from stream values only). RC-01 is equilibrium type; RC-02/RC-03/RC-04 conversion parameters absent from reference. Compounds extended to 7 (adds Nitrogen, Oxygen vs the 5-compound L1 VAL_04 case) to cover the combustion section. Molar flows all null in reference. 44 stream-level connection edges in reference simplified to unit-to-unit topology in reference_structure."
   }
 ]

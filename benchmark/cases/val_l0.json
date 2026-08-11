@@ -1,0 +1,107 @@
+[
+  {
+    "id": "VAL_01_L0",
+    "name": "Methane Liquefaction Linde Cycle (sparse)",
+    "tier": "val_l0",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Methane gas is compressed and cooled through a series of stages to reach high pressure and cryogenic temperature, then expanded to produce a two-phase mixture. The liquid fraction is recovered as liquid methane product, and the vapour is recycled to the compression inlet.",
+    "compounds": [
+      "Methane"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_01_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 5,
+      "n_units_max": 20,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Expander"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "V-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "hydrocarbon"}
+      ]
+    },
+    "notes": "L0 (sparse) variant of VAL_01. Deliberately omits all operating conditions, stage counts, and structural specifics. Only identifies the process (Linde liquefaction), feedstock (methane), and general operation sequence (compress → cool → expand → separate → recycle vapour). Topology extraction and design inference are both required. Reference: benchmark/reference_flowsheets/VAL_01_reference.json (same as VAL_01 and VALS_01). No tag-pattern physics checks — model is free to choose any unit tags."
+  },
+  {
+    "id": "VAL_03_L0",
+    "name": "Hydrodealkylation Toluene to Benzene (sparse)",
+    "tier": "val_l0",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Toluene is reacted with hydrogen at high temperature to produce benzene by hydrodealkylation. The reactor effluent is cooled and the vapour and liquid phases are separated. The hydrogen- and methane-rich vapour is recycled to the reactor feed. The benzene-rich liquid is distilled to recover a high-purity benzene product, and unreacted toluene from the column bottoms is recycled to the reactor.",
+    "compounds": [
+      "Hydrogen",
+      "Toluene",
+      "Benzene",
+      "Methane",
+      "Biphenyl"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_03_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 7,
+      "n_units_max": 15,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Splitter"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "V-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "hydrocarbon"}
+      ]
+    },
+    "notes": "L0 (sparse) variant of VAL_03. Identifies the process (HDA toluene to benzene), feedstock (toluene + hydrogen), and operation sequence (heat → react → cool → separate → distill → dual recycle) without stating any operating conditions, conversion, pressures, or temperatures. Reference: benchmark/reference_flowsheets/VAL_03_reference.json (same as VAL_03). No tag-pattern physics checks."
+  },
+  {
+    "id": "VAL_04_L0",
+    "name": "Hydrogen Production Biogas Reforming WGS PSA (sparse)",
+    "tier": "val_l0",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Biogas containing methane and carbon dioxide is converted to a hydrogen-rich gas stream by steam reforming. The syngas passes through water-gas shift reactors to increase the hydrogen fraction, water is condensed and removed, and the dry gas is purified to yield a high-purity hydrogen product. A tail gas is produced as a by-product.",
+    "compounds": [
+      "Methane",
+      "Carbon dioxide",
+      "Carbon monoxide",
+      "Hydrogen",
+      "Water"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_04_reference.json",
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 10,
+      "n_units_max": 25,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "V-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "mixed"}
+      ]
+    },
+    "notes": "L0 (sparse) variant of VAL_04. Identifies the process (biogas SMR + WGS + PSA), feedstock (biogas + steam), and sequence (compress → reform → shift × 2 → condense water → PSA → H2 product + tail gas) without stating any temperatures, pressures, or reactor conditions. Compounds list carries only the 5 from the L1 case (omits N2, O2 from the reference combustion section, which the L0 description does not mention). Reference: benchmark/reference_flowsheets/VAL_04_reference.json (same as VAL_04). No tag-pattern physics checks."
+  }
+]
