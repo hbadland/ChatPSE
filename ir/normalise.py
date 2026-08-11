@@ -48,8 +48,18 @@ def normalise(graph: FlowsheetGraph) -> FlowsheetGraph:
 
 def _insert_mixers(graph: FlowsheetGraph) -> FlowsheetGraph:
     """
-    For any unit (except Mixer) that receives more than one inlet stream,
+    For any unit (except Mixer) that would receive more than one physical inlet,
     insert an auto-generated Mixer upstream and route all inlets through it.
+
+    "Effective inlets" include:
+      (a) streams already wired to the unit via graph edges (inlet_streams)
+      (b) is_recycle streams whose recycle_target equals the unit but that have
+          dst=None — their INIT stream lands on this unit during to_dwsim
+          connection-building and acts as an additional inlet.  On a single-inlet
+          unit (Compressor, Heater, Cooler, etc.) both the feed and the INIT
+          stream would target port 0, causing a port collision in DWSIM.
+          Inserting a Mixer here routes the INIT stream to the Mixer (which
+          accepts multiple ports) instead of directly to the single-inlet unit.
     """
     g = graph.copy()
     changed = True
@@ -59,7 +69,16 @@ def _insert_mixers(graph: FlowsheetGraph) -> FlowsheetGraph:
             if node.unit_type == "Mixer":
                 continue
             inlets = g.inlet_streams(node.tag)
-            if len(inlets) <= 1:
+            # Recycle streams that target this unit via recycle_target but have
+            # no graph edge yet (dst=None).  Their INIT stream will become a
+            # physical inlet in DWSIM, so they must be counted here.
+            unlinked_recycles = [
+                s for s in g.streams()
+                if s.is_recycle
+                and s.recycle_target == node.tag
+                and g.stream_dest(s.tag) is None
+            ]
+            if len(inlets) + len(unlinked_recycles) <= 1:
                 continue
 
             mixer_tag  = f"MIX-{node.tag}"
@@ -74,12 +93,19 @@ def _insert_mixers(graph: FlowsheetGraph) -> FlowsheetGraph:
                               metadata={"auto_inserted": True})
             g.add_unit(mixer)
 
-            # Detach each inlet from node, re-attach to mixer
+            # Detach each graph-wired inlet from node, re-attach to mixer
             for stream in inlets:
                 src = g.stream_source(stream.tag)
                 # Remove existing edge: src → stream → node
                 g._g.remove_edge(stream.tag, node.tag)
                 # Attach stream → mixer instead
+                g._g.add_edge(stream.tag, mixer_tag)
+
+            # Wire unlinked recycle streams into the mixer so that
+            # stream_dest() returns mixer_tag.  _build_connections will then
+            # route the INIT stream to the Mixer (multi-inlet) rather than
+            # directly to node (single-inlet, port 0 already taken by the feed).
+            for stream in unlinked_recycles:
                 g._g.add_edge(stream.tag, mixer_tag)
 
             # Add new stream: mixer → node
