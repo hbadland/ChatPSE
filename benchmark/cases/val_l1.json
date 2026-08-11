@@ -1,0 +1,61 @@
+[
+  {
+    "id": "VAL_01_L1",
+    "name": "Methane Liquefaction Three-Stage (structural)",
+    "tier": "val_l1",
+    "difficulty": "hard",
+    "coupling_level": "medium",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Pure methane vapour is compressed through three sequential compressor stages. After the first and second stages, a cooler returns the compressed gas to near its feed temperature before it enters the next compressor. After the third stage, a cooler reduces the high-pressure gas to a cryogenic temperature. The cold high-pressure stream passes through an expander, producing a two-phase mixture that is fed to a gas-liquid separator. The separator discharges a liquid methane product from its bottom outlet and an unliquefied vapour product from its top outlet. There is no recycle; the process is once-through.",
+    "compounds": [
+      "Methane"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_01_reference.json",
+    "reference_structure": {
+      "n_units": 8,
+      "unit_types": [
+        "Compressor",
+        "Compressor",
+        "Compressor",
+        "Cooler",
+        "Cooler",
+        "Cooler",
+        "Expander",
+        "Vessel"
+      ],
+      "connections": [
+        ["FEED", "CP-01"],
+        ["CP-01", "CL-01"],
+        ["CL-01", "CP-02"],
+        ["CP-02", "CL-02"],
+        ["CL-02", "CP-03"],
+        ["CP-03", "CL-03"],
+        ["CL-03", "EX-01"],
+        ["EX-01", "V-01"],
+        ["V-01", "LIQ"],
+        ["V-01", "VAP"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 8,
+      "n_units_max": 12,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Expander"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "CP-"},
+        {"type": "pressure_decreases_across", "unit_tag_pattern": "EX-"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CL-"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "V-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "hydrocarbon"}
+      ]
+    },
+    "notes": "L1 (structural) variant of VAL_01. Explicitly states three Compressors, three Coolers (two intercoolers after stages 1 and 2, one cryogenic cooler after stage 3), one Expander, and one Vessel (gas-liquid separator), in their correct once-through sequence, as read from benchmark/reference_flowsheets/VAL_01_reference.json (same reference as VAL_01 and VALS_01). All operating conditions withheld — no temperatures, pressures, or molar flows stated. Description corrected per 2026-08-11 post-audit: no recycle claimed (source Methane_Liquefaction_Cycle.dwxmz connections are once-through; the FOSSEE flowsheet has no vapour return to the compressor inlet). Reference_structure connections use the same normalised tag scheme as VALS_01 (CP-/CL-/EX-/V-) to keep tag-pattern physics checks consistent across the VAL_01 family."
+  }
+]

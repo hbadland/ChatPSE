@@ -34,6 +34,8 @@ TIERS = [
     "val_specified",
     # Sparse (L0) variants — deliberately omit operating conditions to stress topology extraction
     "val_l0",
+    # Structural (L1) variants — state unit types and connectivity, withhold all operating conditions
+    "val_l1",
 ]
 
 # The validation family — real-sourced reference cases that need the large
