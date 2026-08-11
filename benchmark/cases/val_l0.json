@@ -7,7 +7,7 @@
     "coupling_level": "medium",
     "perturbation": "none",
     "domain": "hydrocarbon",
-    "description": "Methane gas is compressed and cooled through a series of stages to reach high pressure and cryogenic temperature, then expanded to produce a two-phase mixture. The liquid fraction is recovered as liquid methane product, and the vapour is recycled to the compression inlet.",
+    "description": "Methane gas is compressed and cooled through a series of stages to reach high pressure and cryogenic temperature, then expanded to produce a two-phase mixture. The liquid fraction is recovered as liquid methane product, and the unliquefied vapour fraction is taken off as a separate product stream.",
     "compounds": [
       "Methane"
     ],
@@ -28,7 +28,7 @@
         {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "hydrocarbon"}
       ]
     },
-    "notes": "L0 (sparse) variant of VAL_01. Deliberately omits all operating conditions, stage counts, and structural specifics. Only identifies the process (Linde liquefaction), feedstock (methane), and general operation sequence (compress → cool → expand → separate → recycle vapour). Topology extraction and design inference are both required. Reference: benchmark/reference_flowsheets/VAL_01_reference.json (same as VAL_01 and VALS_01). No tag-pattern physics checks — model is free to choose any unit tags."
+    "notes": "L0 (sparse) variant of VAL_01. Deliberately omits all operating conditions, stage counts, and structural specifics. Only identifies the process (Linde liquefaction), feedstock (methane), and general operation sequence (compress → cool → expand → separate → two product streams). Topology extraction and design inference are both required. Reference: benchmark/reference_flowsheets/VAL_01_reference.json (same as VAL_01 and VALS_01). No tag-pattern physics checks — model is free to choose any unit tags. Description corrected post-audit to match verified source topology (Methane_Liquefaction_Cycle.dwxmz, connections confirmed once-through); the original phrasing implied a Linde-cycle recycle not present in the FOSSEE flowsheet."
   },
   {
     "id": "VAL_03_L0",
