@@ -107,9 +107,12 @@ def _recycle_init_stream_dict(edge: EdgeIR,
     """
     d: dict = {"tag": f"{edge.tag}-INIT"}
 
-    # Resolve composition: use edge's own first, then the first feed stream as
-    # a fallback so DWSIM always has a valid composition for VLE initialisation.
-    _comp = edge.composition if edge.composition else _feed_stream_composition(graph)
+    # Resolve composition: use edge's own first, then the Mixer-adjacency heuristic
+    # (secondary entrainer/solvent feed when recycle targets a Mixer with a
+    # materially distinct second feed), then the first feed stream as a final fallback.
+    _comp = (edge.composition
+             or _mixer_secondary_feed_composition(edge, graph)
+             or _feed_stream_composition(graph))
 
     import sys as _sys
 
@@ -171,6 +174,49 @@ def _feed_stream_composition(graph: FlowsheetGraph) -> dict:
     for s in graph.streams():
         if not s.is_recycle and graph.stream_source(s.tag) is None and s.composition:
             return s.composition
+    return {}
+
+
+def _mixer_secondary_feed_composition(edge: EdgeIR, graph: FlowsheetGraph) -> dict:
+    """Mixer-adjacency heuristic: seed recycle INIT from a secondary entrainer feed.
+
+    When the recycle target is a Mixer and a second non-recycle feed stream enters
+    that Mixer with L1 distance > 0.3 from the primary feed, return the secondary
+    feed's composition for use as the recycle INIT composition.
+
+    Handles two topologies:
+      - Explicit Mixer target: edge.recycle_target names an existing Mixer unit
+        (graph.stream_dest returns None because no graph edge exists for the recycle).
+      - Auto-inserted Mixer: normalise()._insert_mixers wired the recycle stream to
+        an auto-generated Mixer; graph.stream_dest resolves to that Mixer's tag.
+
+    Returns {} when the heuristic does not apply: target is not a Mixer, only one
+    feed stream is present, or no secondary feed differs materially from the primary.
+    """
+    target_tag = graph.stream_dest(edge.tag) or edge.recycle_target
+    if not target_tag:
+        return {}
+    target_unit = graph.unit(target_tag)
+    if not target_unit or target_unit.unit_type != "Mixer":
+        return {}
+
+    feeds = [
+        s for s in graph.inlet_streams(target_tag)
+        if not s.is_recycle and graph.stream_source(s.tag) is None and s.composition
+    ]
+    if len(feeds) < 2:
+        return {}
+
+    primary_comp = feeds[0].composition
+
+    def _l1(a: dict, b: dict) -> float:
+        keys = set(a) | set(b)
+        return sum(abs(a.get(k, 0.0) - b.get(k, 0.0)) for k in keys)
+
+    for s in feeds[1:]:
+        if _l1(s.composition, primary_comp) > 0.3:
+            return s.composition
+
     return {}
 
 
