@@ -57,5 +57,140 @@
       ]
     },
     "notes": "L1 (structural) variant of VAL_01. Explicitly states three Compressors, three Coolers (two intercoolers after stages 1 and 2, one cryogenic cooler after stage 3), one Expander, and one Vessel (gas-liquid separator), in their correct once-through sequence, as read from benchmark/reference_flowsheets/VAL_01_reference.json (same reference as VAL_01 and VALS_01). All operating conditions withheld — no temperatures, pressures, or molar flows stated. Description corrected per 2026-08-11 post-audit: no recycle claimed (source Methane_Liquefaction_Cycle.dwxmz connections are once-through; the FOSSEE flowsheet has no vapour return to the compressor inlet). Reference_structure connections use the same normalised tag scheme as VALS_01 (CP-/CL-/EX-/V-) to keep tag-pattern physics checks consistent across the VAL_01 family."
+  },
+  {
+    "id": "VAL_03_L1",
+    "name": "Toluene Hydrodealkylation (structural)",
+    "tier": "val_l1",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "hydrocarbon",
+    "description": "Construct a toluene hydrodealkylation process with separate hydrogen and toluene feed streams entering a feed mixer. Send the mixed feed through a heater and then to a conversion reactor, where toluene reacts with hydrogen to form benzene and methane. Cool the reactor effluent and feed it to a vapour-liquid separator. Recycle the hydrogen- and methane-rich vapour outlet from the separator to the feed mixer. Send the separator liquid through a second heater and then to a distillation column. Withdraw a benzene-rich distillate as product. Send the toluene-rich column bottoms through a pump and recycle it to the feed mixer. The required main sequence is feed mixer, feed heater, conversion reactor, effluent cooler, vapour-liquid separator, liquid reheater, distillation column, and bottoms pump, with separate vapour and bottoms recycle loops. Infer all temperatures, pressures, flow rates, conversion, and other operating conditions.",
+    "compounds": [
+      "Hydrogen",
+      "Toluene",
+      "Benzene",
+      "Methane",
+      "Biphenyl"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_03_reference.json",
+    "reference_structure": {
+      "n_units": 11,
+      "unit_types": [
+        "Mixer",
+        "Heater",
+        "ConversionReactor",
+        "Vessel",
+        "Cooler",
+        "Vessel",
+        "Heater",
+        "Vessel",
+        "Pump",
+        "Splitter",
+        "Splitter"
+      ],
+      "connections": [],
+      "audited_unit_types": [
+        "Mixer",
+        "Heater",
+        "ConversionReactor",
+        "Cooler",
+        "Vessel",
+        "Heater",
+        "Column",
+        "Pump"
+      ],
+      "audited_unit_types_note": "Source-faithful 8-unit structural truth for scoring purposes. unit_types above reproduces the simulator reference encoding (V-03 stored as Vessel; two Splitter entries from DWSIM recycle bookkeeping). audited_unit_types reflects the source-described process: the distillation column is a Column unit, and the two recycle operators are simulator artefacts not scored as required physical units. Do not compute structural unit-type F1 from unit_types directly; use audited_unit_types instead."
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 8,
+      "n_units_max": 13,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "ConversionReactor"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "unit_type_present", "unit_type": "Column"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "temp_increases_across", "unit_tag_pattern": "HT-"},
+        {"type": "temp_decreases_across", "unit_tag_pattern": "CO-"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "P-"},
+        {"type": "two_phase_outlet", "unit_tag_pattern": "V-"},
+        {"type": "separation_achieved", "unit_tag_pattern": "V-", "min_relative_diff": 0.1, "domain": "hydrocarbon"}
+      ]
+    },
+    "notes": "L1 (structural) variant of VAL_03. States the complete eight-unit main sequence (feed mixer, feed heater, conversion reactor, effluent cooler, vapour-liquid separator, liquid reheater, distillation column, bottoms pump) and both recycle destinations (vapour to feed mixer, bottoms via pump to feed mixer) without prescribing any operating conditions, conversion, temperatures, pressures, or flow rates. Recycle splitter units are not forced in the description: the source audit found DWSIM recycle bookkeeping that does not require explicit physical splitters; they appear in reference_structure.unit_types (reproducing the reference JSON) but are not checked in expected.physics_checks. STRUCTURAL SCORING NOTE: reference_structure.unit_types reproduces the simulator encoding and must not be used directly for unit-type F1. The reference encodes the distillation column as Vessel (V-03) and includes two Splitters as bookkeeping artefacts. expected.physics_checks follows the source-described process and correctly requires a Column. Use reference_structure.audited_unit_types (8 units: Mixer, Heater, ConversionReactor, Cooler, Vessel, Heater, Column, Pump) for structural agreement calculations. Same reference as VAL_03 and VALS_03. Reference has 0 connections; reference_structure.connections is empty accordingly; no connection-level recall or F1 should be reported for this case."
+  },
+  {
+    "id": "VAL_04_L1",
+    "name": "Biogas Steam Reforming to Hydrogen (structural)",
+    "tier": "val_l1",
+    "difficulty": "hard",
+    "coupling_level": "high",
+    "perturbation": "none",
+    "domain": "mixed",
+    "description": "Construct a hydrogen-production process from biogas with the complete tail-gas combustion train. Compress and heat the biogas in separate units. Pump and heat a separate water feed, then mix the hot biogas and steam. Send the combined feed to an equilibrium steam methane reformer. Cool the reformer syngas and pass it through a high-temperature water-gas shift reactor. Cool the outlet again and send it to a separate low-temperature water-gas shift reactor. Cool the shifted gas until water condenses, then use a gas-liquid separator to remove the liquid water. Send the remaining vapour to a pressure swing adsorption unit that produces a high-purity hydrogen product and a separate tail-gas stream. Reduce the pressure of the PSA tail gas through a valve. Mix it with a separate air feed, heat the mixture, and send it to a combustion reactor. Cool the resulting flue gas before discharge. Retain both water-gas shift reactors and the complete tail-gas treatment sequence. Infer all feed conditions, temperatures, pressures, flow rates, conversions, and separation specifications.",
+    "compounds": [
+      "Methane",
+      "Carbon dioxide",
+      "Carbon monoxide",
+      "Hydrogen",
+      "Water",
+      "Nitrogen",
+      "Oxygen"
+    ],
+    "reference_file": "benchmark/reference_flowsheets/VAL_04_reference.json",
+    "reference_structure": {
+      "n_units": 18,
+      "unit_types": [
+        "Compressor", "Pump",
+        "Heater", "Heater",
+        "Mixer",
+        "ConversionReactor",
+        "Cooler", "ConversionReactor",
+        "Cooler", "ConversionReactor",
+        "Cooler", "Vessel",
+        "Vessel",
+        "Expander", "Mixer",
+        "Heater", "ConversionReactor", "Cooler"
+      ],
+      "connections": [
+        ["BIOGAS", "COMP-1"], ["COMP-1", "HE-01"], ["HE-01", "MIX-1"],
+        ["WATER", "PUMP-1"], ["PUMP-1", "HE-02"], ["HE-02", "MIX-1"],
+        ["MIX-1", "RC-01"], ["RC-01", "HE-03"], ["HE-03", "RC-02"],
+        ["RC-02", "HE-04"], ["HE-04", "RC-03"], ["RC-03", "HE-05"],
+        ["HE-05", "CONDENSER"], ["CONDENSER", "PSA"], ["CONDENSER", "LIQUID_WATER"],
+        ["PSA", "H2"], ["PSA", "VALVE"],
+        ["VALVE", "MIX-2"], ["AIR", "MIX-2"],
+        ["MIX-2", "HE-06"], ["HE-06", "RC-04"], ["RC-04", "HE-07"],
+        ["HE-07", "FLUE_GAS"]
+      ]
+    },
+    "expected": {
+      "property_package_class": "eos",
+      "n_units_min": 16,
+      "n_units_max": 22,
+      "convergence_expected": true,
+      "physics_checks": [
+        {"type": "convergence"},
+        {"type": "mass_balance"},
+        {"type": "unit_type_present", "unit_type": "Compressor"},
+        {"type": "unit_type_present", "unit_type": "Pump"},
+        {"type": "unit_type_present", "unit_type": "Mixer"},
+        {"type": "unit_type_present", "unit_type": "Heater"},
+        {"type": "unit_type_present", "unit_type": "Cooler"},
+        {"type": "unit_type_present", "unit_type": "ConversionReactor"},
+        {"type": "unit_type_present", "unit_type": "Vessel"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "CP"},
+        {"type": "pressure_increases_across", "unit_tag_pattern": "P-"}
+      ]
+    },
+    "notes": "L1 (structural) variant of VAL_04. States the complete 18-unit topology including both WGS stages, the condenser and water separator, the PSA unit, and the full tail-gas treatment sequence (pressure-reducing valve, air mixer, preheater, combustion reactor, flue-gas cooler) without any numerical conditions. The tail-gas combustion train was omitted from the original val_15plus VAL_04 prompt (and its description), making that case unsuitable as a structural L1. Compounds extended to 7 (Nitrogen and Oxygen added vs the 5-compound val_15plus case) to cover the combustion section. Same reference as VAL_04 and VALS_04 (benchmark/reference_flowsheets/VAL_04_reference.json). Reference_structure unit_types corrected to 18 entries matching the reference unit count (the extra Cooler present in VALS_04 reference_structure removed)."
   }
 ]
