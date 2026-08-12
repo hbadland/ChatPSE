@@ -170,6 +170,15 @@ def get_global_margin_model() -> MarginModel:
     return _GLOBAL_MARGIN_MODEL
 
 
+def reset_global_margin_model() -> None:
+    """Clear all accumulated observations from the process-level singleton.
+
+    Call between model segments when running multiple models sequentially in one
+    Python process to prevent cross-model observation leakage.
+    """
+    _GLOBAL_MARGIN_MODEL._data.clear()
+
+
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 def _trimmed_mean_plus_half_std(vals: list[float], trim: float) -> float:

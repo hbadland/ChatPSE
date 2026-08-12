@@ -114,7 +114,8 @@ class RunLog:
 
     def save(self, results_dir: str = "results/per_run") -> str:
         os.makedirs(results_dir, exist_ok=True)
-        fname = f"{self.case_id}_{self.ablation_mode}_{self.timestamp}.json"
+        model_slug = self.model.replace(":", "_").replace("/", "_")
+        fname = f"{self.case_id}_{self.ablation_mode}_{model_slug}_{self.timestamp}.json"
         path  = os.path.join(results_dir, fname)
         with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2, default=str)
