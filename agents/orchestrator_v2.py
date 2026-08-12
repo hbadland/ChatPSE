@@ -570,7 +570,9 @@ class OrchestratorV2:
             # Phrase guard: accept is_recycle=True only when the description
             # contains a recognised recycle trigger phrase.  Suppresses LLM
             # hallucinations on non-recycle flowsheets.
-            _desc_lower = desc.lower()
+            # Use raw description, not norm_desc: LLM normalisation can paraphrase
+            # away the exact trigger phrases present in the original input.
+            _desc_lower = (description or desc).lower()
             for _s in sem_topo.streams:
                 if getattr(_s, "is_recycle", False):
                     if not any(p in _desc_lower for p in _RECYCLE_PHRASES):

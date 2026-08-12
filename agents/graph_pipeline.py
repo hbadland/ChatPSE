@@ -1348,7 +1348,10 @@ class GraphPipeline:
                         _s.recycle_target = None
 
             # ── Recycle guard 3: phrase guard ─────────────────────────────────
-            _desc_lower = desc.lower()
+            # Use the raw input description, not norm_desc: the LLM-normalised
+            # description can paraphrase and drop exact trigger phrases.
+            # Same rationale as the raw-description pass to thermo.assign (line 1584).
+            _desc_lower = (state.get("description") or desc).lower()
             for _s in sem_topo.streams:
                 if getattr(_s, "is_recycle", False):
                     if not any(p in _desc_lower for p in _RECYCLE_PHRASES):
