@@ -431,6 +431,8 @@ class RepairAgent:
             graph, node, param_name, feed_T, feed_P, bp,
             tried_vals, error, uncertainty=uncertainty, sim_hints=sim_hints,
             memory=memory)
+        _ablation_phase_cands = sum(
+            1 for c in candidates if c.action.source == "physics")
 
         llm_cand = self._llm_candidate(
             graph, node, param_name, error, feed_T, feed_P, bp, tried_vals)
@@ -439,7 +441,15 @@ class RepairAgent:
 
         if not candidates:
             return graph, [
-                f"CONDITION_FIX: no viable candidates for {node.tag}.{param_name}"]
+                f"CONDITION_FIX: no viable candidates for {node.tag}.{param_name}",
+                "ABLATION_STATS_LOG:" + json.dumps({
+                    "n_bp_calls": 1,
+                    "n_phase_candidates": _ablation_phase_cands,
+                    "phase_candidate_selected": False,
+                    "n_coupling_queries": 0,
+                    "nonempty_boosts": [],
+                }),
+            ]
 
         _score_candidates(
             candidates,
@@ -451,6 +461,7 @@ class RepairAgent:
             target_tag_sim  = error.target.tag,
         )
         best = min(candidates, key=lambda c: c.score)
+        _ablation_phase_selected = best.action.source == "physics"
 
         post_report = validate(best.graph)
         memory.record(
@@ -473,7 +484,14 @@ class RepairAgent:
             f"CONDITION_FIX[{best.action.source}]: {node.tag}.{param_name} "
             f"{old_val}→{best.action.new_value} "
             f"({best.action.rationale}, score={best.score:.1f}, "
-            f"credit={best.action.source})"
+            f"credit={best.action.source})",
+            "ABLATION_STATS_LOG:" + json.dumps({
+                "n_bp_calls": 1,
+                "n_phase_candidates": _ablation_phase_cands,
+                "phase_candidate_selected": _ablation_phase_selected,
+                "n_coupling_queries": 0,
+                "nonempty_boosts": [],
+            }),
         ]
 
     # ── LLM candidate (with output clamping) ──────────────────────────────────

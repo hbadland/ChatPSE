@@ -35,6 +35,7 @@ Candidate import note:
 """
 from __future__ import annotations
 
+import json
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Optional
@@ -130,6 +131,12 @@ class BeamRepairSearch:
               f"beam_width={self.width}",
               flush=True, file=_sys.stderr)
 
+        # Ablation activation counters — persisted into ABLATION_STATS_LOG
+        _ablation_bp_calls:        int       = 1  # probe call above
+        _ablation_phase_cands:     int       = 0
+        _ablation_coupling_queries: int      = 0
+        _ablation_nonempty_boosts: list[dict] = []
+
         memory    = memory or RepairMemory()
         cache     = StateCache()
         scheduler = ExploreExploitScheduler(
@@ -157,6 +164,7 @@ class BeamRepairSearch:
                 unfixed_tags = {e.target.tag for e in unfixed}
                 coupling_boosts: dict[str, float] = {}
                 if state.last_fixed_tag and state.last_fixed_param:
+                    _ablation_coupling_queries += 1
                     coupling_boosts = _coupling.get_coupled_boosts(
                         state.graph,
                         state.last_fixed_tag,
@@ -164,6 +172,11 @@ class BeamRepairSearch:
                         unfixed_tags,
                     )
                     if coupling_boosts:
+                        _ablation_nonempty_boosts.append({
+                            "source_tag":   state.last_fixed_tag,
+                            "source_param": state.last_fixed_param,
+                            "boosted":      dict(coupling_boosts),
+                        })
                         import sys as _sys
                         print(f"[BEAM] coupling_boosts={coupling_boosts} "
                               f"(from {state.last_fixed_tag}.{state.last_fixed_param})",
@@ -184,6 +197,7 @@ class BeamRepairSearch:
                 feed_T, feed_P = _inlet_conditions(state.graph, node.tag)
                 bp             = bubble_point_K(
                     state.graph.compounds, feed_P or 101_325.0)
+                _ablation_bp_calls += 1
                 tried_vals     = memory.tried_values(
                     target_error.target.tag, param_name)
                 uncertainty    = memory.uncertainty_score(
@@ -202,6 +216,8 @@ class BeamRepairSearch:
                     sim_hints   = sim_hints,
                     memory      = memory,
                 )
+                _ablation_phase_cands += sum(
+                    1 for c in candidates if c.action.source == "physics")
 
                 if llm_agent is not None:
                     llm_c = llm_agent._llm_candidate(
@@ -309,6 +325,17 @@ class BeamRepairSearch:
                     n_errors_before = init_errs,
                 )
 
+        # ── Ablation stats log (persisted into per-run JSON) ──────────────────
+        _ablation_phase_selected = any(
+            isinstance(c, str) and "[physics]" in c for c in best.changes)
+        _abl_log = "ABLATION_STATS_LOG:" + json.dumps({
+            "n_bp_calls":              _ablation_bp_calls,
+            "n_phase_candidates":      _ablation_phase_cands,
+            "phase_candidate_selected": _ablation_phase_selected,
+            "n_coupling_queries":      _ablation_coupling_queries,
+            "nonempty_boosts":         _ablation_nonempty_boosts,
+        })
+
         # ── Local optimisation post-processing (Item 3) ───────────────────────
         after_beam_errs = best.ir_errors
         if self.run_local_opt and (best.ir_errors > 0 or best.ir_warnings > 0):
@@ -323,7 +350,7 @@ class BeamRepairSearch:
                     f'REPAIR_STAGE_LOG:{{"after_beam":{after_beam_errs},'
                     f'"after_local_opt":{opt_errs}}}'
                 )
-                return opt_graph, best.changes + opt_changes + [stage_log]
+                return opt_graph, best.changes + opt_changes + [stage_log, _abl_log]
 
         stage_log = (
             f'REPAIR_STAGE_LOG:{{"after_beam":{after_beam_errs},'
@@ -331,7 +358,7 @@ class BeamRepairSearch:
         )
         if best.ir_errors == 0 and best.trajectory:
             _record_trajectory_margins(best.graph, best.trajectory)
-        return best.graph, best.changes + [stage_log]
+        return best.graph, best.changes + [stage_log, _abl_log]
 
 
 # ── Target selection ───────────────────────────────────────────────────────────

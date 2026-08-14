@@ -44,6 +44,12 @@ class IterationLog:
     # Fix 3: per-stage error counts from REPAIR_STAGE_LOG
     stage_after_beam_errors:      Optional[int] = None
     stage_after_local_opt_errors: Optional[int] = None
+    # Ablation activation counters (from ABLATION_STATS_LOG)
+    n_bp_calls:                int        = 0
+    n_phase_candidates:        int        = 0
+    phase_candidate_selected:  bool       = False
+    n_coupling_queries:        int        = 0
+    nonempty_coupling_boosts:  list[dict] = field(default_factory=list)
 
 
 @dataclass
@@ -91,6 +97,9 @@ class RunLog:
     # reference-blind signals — so the selection is auditable and demonstrably
     # never uses reference/MAPE data.
     best_of_n:      Optional[dict] = None
+    # Aggregate ablation activation counters across all iterations.  None when no
+    # ABLATION_STATS_LOG entries exist in the trace (pre-instrumentation records).
+    ablation_stats: Optional[dict] = None
 
     @property
     def score_curve(self) -> list[int]:
@@ -227,6 +236,11 @@ def extract_run_log(
         cd_improvement      = 0.0
         stage_after_beam    = None
         stage_after_local   = None
+        abl_bp_calls        = 0
+        abl_phase_cands     = 0
+        abl_phase_selected  = False
+        abl_coupling_q      = 0
+        abl_nonempty_boosts: list[dict] = []
         for chg in changes:
             if not isinstance(chg, str):
                 continue
@@ -243,6 +257,16 @@ def extract_run_log(
                     p = json.loads(chg[len("REPAIR_STAGE_LOG:"):])
                     stage_after_beam  = p.get("after_beam")
                     stage_after_local = p.get("after_local_opt")
+                except Exception:
+                    pass
+            elif chg.startswith("ABLATION_STATS_LOG:"):
+                try:
+                    p = json.loads(chg[len("ABLATION_STATS_LOG:"):])
+                    abl_bp_calls       = int(p.get("n_bp_calls", 0))
+                    abl_phase_cands    = int(p.get("n_phase_candidates", 0))
+                    abl_phase_selected = bool(p.get("phase_candidate_selected", False))
+                    abl_coupling_q     = int(p.get("n_coupling_queries", 0))
+                    abl_nonempty_boosts = list(p.get("nonempty_boosts", []))
                 except Exception:
                     pass
 
@@ -290,7 +314,26 @@ def extract_run_log(
             coord_descent_improvement    = cd_improvement,
             stage_after_beam_errors      = stage_after_beam,
             stage_after_local_opt_errors = stage_after_local,
+            n_bp_calls               = abl_bp_calls,
+            n_phase_candidates       = abl_phase_cands,
+            phase_candidate_selected = abl_phase_selected,
+            n_coupling_queries       = abl_coupling_q,
+            nonempty_coupling_boosts = abl_nonempty_boosts,
         ))
+
+    # Aggregate ablation counters across all iterations
+    if any(it.n_bp_calls > 0 for it in iter_logs):
+        all_nonempty = [b for it in iter_logs for b in it.nonempty_coupling_boosts]
+        ablation_agg: Optional[dict] = {
+            "n_bp_calls_total":             sum(it.n_bp_calls for it in iter_logs),
+            "n_phase_candidates_total":     sum(it.n_phase_candidates for it in iter_logs),
+            "phase_candidate_ever_selected": any(it.phase_candidate_selected for it in iter_logs),
+            "n_coupling_queries_total":     sum(it.n_coupling_queries for it in iter_logs),
+            "nonempty_coupling_boosts_total": len(all_nonempty),
+            "nonempty_coupling_boost_events": all_nonempty,
+        }
+    else:
+        ablation_agg = None
 
     # Completeness-loop diagnostic (None unless the loop ran)
     completeness = getattr(pr, "completeness", None)
@@ -362,6 +405,7 @@ def extract_run_log(
         final_graph_summary = graph_summary,
         warnings         = warnings[:20],
         completeness_critic = completeness if isinstance(completeness, dict) else None,
+        ablation_stats   = ablation_agg,
     )
 
 
