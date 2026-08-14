@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -N comp_val
-#PBS -l walltime=08:00:00
-#PBS -l select=1:ncpus=8:mem=64gb
+#PBS -l walltime=05:00:00
+#PBS -l select=1:ncpus=8:mem=64gb:ngpus=1:gpu_type=L40S
 #PBS -o /rds/general/user/hgb25/home/multiAgentFlowsheet/results/component_val.out
 #PBS -e /rds/general/user/hgb25/home/multiAgentFlowsheet/results/component_val.err
 #PBS -m abe
@@ -12,11 +12,14 @@ set -euo pipefail
 DEST="/rds/general/user/hgb25/home/multiAgentFlowsheet"
 SINGULARITY_IMG="/rds/general/user/hgb25/home/dwsim.sif"
 OLLAMA_HOST="http://localhost:11434/v1"
+OLLAMA_BIN="/rds/general/user/hgb25/home/bin/ollama"
 RUN_STAMP="$(date +%Y%m%d_%H%M%S)"
 LOG="$DEST/results/component_ablation_val_${RUN_STAMP}.log"
 
 cd "$DEST"
 mkdir -p results/per_run
+export OLLAMA_NUM_CTX=16384
+export OLLAMA_TIMEOUT=300
 
 {
     echo "[$(date)] Component ablation starting"
@@ -30,12 +33,22 @@ mkdir -p results/per_run
     echo "rule_store=cleared before each case-mode run"
 } | tee "$LOG"
 
-echo "[$(date)] Waiting 30s for Ollama" | tee -a "$LOG"
+echo "[$(date)] Starting Ollama on the allocated GPU" | tee -a "$LOG"
+CUDA_VISIBLE_DEVICES=0 "$OLLAMA_BIN" serve \
+    >>"$DEST/results/component_val_ollama_${RUN_STAMP}.log" 2>&1 &
+OLLAMA_PID=$!
+trap 'kill "$OLLAMA_PID" 2>/dev/null || true' EXIT
+
 sleep 30
 if ! curl -fsS http://localhost:11434/api/tags >/dev/null; then
     echo "[$(date)] ERROR: Ollama not responding" | tee -a "$LOG"
     exit 1
 fi
+if ! "$OLLAMA_BIN" list | grep -q "qwen3:30b-a3b"; then
+    echo "[$(date)] ERROR: qwen3:30b-a3b is not available" | tee -a "$LOG"
+    exit 1
+fi
+echo "[$(date)] Ollama and model ready" | tee -a "$LOG"
 
 echo "[$(date)] Running instrumentation preflight" | tee -a "$LOG"
 singularity exec --bind /rds --bind "$DEST" "$SINGULARITY_IMG" \
@@ -53,11 +66,13 @@ for CASE_ID in VAL_06 VAL_05; do
         singularity exec --bind /rds --bind "$DEST" "$SINGULARITY_IMG" \
             bash -lc "
                 cd '$DEST'
-                PYTHONPATH=. \
+                PYTHONPATH='$DEST/deps':. \
                 USE_LANGGRAPH=1 \
                 OLLAMA_BASE_URL='$OLLAMA_HOST' \
                 PYTHONNET_RUNTIME=coreclr \
                 BEST_OF_N=5 \
+                DWSIM_SOLVER_TIMEOUT=300 \
+                OLLAMA_TIMEOUT=300 \
                 python3.9 benchmark_runner.py \
                     --case '$CASE_ID' \
                     --mode '$MODE' \
