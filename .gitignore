@@ -6,6 +6,7 @@ __pycache__/
 .DS_Store
 rag/db/
 results/
+results_hpc/
 docker/dwsim_9.0.4-amd64.deb
 .env
 
