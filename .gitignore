@@ -55,3 +55,46 @@ deps/
 
 # PubChem enrichment cache (large, reproducible)
 rag/sources/.pubchem_cache.json
+
+# DWSIM development/discovery scripts (knowledge encoded in dwsim_wrapper.py)
+dwsim/discover_*.py
+dwsim/audit_injection_noop.py
+dwsim/verify_injection_fix.py
+dwsim/probe_*.py
+dwsim/gate_*.py
+dwsim/flowsheets/
+dwsim/samples/
+
+# Superseded agent modules (replaced by stage4/beam_search.py and benchmark/)
+agents/multi_repair.py
+agents/candidate_selector.py
+agents/ablation.py
+agents/benchmark_pipeline.py
+agents/benchmark_adversarial.py
+agents/benchmark_mode.py
+agents/benchmark_thermo.py
+agents/variant_b_diag.py
+agents/basis/
+agents/llm/
+agents/normalisation/
+agents/orchestrator/
+
+# Old evaluation framework (superseded by benchmark/)
+eval/
+run_experiments.py
+
+# One-off diagnostic / partition scripts
+partition_val01.py
+stage1_diag.py
+agents/test_orchestrator.py
+
+# Empty scaffolding directories
+benchmarks/
+
+# Archived v1 reference flowsheets (superseded by reference_flowsheets_v2/)
+benchmark/reference_flowsheets/_v1_archive/
+
+# Internal thesis working documents
+THESIS_CONTRIBUTIONS_AUDIT.md
+THESIS_PIPELINE_ARCHITECTURE.md
+literature_review_multi_agent_systems.md
