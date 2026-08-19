@@ -12,7 +12,7 @@ small search is not treated as proof that coupling is broken because the search
 may terminate before a second target-selection step.
 
 Run on the host without Docker or LLM:
-  PYTHONPATH=. python3.9 verify_ablation_counters.py
+  PYTHONPATH=. python3.9 scripts/verification/verify_ablation_counters.py
 """
 import json
 import sys

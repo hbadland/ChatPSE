@@ -1,4 +1,5 @@
 #!/bin/bash
+# Imperial CX3 job for the L1 specification-density study.
 #PBS -N density_l1
 #PBS -l walltime=03:00:00
 #PBS -l select=1:ncpus=4:mem=16gb

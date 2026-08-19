@@ -1,0 +1,224 @@
+{
+  "case_id": "S2",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260810_171343",
+  "outcome": "PASS",
+  "total_elapsed_s": 46.15035557746887,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [
+        "PASS"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 0,
+    "issue_summaries": []
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 1,
+    "unit_types": [
+      "Cooler"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": 333.15,
+        "temperature_source": "extracted"
+      }
+    ]
+  },
+  "warnings": [
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL T=333.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 373.15,
+      "T_C": 100.0,
+      "P_Pa": 100000.0,
+      "P_bar": 1.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Benzene": 1.0
+      },
+      "is_feed": true
+    },
+    "COOL": {
+      "T_K": 333.15,
+      "T_C": 60.0,
+      "P_Pa": 100000.0,
+      "P_bar": 1.0,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Benzene": 1.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Benzene": 1.0
+      },
+      "composition_sum": 1.0,
+      "T": 373.15,
+      "P": 100000.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 2,
+    "n_reference_streams": 2,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": true,
+    "reference_mape_T": 0.0,
+    "reference_mape_P": 1.31,
+    "reference_mape_vf": 0.0,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": true,
+        "detail": "2/2 matched streams within +/-5 K. MAPE=0.00%.",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "2/2 matched streams within +/-5%. MAPE=1.31%.",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "2/2 matched streams within +/-0.05. MAE=0.0000.",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "2 matched (confidence >= 0.55); 0 system + 0 reference unmatched",
+        "n_matched": 2,
+        "n_system_unmatched": 0,
+        "n_reference_unmatched": 0,
+        "matches": [
+          {
+            "ref_tag": "FEED",
+            "sys_tag": "FEED",
+            "confidence": 0.998,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": -1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "PROD",
+            "sys_tag": "COOL",
+            "confidence": 0.9979,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": -1325.0,
+            "dvf": 0.0
+          }
+        ],
+        "system_unmatched": [],
+        "reference_unmatched": [],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 1,
+  "n_units_total": 1,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=fully_solved, passed=True, critical_ir_errors=0, iterations=1",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    0
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

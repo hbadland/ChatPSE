@@ -1,0 +1,253 @@
+{
+  "case_id": "VAL_10",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260810_202657",
+  "outcome": "HUMAN",
+  "total_elapsed_s": 435.8706302642822,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 1,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INFEASIBLE] unit:COL-01 \u2192 HUMAN: COL-01: near-degenerate split (relative volatility \u2248 1): components not separabl"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 0,
+    "issue_summaries": []
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 7,
+    "unit_types": [
+      "ConversionReactor",
+      "Mixer",
+      "ConversionReactor",
+      "ConversionReactor",
+      "ConversionReactor",
+      "Column",
+      "ConversionReactor"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 1073.15,
+        "temperature_source": "template",
+        "reaction_type": "steam_methane_reforming",
+        "basis": "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"
+      },
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-02",
+        "type": "ConversionReactor",
+        "T_K": 1073.15,
+        "temperature_source": "template",
+        "reaction_type": "steam_methane_reforming",
+        "basis": "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"
+      },
+      {
+        "tag": "RX-03",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift",
+        "basis": "Newsome, Catal. Rev.-Sci. Eng. 21 (1980) 275 (HTS default)"
+      },
+      {
+        "tag": "RX-04",
+        "type": "ConversionReactor",
+        "T_K": 473.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift_lts",
+        "basis": "Ratnasamy & Wagner, Catal. Rev. 51 (2009) 325"
+      },
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-05",
+        "type": "ConversionReactor",
+        "T_K": 573.15,
+        "temperature_source": "template",
+        "reaction_type": "co_methanation",
+        "basis": "Kopyscinski et al., Fuel 89 (2010) 1763"
+      }
+    ]
+  },
+  "warnings": [
+    "[consistency] CONSISTENCY[fill_stream_T]: RX01 T=1073.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MX01 T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: RX02 T=1073.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: RX03 T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: RX04 T=473.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COL01 T=473.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SYNGAS T=573.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COL-01-BOT T=473.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": null,
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Methane": 0.45,
+        "Ethane": 0.04,
+        "Propane": 0.01,
+        "Water": 0.5,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Carbon dioxide": 0.0,
+        "Ammonia": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "AIR": {
+      "composition": {
+        "Nitrogen": 0.79,
+        "Oxygen": 0.21,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0,
+        "Ethane": 0.0,
+        "Propane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Ammonia": 0.0,
+        "Water": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 0,
+    "n_reference_streams": 0,
+    "min_match_threshold": 3,
+    "fully_solved": false,
+    "n_streams_at_default": 0,
+    "mape_status": "partial_solve",
+    "reference_match_pass": false,
+    "reference_mape_T": "partial_solve",
+    "reference_mape_P": "partial_solve",
+    "reference_mape_vf": "partial_solve",
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": false,
+  "n_units_solved": 0,
+  "n_units_total": 7,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=failed, passed=False, critical_ir_errors=0, iterations=1",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "failed",
+        "outcome": "HUMAN",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "HUMAN",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "HUMAN",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    1
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

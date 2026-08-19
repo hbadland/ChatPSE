@@ -1,0 +1,900 @@
+{
+  "case_id": "VAL_03",
+  "ablation_mode": "no_physics",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260818_173847",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 311.1911208629608,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 743.15\u2192773.15 (feed T-150 [cryo-hi], score=0.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 743.15\u2192773.15 (feed T-150 [cryo-hi], score=0.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=743.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 773.15\u2192803.15 (feed T-120 [cryo-mi], score=0.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 773.15\u2192803.15 (feed T-120 [cryo-mi], score=0.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=773.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 803.15\u2192823.15 (feed T-100 [cryo-lo], score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 803.15\u2192823.15 (feed T-100 [cryo-lo], score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=803.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 823.15\u2192843.15 (feed T-80 [high], score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 823.15\u2192843.15 (feed T-80 [high], score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=823.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 843.15\u2192863.15 (feed T-60 [med-hi], score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 843.15\u2192863.15 (feed T-60 [med-hi], score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=843.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 863.15\u2192883.15 (feed T-40 [med-lo], score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 863.15\u2192883.15 (feed T-40 [med-lo], score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=863.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 6,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 883.15\u2192903.15 (feed T-20 [low], score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 883.15\u2192903.15 (feed T-20 [low], score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=883.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 7,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 903.15\u2192273.15 (absolute 273 K (0\u00b0C), score=5.3, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 903.15\u2192273.15 (absolute 273 K (0\u00b0C), score=5.3, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=903.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 8,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 273.15\u2192253.15 (absolute 253 K (-20\u00b0C), score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 273.15\u2192253.15 (absolute 253 K (-20\u00b0C), score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 9,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 253.15\u2192233.15 (absolute 233 K (-40\u00b0C), score=5.0, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 253.15\u2192233.15 (absolute 233 K (-40\u00b0C), score=5.0, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=253.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 10,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX[heuristic]: CL-01.T_out 233.15\u2192743.15 (feed T-180 [cryo-wide], score=6.1, credit=heuristic)",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "CONDITION_FIX[heuristic]: CL-01.T_out 233.15\u2192743.15 (feed T-180 [cryo-wide], score=6.1, credit=heuristic)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=233.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 11,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX: no viable candidates for CL-01.T_out",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=743.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 12,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX: no viable candidates for CL-01.T_out",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=743.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 13,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "CONDITION_FIX: no viable candidates for CL-01.T_out",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=743.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 14,
+      "n_errors_before": 1,
+      "n_errors_after": 0,
+      "changes": [
+        "CONDITION_FIX: no viable candidates for CL-01.T_out",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=743.15 \u2014 DWSIM convergence failure; T_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 1, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 1,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 1,
+    "issue_summaries": [
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 4,
+    "unit_types": [
+      "ConversionReactor",
+      "Cooler",
+      "Vessel",
+      "Mixer"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 923.15,
+        "temperature_source": "template",
+        "reaction_type": "hydrodealkylation",
+        "basis": "thermal toluene HDA (Perry's Chemical Engineers' Handbook)"
+      },
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": 743.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      },
+      {
+        "tag": "MIX-RX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[recycle] 'LIQ' cleared \u2014 multiple recycles from 'V-01', kept 'VAP' \u2192 'RX-01'",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] global:global \u2192 HUMAN: Cycle detected in non-recycle streams \u2014 possible missing is_recycle tag",
+    "[TOPO_REPAIR] repropagated is_recycle on LIQ (lost at guard2-multi)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT T=923.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL T=743.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=743.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=743.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: S-MIX-RX-01-OUT T=773.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 773.15,
+      "T_C": 500.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.5,
+        "Methane": 0.0,
+        "Benzene": 0.0,
+        "Toluene": 0.5
+      },
+      "is_feed": true
+    },
+    "HOT": {
+      "T_K": 923.15,
+      "T_C": 650.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 53.00000561725697,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.0010482179205927435,
+        "Methane": 0.4989517820794079,
+        "Benzene": 0.49895178207940666,
+        "Toluene": 0.001048217920592668
+      },
+      "is_feed": false
+    },
+    "COOL": {
+      "T_K": 743.15,
+      "T_C": 470.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 53.00000561725697,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.0010482179205927435,
+        "Methane": 0.4989517820794079,
+        "Benzene": 0.49895178207940666,
+        "Toluene": 0.001048217920592668
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 743.15,
+      "T_C": 470.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 53.00000561725697,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.0010482179205927435,
+        "Methane": 0.4989517820794079,
+        "Benzene": 0.49895178207940666,
+        "Toluene": 0.001048217920592668
+      },
+      "is_feed": false
+    },
+    "VAP-INIT": {
+      "T_K": 743.15,
+      "T_C": 470.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 53.00000561725697,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.0010482179205927435,
+        "Methane": 0.4989517820794079,
+        "Benzene": 0.49895178207940666,
+        "Toluene": 0.001048217920592668
+      },
+      "is_feed": true
+    },
+    "LIQ": {
+      "T_K": 743.15,
+      "T_C": 470.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 8.953609786773343e-81,
+        "Methane": 3.3485074351972846e-07,
+        "Benzene": 0.9935524200769497,
+        "Toluene": 0.0064472450723068835
+      },
+      "is_feed": false
+    },
+    "LIQ-INIT": {
+      "T_K": 743.15,
+      "T_C": 470.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 9.125029501014132e-81,
+        "Methane": 3.3480914315692363e-07,
+        "Benzene": 0.9934289855559261,
+        "Toluene": 0.006570679634930756
+      },
+      "is_feed": true
+    },
+    "S-MIX-RX-01-OUT": {
+      "T_K": 743.748,
+      "T_C": 470.598,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 53.00000551104833,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen": 0.01048217920592675,
+        "Methane": 0.48951782079407385,
+        "Benzene": 0.48951782079407263,
+        "Toluene": 0.010482179205926674
+      },
+      "is_feed": false
+    },
+    "RX-01-OUT1": {
+      "T_K": 923.15,
+      "T_C": 650.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen": 0.0,
+        "Methane": 0.0,
+        "Benzene": 0.0,
+        "Toluene": 0.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Toluene": 0.5,
+        "Hydrogen": 0.5,
+        "Methane": 0.0,
+        "Benzene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 773.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "VAP-INIT": {
+      "composition": {
+        "Toluene": 0.5,
+        "Hydrogen": 0.5,
+        "Methane": 0.0,
+        "Benzene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 743.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "LIQ-INIT": {
+      "composition": {
+        "Toluene": 0.5,
+        "Hydrogen": 0.5,
+        "Methane": 0.0,
+        "Benzene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 743.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 4,
+    "n_reference_streams": 8,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": false,
+    "reference_mape_T": 44.08,
+    "reference_mape_P": 95.69,
+    "reference_mape_vf": 0.25,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "0/4 matched streams within +/-5 K. MAPE=44.08%. Failures: Pure_Benzene->LIQ: |dT|=268.5K (sys=743.1 ref=474.6); MSTR-020->LIQ-INIT: |dT|=370.0K (sys=743.1 ref=373.1); MSTR-008->HOT: |dT|=50.0K (sys=923.1 ref=873.1); Hot_Mixed_Stream->VAP-INIT: |dT|=130.0K (sys=743.1 ref=873.1)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "0/4 matched streams within +/-5%. MAPE=95.69%. Failures: Pure_Benzene->LIQ: |dP/P|=95.7%; MSTR-020->LIQ-INIT: |dP/P|=95.7%; MSTR-008->HOT: |dP/P|=95.7%; Hot_Mixed_Stream->VAP-INIT: |dP/P|=95.7%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": false,
+        "detail": "3/4 matched streams within +/-0.05. MAE=0.2500. Failures: MSTR-020->LIQ-INIT: |dvf|=1.000",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "4 matched (confidence >= 0.55); 5 system + 4 reference unmatched",
+        "n_matched": 4,
+        "n_system_unmatched": 5,
+        "n_reference_unmatched": 4,
+        "matches": [
+          {
+            "ref_tag": "Pure_Benzene",
+            "sys_tag": "LIQ",
+            "confidence": 0.7542,
+            "comp_cosine": 0.9995,
+            "dT": 268.5,
+            "dP": -2248675.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "MSTR-020",
+            "sys_tag": "LIQ-INIT",
+            "confidence": 0.5994,
+            "comp_cosine": 0.9995,
+            "dT": 370.0,
+            "dP": -2248675.0,
+            "dvf": 1.0
+          },
+          {
+            "ref_tag": "MSTR-008",
+            "sys_tag": "HOT",
+            "confidence": 0.5878,
+            "comp_cosine": 0.5796,
+            "dT": 50.0,
+            "dP": -2248675.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "Hot_Mixed_Stream",
+            "sys_tag": "VAP-INIT",
+            "confidence": 0.5674,
+            "comp_cosine": 0.5701,
+            "dT": -130.0,
+            "dP": -2248675.0,
+            "dvf": 0.0
+          }
+        ],
+        "system_unmatched": [
+          "FEED",
+          "COOL",
+          "VAP",
+          "S-MIX-RX-01-OUT",
+          "RX-01-OUT1"
+        ],
+        "reference_unmatched": [
+          "Toluene",
+          "Recycled_Toluene",
+          "MSTR-016",
+          "Heavy_1"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 4,
+  "n_units_total": 4,
+  "best_of_n": {
+    "N": 3,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 3 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=fully_solved, passed=False, critical_ir_errors=1, iterations=15",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "ablation_stats": {
+    "n_bp_calls_total": 15,
+    "n_phase_candidates_total": 0,
+    "phase_candidate_ever_selected": false,
+    "n_coupling_queries_total": 0,
+    "nonempty_coupling_boosts_total": 0,
+    "nonempty_coupling_boost_events": []
+  },
+  "score_curve": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

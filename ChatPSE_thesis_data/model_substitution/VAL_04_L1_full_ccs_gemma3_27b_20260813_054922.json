@@ -1,0 +1,283 @@
+{
+  "case_id": "VAL_04_L1",
+  "ablation_mode": "full_ccs",
+  "model": "gemma3:27b",
+  "timestamp": "20260813_054922",
+  "outcome": "INVALID_IR",
+  "total_elapsed_s": 97.24885320663452,
+  "iterations": [],
+  "ir_report_json": {
+    "valid": false,
+    "n_issues": 1,
+    "issue_summaries": [
+      "[PHYSICS/CRITICAL] [CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: Expander P_out=101325.0 Pa \u2265 feed P="
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 18,
+    "unit_types": [
+      "Compressor",
+      "Heater",
+      "Pump",
+      "Heater",
+      "Mixer",
+      "ConversionReactor",
+      "Cooler",
+      "ConversionReactor",
+      "Cooler",
+      "ConversionReactor",
+      "Cooler",
+      "Decanter",
+      "Column",
+      "Expander",
+      "Mixer",
+      "Heater",
+      "ConversionReactor",
+      "Cooler"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CP-01",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "HT-01",
+        "type": "Heater",
+        "T_K": 338.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "PM-01",
+        "type": "Pump",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "HT-02",
+        "type": "Heater",
+        "T_K": 338.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 1073.15,
+        "temperature_source": "template",
+        "reaction_type": "steam_methane_reforming",
+        "basis": "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"
+      },
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-02",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift",
+        "basis": "Newsome, Catal. Rev.-Sci. Eng. 21 (1980) 275 (HTS default)"
+      },
+      {
+        "tag": "CL-02",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-03",
+        "type": "ConversionReactor",
+        "T_K": 473.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift_lts",
+        "basis": "Ratnasamy & Wagner, Catal. Rev. 51 (2009) 325"
+      },
+      {
+        "tag": "CL-03",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "DEC-01",
+        "type": "Decanter",
+        "T_K": null,
+        "temperature_source": "inherited"
+      },
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "EX-01",
+        "type": "Expander",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MX-02",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "HT-03",
+        "type": "Heater",
+        "T_K": 338.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-04",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "generic",
+        "basis": "unresolved reaction type - conservative moderate default"
+      },
+      {
+        "tag": "CL-04",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[consistency] CONSISTENCY[monotonic]: EX-01 P_out 101325.0\u2192101325.0 Pa (must be < feed P=101325 Pa)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COMP T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT_BG T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: PUMPED T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT_H2O T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MIXED T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SYNGAS T=1073.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL_1 T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SHIFT_1 T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL_2 T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SHIFT_2 T=473.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL_3 T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAPOR T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQUID T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: H2_PRODUCT T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: PSA_TAIL T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LOW_P T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MIX_TAIL_AIR T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT_TAIL T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: FLUE_GAS T=623.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": null,
+  "ir_feed_streams": null,
+  "reference_comparison": {
+    "n_matched": 0,
+    "n_reference_streams": 0,
+    "min_match_threshold": 3,
+    "fully_solved": false,
+    "n_streams_at_default": 0,
+    "mape_status": "partial_solve",
+    "reference_match_pass": false,
+    "reference_mape_T": "partial_solve",
+    "reference_mape_P": "partial_solve",
+    "reference_mape_vf": "partial_solve",
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": true,
+        "detail": "reference comparison skipped: DWSIM did not execute",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "reference comparison skipped: DWSIM did not execute",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "reference comparison skipped: DWSIM did not execute",
+        "source": "none",
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": false,
+  "n_units_solved": 0,
+  "n_units_total": 18,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=failed, passed=False, critical_ir_errors=1, iterations=0",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [],
+  "n_explore": 0,
+  "n_exploit": 0
+}

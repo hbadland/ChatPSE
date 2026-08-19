@@ -1,0 +1,24 @@
+{
+  "execution_platform": "Imperial College London CX3",
+  "container": {
+    "format": "Singularity SIF",
+    "size_bytes": 6301372416,
+    "modified": "2026-05-21T22:53:12.298693870+01:00",
+    "sha256": "9fcab28ee668c92e4461dd437e94a3d6588060d250f5e4970c82a21f24f6832c"
+  },
+  "ollama": {
+    "version": "0.24.0",
+    "model_tag": "qwen3:30b-a3b",
+    "manifest_digest": "ad815644918f0eaab341c12b67837cc6dd4562342cdaf118f83d5d554cb37226",
+    "executed_gguf_blob_sha256": "58574f2e94b99fb9e4391408b57e5aeaaaec10f6384e9a699fc2cb43a5c8eabf",
+    "format": "gguf",
+    "family": "qwen3moe",
+    "parameter_size": "30.5B",
+    "quantization": "Q4_K_M"
+  },
+  "evidence": {
+    "main_job_stdout": "fullv3.o3649166",
+    "main_job_stderr": "fullv3.e3649166",
+    "main_job_started": "2026-08-10T15:39:21.865+01:00"
+  }
+}

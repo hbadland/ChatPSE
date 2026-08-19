@@ -40,10 +40,10 @@ htmlcov/
 ChatPSE_thesis_data/_staging/
 CLAUDE.md
 
-# HPC scripts (contain hardcoded server paths/usernames — keep local only)
-sync_to_hpc.sh
+# Local HPC overrides. The documented experiment scripts under scripts/hpc/
+# are versioned because they form part of the reproducibility record.
+scripts/hpc/*.local.sh
 run_validation_hpc.sh
-*_hpc.sh
 
 # Singularity / DWSIM binary artefacts
 *.sif

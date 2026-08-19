@@ -1,6 +1,8 @@
+<div align="center">
+
 # ChatPSE
 
-**Natural-language description to flowsheet.**
+**Natural-language process descriptions in. Executable DWSIM flowsheets out.**
 
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-3776AB?logo=python&logoColor=white)](#requirements)
 [![DWSIM 9.0.4](https://img.shields.io/badge/DWSIM-9.0.4-0B7285)](https://dwsim.org/)
@@ -190,9 +192,9 @@ DWSIM flowsheets, not experimental ground truth.
 | [`ChatPSE_thesis_data/`](ChatPSE_thesis_data) | curated records underlying the reported results |
 | [`docs/`](docs) | longer-form technical notes |
 
-The root-level `benchmark_runner.py` is the main CLI. `demo.py` is the older
-single-process demonstration path. Experiment and HPC helpers live under
-[`scripts/`](scripts).
+The root-level `benchmark_runner.py` is the main CLI. The older single-process
+demonstration lives in [`examples/demo.py`](examples/demo.py); experiment and HPC
+helpers live under [`scripts/`](scripts).
 
 ## Limitations
 

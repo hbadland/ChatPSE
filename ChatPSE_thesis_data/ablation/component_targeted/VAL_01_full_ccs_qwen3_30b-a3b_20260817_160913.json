@@ -1,0 +1,1021 @@
+{
+  "case_id": "VAL_01",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260817_160913",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 721.6327443122864,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/deterministic] CP-01.P_out 506625.0\u2192506625.0 (feed P\u00d75 [med])",
+        "CONSISTENCY[fill_stream_T]: COMP T=298.15 K (propagated from upstream unit outlet)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/deterministic] CP-01.P_out 506625.0\u2192506625.0 (feed P\u00d75 [med])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=506625.0 \u2014 DWSIM convergence failure; P_out likely wron",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 506625.0\u2192500000.0 (absolute 5 bar)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 506625.0\u2192500000.0 (absolute 5 bar)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=506625.0 \u2014 DWSIM convergence failure; P_out likely wron",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/deterministic] CP-01.P_out 500000.0\u2192303975.0 (feed P\u00d73 [low])",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/deterministic] CP-01.P_out 500000.0\u2192303975.0 (feed P\u00d73 [low])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=500000.0 \u2014 DWSIM convergence failure; P_out likely wron",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/deterministic] CP-01.P_out 303975.0\u2192202650.0 (feed P\u00d72 [lo])",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/deterministic] CP-01.P_out 303975.0\u2192202650.0 (feed P\u00d72 [lo])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=303975.0 \u2014 DWSIM convergence failure; P_out likely wron",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/deterministic] CP-01.P_out 202650.0\u2192709275.0 (feed P\u00d77 [med-hi])",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/deterministic] CP-01.P_out 202650.0\u2192709275.0 (feed P\u00d77 [med-hi])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=202650.0 \u2014 DWSIM convergence failure; P_out likely wron",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/deterministic] CP-01.P_out 709275.0\u21921013250.0 (feed P\u00d710 [high])",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/deterministic] CP-01.P_out 709275.0\u21921013250.0 (feed P\u00d710 [high])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=709275.0 \u2014 DWSIM convergence failure; P_out likely wron",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 6,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 1013250.0\u21921000000.0 (absolute 10 bar)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 1013250.0\u21921000000.0 (absolute 10 bar)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=1013250.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 7,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 1000000.0\u21921519875.0 (feed P\u00d715 [v-high])",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 1000000.0\u21921519875.0 (feed P\u00d715 [v-high])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=1000000.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 8,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 1519875.0\u21922026500.0 (feed P\u00d720 [wide])",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 1519875.0\u21922026500.0 (feed P\u00d720 [wide])",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=1519875.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 9,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 2026500.0\u21922000000.0 (absolute 20 bar)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 2026500.0\u21922000000.0 (absolute 20 bar)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=2026500.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 10,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 2000000.0\u21923039750.0 (feed P\u00d730 [ultra-wide])",
+        "CONSISTENCY[monotonic]: CP-02 P_out 2533125.0\u219215198750.0 Pa (must be > feed P=3039750 Pa)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 2000000.0\u21923039750.0 (feed P\u00d730 [ultra-wide])",
+          "source": "parsed"
+        },
+        {
+          "change": "CONSISTENCY[monotonic]: CP-02 P_out 2533125.0\u219215198750.0 Pa (must be > feed P=3039750 Pa)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=2000000.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=2533125.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 11,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 3039750.0\u21925000000.0 (absolute 50 bar)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 3039750.0\u21925000000.0 (absolute 50 bar)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=3039750.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=15198750.0 \u2014 DWSIM convergence failure; P_out likely wr",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 12,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "[beam/step0/heuristic] CP-01.P_out 5000000.0\u219210000000.0 (absolute 100 bar)",
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [
+        {
+          "change": "[beam/step0/heuristic] CP-01.P_out 5000000.0\u219210000000.0 (absolute 100 bar)",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=5000000.0 \u2014 DWSIM convergence failure; P_out likely wro",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=15198750.0 \u2014 DWSIM convergence failure; P_out likely wr",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 13,
+      "n_errors_before": 4,
+      "n_errors_after": 4,
+      "changes": [
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=10000000.0 \u2014 DWSIM convergence failure; P_out likely wr",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=15198750.0 \u2014 DWSIM convergence failure; P_out likely wr",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 14,
+      "n_errors_before": 4,
+      "n_errors_after": 0,
+      "changes": [
+        "REPAIR_STAGE_LOG:{\"after_beam\":0,\"after_local_opt\":0}",
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-01.P_out \u2192 CONDITION_FIX: CP-01 (Compressor) P_out=10000000.0 \u2014 DWSIM convergence failure; P_out likely wr",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CL-01.T_out \u2192 CONDITION_FIX: CL-01 (Cooler) T_out=273.15 \u2014 DWSIM convergence failure; T_out likely wrong",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:CP-02.P_out \u2192 CONDITION_FIX: CP-02 (Compressor) P_out=15198750.0 \u2014 DWSIM convergence failure; P_out likely wr",
+        "[CRITICAL/INVALID_UNIT_CONFIG] unit:EX-01.P_out \u2192 CONDITION_FIX: EX-01 (Expander) P_out=101325.0 \u2014 DWSIM convergence failure; P_out likely wrong"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [
+        "ABLATION_STATS_LOG:{\"n_bp_calls\": 2, \"n_phase_candidates\": 0, \"phase_candidate_selected\": false, \"n_coupling_queries\": 0, \"nonempty_boosts\": []}"
+      ],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": 0,
+      "stage_after_local_opt_errors": 0,
+      "n_bp_calls": 2,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 1,
+    "issue_summaries": [
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 6,
+    "unit_types": [
+      "Compressor",
+      "Cooler",
+      "Compressor",
+      "Expander",
+      "Vessel",
+      "Mixer"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CP-01",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "CP-02",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "EX-01",
+        "type": "Expander",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      },
+      {
+        "tag": "MIX-CP-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapour",
+    "[consistency] CONSISTENCY[monotonic]: CP-02 P_out 506625.0\u21922533125.0 Pa (must be > feed P=506625 Pa)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: EXPND T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: S-MIX-CP-01-OUT T=298.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": true
+    },
+    "COMP": {
+      "T_K": 432.603,
+      "T_C": 159.453,
+      "P_Pa": 10000000.0,
+      "P_bar": 100.0,
+      "flow_mol_s": 51.99999999999998,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "COOL": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 10000000.0,
+      "P_bar": 100.0,
+      "flow_mol_s": 51.99999999999998,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "HOT": {
+      "T_K": 308.221,
+      "T_C": 35.071,
+      "P_Pa": 15198750.0,
+      "P_bar": 151.9875,
+      "flow_mol_s": 51.99999999999998,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "EXPND": {
+      "T_K": 113.056,
+      "T_C": -160.094,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 51.99999999999998,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 113.056,
+      "T_C": -160.094,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 113.056,
+      "T_C": -160.094,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 51.999999999999986,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "VAP-INIT": {
+      "T_K": 113.056,
+      "T_C": -160.094,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 51.999999999999986,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": true
+    },
+    "S-MIX-CP-01-OUT": {
+      "T_K": 116.639,
+      "T_C": -156.511,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 51.99999999999998,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Methane": 1.0,
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "VAP-INIT": {
+      "composition": {
+        "Methane": 1.0,
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 273.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 9,
+    "n_reference_streams": 10,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": false,
+    "reference_mape_T": 21.4,
+    "reference_mape_P": 74.75,
+    "reference_mape_vf": 0.0562,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "3/9 matched streams within +/-5 K. MAPE=21.40%. Failures: S-06->COMP: |dT|=43.4K (sys=432.6 ref=389.2); S-07->COOL: |dT|=63.2K (sys=273.2 ref=210.0); S-01->VAP-INIT: |dT|=166.9K (sys=113.1 ref=280.0); S-03->FEED: |dT|=18.1K (sys=298.1 ref=280.0); S-05->HOT: |dT|=28.2K (sys=308.2 ref=280.0); S-02->S-MIX-CP-01-OUT: |dT|=283.9K (sys=116.6 ref=400.6)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "6/9 matched streams within +/-5%. MAPE=74.75%. Failures: S-03->FEED: |dP/P|=79.7%; S-05->HOT: |dP/P|=508.0%; S-02->S-MIX-CP-01-OUT: |dP/P|=79.7%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": false,
+        "detail": "6/7 matched streams within +/-0.05. MAE=0.0562. Failures: S-08->EXPND: |dvf|=0.394",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "9 matched (confidence >= 0.55); 0 system + 1 reference unmatched",
+        "n_matched": 9,
+        "n_system_unmatched": 0,
+        "n_reference_unmatched": 1,
+        "matches": [
+          {
+            "ref_tag": "S-09",
+            "sys_tag": "VAP",
+            "confidence": 0.9955,
+            "comp_cosine": 1.0,
+            "dT": 1.6,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-10",
+            "sys_tag": "LIQ",
+            "confidence": 0.9951,
+            "comp_cosine": 1.0,
+            "dT": 1.6,
+            "dP": 1325.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-06",
+            "sys_tag": "COMP",
+            "confidence": 0.982,
+            "comp_cosine": 1.0,
+            "dT": 43.37,
+            "dP": 0.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-08",
+            "sys_tag": "EXPND",
+            "confidence": 0.9617,
+            "comp_cosine": 1.0,
+            "dT": 1.6,
+            "dP": 1325.0,
+            "dvf": 0.3937
+          },
+          {
+            "ref_tag": "S-07",
+            "sys_tag": "COOL",
+            "confidence": 0.9469,
+            "comp_cosine": 1.0,
+            "dT": 63.15,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-01",
+            "sys_tag": "VAP-INIT",
+            "confidence": 0.9058,
+            "comp_cosine": 1.0,
+            "dT": -166.94,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-03",
+            "sys_tag": "FEED",
+            "confidence": 0.8609,
+            "comp_cosine": 1.0,
+            "dT": 18.15,
+            "dP": -398675.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-05",
+            "sys_tag": "HOT",
+            "confidence": 0.8225,
+            "comp_cosine": 1.0,
+            "dT": 28.22,
+            "dP": 12698750.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-02",
+            "sys_tag": "S-MIX-CP-01-OUT",
+            "confidence": 0.7571,
+            "comp_cosine": 1.0,
+            "dT": -283.94,
+            "dP": -398675.0,
+            "dvf": 0.0
+          }
+        ],
+        "system_unmatched": [],
+        "reference_unmatched": [
+          "S-04"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 6,
+  "n_units_total": 6,
+  "best_of_n": {
+    "N": 3,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 3 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=fully_solved, passed=False, critical_ir_errors=0, iterations=15",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "ablation_stats": {
+    "n_bp_calls_total": 30,
+    "n_phase_candidates_total": 0,
+    "phase_candidate_ever_selected": false,
+    "n_coupling_queries_total": 0,
+    "nonempty_coupling_boosts_total": 0,
+    "nonempty_coupling_boost_events": []
+  },
+  "score_curve": [
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4,
+    4
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

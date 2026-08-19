@@ -1,0 +1,5 @@
+case	n	terminal_outcomes	fully_solved	matched_streams	T_MAPE_mean_pct	T_MAPE_sample_SD_pct	P_MAPE_mean_pct	P_MAPE_sample_SD_pct
+VAL_01	5	MAX_ITER:5	5/5	9/10 in all runs	21.40	0.00	74.75	0.00
+VAL_04	5	PASS:1; MAX_ITER:4	5/5	3/27 in 3 runs; 8/27 in 2 runs	19.64	2.72	49.93	5.38
+VAL_06	5	MAX_ITER:5	0/5	No scored comparison in all runs	NA	NA	NA	NA
+VAL_09	5	HUMAN:5	0/5	No scored comparison in all runs	NA	NA	NA	NA

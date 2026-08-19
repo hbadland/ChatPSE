@@ -1,0 +1,566 @@
+{
+  "case_id": "VAL_04",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260817_195840",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 359.7370240688324,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 1,
+    "issue_summaries": [
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 5,
+    "unit_types": [
+      "Compressor",
+      "Mixer",
+      "ConversionReactor",
+      "ConversionReactor",
+      "Vessel"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CP-01",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 1073.15,
+        "temperature_source": "template",
+        "reaction_type": "steam_methane_reforming",
+        "basis": "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"
+      },
+      {
+        "tag": "RX-02",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift",
+        "basis": "Newsome, Catal. Rev.-Sci. Eng. 21 (1980) 275 (HTS default)"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      }
+    ]
+  },
+  "warnings": [
+    "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapour",
+    "[consistency] CONSISTENCY[fill_stream_T]: COMP T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MIX T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: REFORM T=1073.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SHIFT T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=623.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": true
+    },
+    "WATER": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 1.0
+      },
+      "is_feed": true
+    },
+    "COMP": {
+      "T_K": 458.682,
+      "T_C": 185.532,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "MIX": {
+      "T_K": 317.842,
+      "T_C": 44.692,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 2.0,
+      "vapor_fraction": 0.5450396891205722,
+      "composition": {
+        "Methane": 0.3,
+        "Carbon dioxide": 0.19999999999999998,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.5
+      },
+      "is_feed": false
+    },
+    "REFORM": {
+      "T_K": 1073.15,
+      "T_C": 800.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 2.101104320990257,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.02999999999999997,
+        "Carbon dioxide": 0.19999999999999998,
+        "Carbon monoxide": 0.27,
+        "Hydrogen": 0.27,
+        "Water": 0.22999999999999998
+      },
+      "is_feed": false
+    },
+    "SHIFT": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 2.111607657287215,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.003433270993079647,
+        "Carbon dioxide": 0.40343327099307963,
+        "Carbon monoxide": 0.09313345801384068,
+        "Hydrogen": 0.5,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 2.111607657287215,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.003433270993079647,
+        "Carbon dioxide": 0.40343327099307963,
+        "Carbon monoxide": 0.09313345801384068,
+        "Hydrogen": 0.5,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 9.240781660354613e-05,
+        "Carbon dioxide": 0.9999075307754398,
+        "Carbon monoxide": 6.140795672982405e-08,
+        "Hydrogen": 6.581497833885377e-53,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-01-OUT1": {
+      "T_K": 1073.15,
+      "T_C": 800.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-02-OUT1": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "WATER": {
+      "composition": {
+        "Water": 1.0,
+        "Methane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 8,
+    "n_reference_streams": 27,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": false,
+    "reference_mape_T": 22.62,
+    "reference_mape_P": 55.83,
+    "reference_mape_vf": 0.1667,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "2/8 matched streams within +/-5 K. MAPE=22.62%. Failures: S-01->COMP: |dT|=131.1K (sys=458.7 ref=589.8); S-06->REFORM: |dT|=108.6K (sys=1073.2 ref=1181.8); S-012->VAP: |dT|=108.6K (sys=623.1 ref=514.6); S-09->SHIFT: |dT|=117.8K (sys=623.1 ref=741.0); S-016->MIX: |dT|=6.7K (sys=317.8 ref=311.1); S-018->LIQ: |dT|=327.0K (sys=623.1 ref=296.2)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "3/8 matched streams within +/-5%. MAPE=55.83%. Failures: S-01->COMP: |dP/P|=68.3%; S-06->REFORM: |dP/P|=93.7%; S-012->VAP: |dP/P|=93.5%; S-09->SHIFT: |dP/P|=93.6%; S-016->MIX: |dP/P|=93.5%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": false,
+        "detail": "5/6 matched streams within +/-0.05. MAE=0.1667. Failures: S-018->LIQ: |dvf|=1.000",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "8 matched (confidence >= 0.55); 2 system + 19 reference unmatched",
+        "n_matched": 8,
+        "n_system_unmatched": 2,
+        "n_reference_unmatched": 19,
+        "matches": [
+          {
+            "ref_tag": "BIOGAS",
+            "sys_tag": "FEED",
+            "confidence": 0.9979,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "WATER",
+            "sys_tag": "WATER",
+            "confidence": 0.9978,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 1325.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-01",
+            "sys_tag": "COMP",
+            "confidence": 0.8539,
+            "comp_cosine": 1.0,
+            "dT": -131.14,
+            "dP": -1093375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-06",
+            "sys_tag": "REFORM",
+            "confidence": 0.7759,
+            "comp_cosine": 0.9016,
+            "dT": -108.63,
+            "dP": -1498675.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-012",
+            "sys_tag": "VAP",
+            "confidence": 0.7661,
+            "comp_cosine": 0.9172,
+            "dT": 108.57,
+            "dP": -1468675.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-09",
+            "sys_tag": "SHIFT",
+            "confidence": 0.7637,
+            "comp_cosine": 0.899,
+            "dT": -117.83,
+            "dP": -1473675.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-016",
+            "sys_tag": "MIX",
+            "confidence": 0.7093,
+            "comp_cosine": 0.8118,
+            "dT": 6.69,
+            "dP": -1468675.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-018",
+            "sys_tag": "LIQ",
+            "confidence": 0.6863,
+            "comp_cosine": 0.8913,
+            "dT": 327.0,
+            "dP": 1325.0,
+            "dvf": -1.0
+          }
+        ],
+        "system_unmatched": [
+          "RX-01-OUT1",
+          "RX-02-OUT1"
+        ],
+        "reference_unmatched": [
+          "S-07",
+          "S-05",
+          "FLUE GAS",
+          "S-04",
+          "S-02",
+          "S-03",
+          "S-08",
+          "S-010",
+          "S-011",
+          "S-013",
+          "S-014",
+          "H2",
+          "S-015",
+          "S-017",
+          "AIR",
+          "S-019",
+          "S-020",
+          "S-021",
+          "S-022"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 5,
+  "n_units_total": 5,
+  "best_of_n": null,
+  "ablation_stats": null,
+  "score_curve": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

@@ -52,7 +52,7 @@ echo "[$(date)] Ollama and model ready" | tee -a "$LOG"
 
 echo "[$(date)] Running instrumentation preflight" | tee -a "$LOG"
 singularity exec --bind /rds --bind "$DEST" "$SINGULARITY_IMG" \
-    bash -lc "cd '$DEST' && PYTHONPATH=. python3.9 verify_ablation_counters.py" \
+    bash -lc "cd '$DEST' && PYTHONPATH=. python3.9 scripts/verification/verify_ablation_counters.py" \
     2>&1 | tee -a "$LOG"
 
 for CASE_ID in VAL_06 VAL_05; do

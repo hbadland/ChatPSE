@@ -1,0 +1,18 @@
+{
+  "repeatability": {
+    "cases": ["VAL_01", "VAL_04", "VAL_06", "VAL_09"],
+    "independent_executions_per_case": 5,
+    "generated_candidates_per_execution": 1,
+    "selection": "No best-of-N selection; each record is one independent execution",
+    "summary_statistics": "Arithmetic mean and sample standard deviation across five executions"
+  },
+  "component_ablation": {
+    "cases": ["VAL_01", "VAL_02", "VAL_03", "VAL_06"],
+    "arms": ["full_ccs", "no_physics", "no_coupling"],
+    "generated_candidates_per_case_arm": 3,
+    "executions_per_case_arm": 1,
+    "no_physics": "bubble_point_K call sites return None",
+    "no_coupling": "ParameterCouplingMap.get_coupled_boosts returns an empty mapping",
+    "interpretive_limit": "One stochastic best-of-three execution per case-arm; outcome differences cannot be assigned causally without repeated matched runs"
+  }
+}

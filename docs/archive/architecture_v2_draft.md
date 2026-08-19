@@ -1,4 +1,8 @@
-# Architecture — Multi-Agent Flowsheet Generation System (v2)
+# Archived architecture draft (v2)
+
+> Historical design document retained for development context. Several benchmark
+> descriptions and expected outcomes predate the final ChatPSE evaluation and must
+> not be treated as the reported methodology or results.
 
 ## Core Contribution Framing
 

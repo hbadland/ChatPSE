@@ -19,7 +19,8 @@ All ablation patches verified on the v2 path before this run.
 
 Usage (HPC):
   PYTHONPATH=. OLLAMA_BASE_URL=http://localhost:11434/v1 \\
-      python3.9 run_ablation_cap20.py --model qwen3:30b-a3b [--modes full_ccs no_rule_store ...]
+      python3.9 scripts/experiments/run_ablation_cap20.py \
+          --model qwen3:30b-a3b [--modes full_ccs no_rule_store ...]
 
 Outputs per-run JSON to results/per_run/ and prints a summary table at the end.
 """

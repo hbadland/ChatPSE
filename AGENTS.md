@@ -16,8 +16,8 @@ PYTHONPATH=. python3.9 agents/test_basis.py      # 3 tests require ANTHROPIC_API
 docker exec priceless_elion sh -c "cd /workspaces/multiAgentFlowsheet && PYTHONPATH=. python3.9 dwsim/test_dwsim_wrapper.py"
 
 # Run end-to-end demo (requires Docker + API key)
-PYTHONPATH=. python3.9 demo.py
-PYTHONPATH=. python3.9 demo.py --description "separate acetone and water at 80°C"
+PYTHONPATH=. python3.9 examples/demo.py
+PYTHONPATH=. python3.9 examples/demo.py --description "separate acetone and water at 80°C"
 
 # Run benchmark pipeline (requires Docker + API key)
 PYTHONPATH=. python3.9 agents/benchmark_pipeline.py

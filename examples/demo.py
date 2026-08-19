@@ -2,16 +2,16 @@
 End-to-end pipeline demo using the Orchestrator.
 
 Usage (inside container):
-    PYTHONPATH=. python3 demo.py
-    PYTHONPATH=. python3 demo.py --description "separate methane/ethane at 50 bar"
-    PYTHONPATH=. python3 demo.py --model gemini-2.5-flash
+    PYTHONPATH=. python3 examples/demo.py
+    PYTHONPATH=. python3 examples/demo.py --description "separate methane/ethane at 50 bar"
+    PYTHONPATH=. python3 examples/demo.py --model gemini-2.5-flash
 """
 import sys
 import argparse
 import time
 
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from agents.orchestrator import Orchestrator
 

@@ -1,0 +1,250 @@
+{
+  "case_id": "C2",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260810_171806",
+  "outcome": "PASS",
+  "total_elapsed_s": 52.2829966545105,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [
+        "PASS"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 0,
+    "issue_summaries": []
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 1,
+    "unit_types": [
+      "Column"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=354.61 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=354.61 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 354.61,
+      "T_C": 81.46,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.00014164376219907897,
+      "composition": {
+        "N-heptane": 0.5,
+        "N-hexane": 0.5
+      },
+      "is_feed": true
+    },
+    "VAP": {
+      "T_K": 342.15,
+      "T_C": 69.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 0.011954591913076816,
+      "composition": {
+        "N-heptane": 0.02,
+        "N-hexane": 0.98
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 370.867,
+      "T_C": 97.717,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.5,
+      "vapor_fraction": 0.004468247912852749,
+      "composition": {
+        "N-heptane": 0.98,
+        "N-hexane": 0.02
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "N-hexane": 0.5,
+        "N-heptane": 0.5
+      },
+      "composition_sum": 1.0,
+      "T": 354.61,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 3,
+    "n_reference_streams": 3,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": true,
+    "reference_mape_T": 0.0,
+    "reference_mape_P": 0.0,
+    "reference_mape_vf": 0.0,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": true,
+        "detail": "3/3 matched streams within +/-5 K. MAPE=0.00%.",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "3/3 matched streams within +/-5%. MAPE=0.00%.",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "3/3 matched streams within +/-0.05. MAE=0.0000.",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "3 matched (confidence >= 0.55); 0 system + 0 reference unmatched",
+        "n_matched": 3,
+        "n_system_unmatched": 0,
+        "n_reference_unmatched": 0,
+        "matches": [
+          {
+            "ref_tag": "FEED",
+            "sys_tag": "FEED",
+            "confidence": 1.0,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 0.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "BOT",
+            "sys_tag": "LIQ",
+            "confidence": 1.0,
+            "comp_cosine": 1.0,
+            "dT": -0.0,
+            "dP": 0.0,
+            "dvf": -0.0
+          },
+          {
+            "ref_tag": "DIST",
+            "sys_tag": "VAP",
+            "confidence": 1.0,
+            "comp_cosine": 1.0,
+            "dT": -0.0,
+            "dP": 0.0,
+            "dvf": 0.0
+          }
+        ],
+        "system_unmatched": [],
+        "reference_unmatched": [],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 1,
+  "n_units_total": 1,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=fully_solved, passed=True, critical_ir_errors=0, iterations=1",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    0
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

@@ -1,0 +1,57 @@
+% Recommended main-text insertion. Change the figure label if the existing
+% VAL_04 dispersion figure uses a different label.
+
+\subsection{Repeatability and component exposure}
+
+To separate execution-level variation from best-of-$N$ selection, four
+validation cases were each rerun five times with one generated candidate per
+execution. \texttt{VAL\_01}, \texttt{VAL\_06} and \texttt{VAL\_09} reproduced
+the same terminal outcome and scored result in all five runs. By contrast,
+\texttt{VAL\_04} produced two matched-stream subsets: three runs matched 3/27
+reference streams and two matched 8/27. Across the five runs, temperature and
+pressure MAPE were $19.64\pm2.72\%$ and $49.93\pm5.38\%$, respectively (mean
+$\pm$ sample SD; Figure~\ref{fig:val04-dispersion}). All five flowsheets fully
+solved, although one returned \texttt{PASS} and four reached \texttt{MAX\_ITER}.
+The dispersion therefore reflects variation in the generated reconstruction
+and matched subset, rather than solver uncertainty or a process-wide fidelity
+estimate.
+
+A targeted component ablation compared the complete pipeline with removal of
+the bubble-point estimator or parameter-coupling map. One reference-blind
+best-of-three execution was retained for each of four cases and each arm.
+No arm returned \texttt{PASS} (Table~\ref{tab:targeted-ablation}). Results for
+\texttt{VAL\_01}, \texttt{VAL\_03} and \texttt{VAL\_06} were identical across
+all arms. For \texttt{VAL\_02}, the complete system reached \texttt{MAX\_ITER}
+with 9/13 matched streams, whereas both removal arms terminated at
+\texttt{HUMAN} before a scored comparison. Because only one stochastic
+execution was retained per case--arm, this difference does not isolate a
+causal component effect.
+
+\begin{table}[t]
+\centering
+\caption{Targeted component-ablation outcomes. Parentheses give matched
+reference streams; ``--'' denotes no scored comparison. Each cell represents
+one reference-blind best-of-three execution.}
+\label{tab:targeted-ablation}
+\scriptsize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Case & Complete & No physics & No coupling \\
+\midrule
+\texttt{VAL\_01} & \texttt{MAX\_ITER} (9/10) & \texttt{MAX\_ITER} (9/10) & \texttt{MAX\_ITER} (9/10) \\
+\texttt{VAL\_02} & \texttt{MAX\_ITER} (9/13) & \texttt{HUMAN} (--) & \texttt{HUMAN} (--) \\
+\texttt{VAL\_03} & \texttt{MAX\_ITER} (4/8) & \texttt{MAX\_ITER} (4/8) & \texttt{MAX\_ITER} (4/8) \\
+\texttt{VAL\_06} & \texttt{MAX\_ITER} (--) & \texttt{MAX\_ITER} (--) & \texttt{MAX\_ITER} (--) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Activation counters provide an exposure check rather than evidence of
+component benefit. In records containing counters, bubble-point call sites
+were reached 15--30 times but produced no phase-derived candidate, and the
+coupling map was never queried. Inspection of the implementation confirmed
+that coupling is consulted only after one candidate fix creates a new beam
+state and another unfixed error remains. The experiment therefore shows that
+neither component improved this four-case sample, while offering limited
+evidence about performance when either component is productively activated.

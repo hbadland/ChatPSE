@@ -1,0 +1,411 @@
+{
+  "case_id": "VAL_03_L1",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260812_131604",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 322.963666677475,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 5,
+      "n_errors_after": 5,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised",
+        "TOPOLOGY_FIX: graph re-normalised",
+        "TOPOLOGY_FIX: graph re-normalised",
+        "TOPOLOGY_FIX: graph re-normalised",
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INVALID_TOPOLOGY] unit:HT-02 \u2192 TOPOLOGY_FIX: Heater needs \u22651 outlet(s), has 0",
+        "[CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22651 inlet(s), has 0",
+        "[CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22652 outlet(s), has 0",
+        "[CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 inlet(s), has 0",
+        "[CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 outlet(s), has 0"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 5,
+      "n_errors_after": 5,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] global:global \u2192 TOPOLOGY_FIX: ",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-01' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'CL-01' (Cooler) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-02' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'PM-01' (Pump) is missing required parameter 'P_out'."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 5,
+      "n_errors_after": 5,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] global:global \u2192 TOPOLOGY_FIX: ",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-01' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'CL-01' (Cooler) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-02' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'PM-01' (Pump) is missing required parameter 'P_out'."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 5,
+      "n_errors_after": 5,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] global:global \u2192 TOPOLOGY_FIX: ",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-01' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'CL-01' (Cooler) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-02' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'PM-01' (Pump) is missing required parameter 'P_out'."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 5,
+      "n_errors_after": 5,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] global:global \u2192 TOPOLOGY_FIX: ",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-01' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'CL-01' (Cooler) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-02' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'PM-01' (Pump) is missing required parameter 'P_out'."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 5,
+      "n_errors_after": 0,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] global:global \u2192 TOPOLOGY_FIX: ",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-01' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'CL-01' (Cooler) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'HT-02' (Heater) is missing required parameter 'T_out'.",
+        "[CRITICAL/MISSING_PARAM] global:global \u2192 PARAM_INJECT: Unit 'PM-01' (Pump) is missing required parameter 'P_out'."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": false,
+    "n_issues": 6,
+    "issue_summaries": [
+      "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:HT-02 \u2192 TOPOLOGY_FIX: Heater needs \u22651 outlet(s), has 0",
+      "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22651 inlet(s), has 0",
+      "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22652 outlet(s), has 0",
+      "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 inlet(s), has 0",
+      "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 outlet(s), has 0",
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "",
+    "n_units": 8,
+    "unit_types": [
+      "Mixer",
+      "Heater",
+      "ConversionReactor",
+      "Cooler",
+      "Vessel",
+      "Heater",
+      "Column",
+      "Pump"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "unknown"
+      },
+      {
+        "tag": "HT-01",
+        "type": "Heater",
+        "T_K": null,
+        "temperature_source": "unknown"
+      },
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": null,
+        "temperature_source": "unknown",
+        "reaction_type": null,
+        "basis": null
+      },
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": null,
+        "temperature_source": "unknown"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "unknown"
+      },
+      {
+        "tag": "HT-02",
+        "type": "Heater",
+        "T_K": null,
+        "temperature_source": "unknown"
+      },
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "unknown"
+      },
+      {
+        "tag": "PM-01",
+        "type": "Pump",
+        "T_K": null,
+        "temperature_source": "unknown"
+      }
+    ]
+  },
+  "warnings": [
+    "[recycle] 'VAP' is_recycle=True but no trigger phrase in description \u2014 cleared to avoid false positive",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] global:global \u2192 HUMAN: Cycle detected in non-recycle streams \u2014 possible missing is_recycle tag",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:HT-02 \u2192 TOPOLOGY_FIX: Heater needs \u22651 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22651 inlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22652 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 inlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 outlet(s), has 0",
+    "[TOPO_REPAIR] repropagated is_recycle on VAP (lost at guard3-phrase)",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:HT-02 \u2192 TOPOLOGY_FIX: Heater needs \u22651 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22651 inlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22652 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 inlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:HT-02 \u2192 TOPOLOGY_FIX: Heater needs \u22651 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22651 inlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22652 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 inlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:PM-01 \u2192 TOPOLOGY_FIX: Pump needs \u22651 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:HT-02 \u2192 TOPOLOGY_FIX: Heater needs \u22651 outlet(s), has 0",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] unit:COL-01 \u2192 TOPOLOGY_FIX: Column needs \u22651 inlet(s), has 0"
+  ],
+  "completeness_critic": null,
+  "system_streams": null,
+  "ir_feed_streams": {
+    "FEED_H2": {
+      "composition": {
+        "Hydrogen": 1.0,
+        "Methane": 0.0,
+        "Benzene": 0.0,
+        "Toluene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "FEED_TOL": {
+      "composition": {
+        "Toluene": 1.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0,
+        "Benzene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "VAP-INIT": {
+      "composition": {
+        "Toluene": 1.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0,
+        "Benzene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 0,
+    "n_reference_streams": 0,
+    "min_match_threshold": 3,
+    "fully_solved": false,
+    "n_streams_at_default": 0,
+    "mape_status": "partial_solve",
+    "reference_match_pass": false,
+    "reference_mape_T": "partial_solve",
+    "reference_mape_P": "partial_solve",
+    "reference_mape_vf": "partial_solve",
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "",
+    "selected_family": "unknown",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": false,
+    "n_binary_params": 0
+  },
+  "fully_solved": false,
+  "n_units_solved": 0,
+  "n_units_total": 8,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=failed, passed=False, critical_ir_errors=41, iterations=6",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "failed",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 41,
+        "n_iterations": 6,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 41,
+        "n_iterations": 6,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 41,
+        "n_iterations": 6,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 41,
+        "n_iterations": 6,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 41,
+        "n_iterations": 6,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    5,
+    5,
+    5,
+    5,
+    5,
+    5
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

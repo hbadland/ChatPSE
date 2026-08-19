@@ -1,0 +1,808 @@
+{
+  "case_id": "VAL_02",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260817_162949",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 338.69691610336304,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 2,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised",
+        "THERMO_SWITCH: NRTL \u2192 Raoult's Law"
+      ],
+      "candidates_tried": [
+        {
+          "change": "THERMO_SWITCH: NRTL \u2192 Raoult's Law",
+          "source": "parsed"
+        }
+      ],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object.",
+        "[CRITICAL/CONVERGENCE_FAILURE] global:global \u2192 THERMO_SWITCH: NRTL VLE solver did not converge \u2014 switching property package"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 6,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 7,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 8,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 9,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 10,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 11,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 12,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 13,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    },
+    {
+      "iteration": 14,
+      "n_errors_before": 1,
+      "n_errors_after": 0,
+      "changes": [
+        "TOPOLOGY_FIX: graph re-normalised"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/CONVERGENCE_FAILURE] unit:DEC-01 \u2192 TOPOLOGY_FIX: DEC-01: Check the connections of the object."
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 0,
+    "issue_summaries": []
+  },
+  "final_graph_summary": {
+    "property_package": "Raoult's Law",
+    "n_units": 4,
+    "unit_types": [
+      "Column",
+      "Decanter",
+      "Column",
+      "Mixer"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "DEC-01",
+        "type": "Decanter",
+        "T_K": null,
+        "temperature_source": "inherited"
+      },
+      {
+        "tag": "COL-02",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MIX-COL-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[recycle] 'REC' is_recycle=True but no trigger phrase in description \u2014 cleared to avoid false positive",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] global:global \u2192 HUMAN: Cycle detected in non-recycle streams \u2014 possible missing is_recycle tag",
+    "[TOPO_REPAIR] repropagated is_recycle on REC (lost at guard3-phrase)",
+    "[consistency] CONSISTENCY[fill_stream_T]: S-MIX-COL-01-OUT T=298.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.4,
+        "Toluene": 0.2,
+        "Water": 0.4
+      },
+      "is_feed": true
+    },
+    "LIQ": {
+      "T_K": 379.254,
+      "T_C": 106.104,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.6249893563508753,
+      "vapor_fraction": 0.0011692095571910754,
+      "composition": {
+        "Pyridine": 0.4923132108578009,
+        "Toluene": 0.02,
+        "Water": 0.48770291134984023
+      },
+      "is_feed": false
+    },
+    "TOL": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.3333333333333333,
+        "Toluene": 0.3333333333333333,
+        "Water": 0.3333333333333333
+      },
+      "is_feed": false
+    },
+    "REC": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.3333333333333333,
+        "Toluene": 0.3333333333333333,
+        "Water": 0.3333333333333333
+      },
+      "is_feed": false
+    },
+    "REC-INIT": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.4,
+        "Toluene": 0.2,
+        "Water": 0.4
+      },
+      "is_feed": true
+    },
+    "S-MIX-COL-01-OUT": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 2.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.39999999999999997,
+        "Toluene": 0.19999999999999998,
+        "Water": 0.4
+      },
+      "is_feed": false
+    },
+    "COL-01-BOT": {
+      "T_K": 383.246,
+      "T_C": 110.096,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.3750368416425731,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 2.4450886962823156e-05,
+        "Toluene": 0.9799056946599825,
+        "Water": 0.02
+      },
+      "is_feed": false
+    },
+    "DEC-01-L2": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.3333333333333333,
+        "Toluene": 0.3333333333333333,
+        "Water": 0.3333333333333333
+      },
+      "is_feed": false
+    },
+    "COL-02-BOT": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Pyridine": 0.3333333333333333,
+        "Toluene": 0.3333333333333333,
+        "Water": 0.3333333333333333
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Pyridine": 0.4,
+        "Water": 0.4,
+        "Toluene": 0.2
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "REC-INIT": {
+      "composition": {
+        "Pyridine": 0.4,
+        "Water": 0.4,
+        "Toluene": 0.2
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 9,
+    "n_reference_streams": 13,
+    "min_match_threshold": 3,
+    "fully_solved": false,
+    "n_streams_at_default": 4,
+    "mape_status": "partial_solve",
+    "reference_match_pass": false,
+    "reference_mape_T": "partial_solve",
+    "reference_mape_P": "partial_solve",
+    "reference_mape_vf": "partial_solve",
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "8/9 matched streams within +/-5 K. MAPE=3.26%. Failures: S-05->COL-01-BOT: |dT|=85.1K (sys=383.2 ref=298.1)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "7/9 matched streams within +/-5%. MAPE=2.02%. Failures: S-04->S-MIX-COL-01-OUT: |dP/P|=9.1%; S-03->LIQ: |dP/P|=9.1%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": false,
+        "detail": "0/1 matched streams within +/-0.05. MAE=0.9988. Failures: S-03->LIQ: |dvf|=0.999",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "9 matched (confidence >= 0.55); 0 system + 4 reference unmatched",
+        "n_matched": 9,
+        "n_system_unmatched": 0,
+        "n_reference_unmatched": 4,
+        "matches": [
+          {
+            "ref_tag": "S-06",
+            "sys_tag": "REC-INIT",
+            "confidence": 0.9805,
+            "comp_cosine": 0.9698,
+            "dT": -0.0,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-04",
+            "sys_tag": "S-MIX-COL-01-OUT",
+            "confidence": 0.9644,
+            "comp_cosine": 0.9698,
+            "dT": 0.0,
+            "dP": -10132.5,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-05",
+            "sys_tag": "COL-01-BOT",
+            "confidence": 0.9495,
+            "comp_cosine": 0.9998,
+            "dT": 85.1,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-03",
+            "sys_tag": "LIQ",
+            "confidence": 0.8929,
+            "comp_cosine": 0.991,
+            "dT": 2.76,
+            "dP": -10132.5,
+            "dvf": -0.9988
+          },
+          {
+            "ref_tag": "S-10",
+            "sys_tag": "FEED",
+            "confidence": 0.837,
+            "comp_cosine": 0.7362,
+            "dT": 0.0,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-07",
+            "sys_tag": "REC",
+            "confidence": 0.7876,
+            "comp_cosine": 0.6717,
+            "dT": -0.0,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-08",
+            "sys_tag": "TOL",
+            "confidence": 0.7876,
+            "comp_cosine": 0.6717,
+            "dT": -0.0,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-11",
+            "sys_tag": "DEC-01-L2",
+            "confidence": 0.7553,
+            "comp_cosine": 0.622,
+            "dT": 0.11,
+            "dP": 0.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-09",
+            "sys_tag": "COL-02-BOT",
+            "confidence": 0.7303,
+            "comp_cosine": 0.5832,
+            "dT": -0.0,
+            "dP": 0.0,
+            "dvf": null
+          }
+        ],
+        "system_unmatched": [],
+        "reference_unmatched": [
+          "S-13",
+          "S-12",
+          "S-01",
+          "S-02"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Raoult's Law",
+    "selected_family": "ideal",
+    "expected_label": "activity_coefficient",
+    "expected_family": "activity",
+    "correct": false,
+    "n_binary_params": 0
+  },
+  "fully_solved": false,
+  "n_units_solved": 2,
+  "n_units_total": 4,
+  "best_of_n": {
+    "N": 3,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 3 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=partial_solve, passed=False, critical_ir_errors=1, iterations=15",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 15,
+        "n_streams_at_default": 4
+      },
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 15,
+        "n_streams_at_default": 4
+      },
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 15,
+        "n_streams_at_default": 4
+      }
+    ]
+  },
+  "ablation_stats": null,
+  "score_curve": [
+    2,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

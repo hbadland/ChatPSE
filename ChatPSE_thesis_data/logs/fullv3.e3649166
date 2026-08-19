@@ -1,0 +1,50 @@
+time=2026-08-10T15:37:55.575+01:00 level=INFO source=routes.go:1802 msg="server config" env="map[CUDA_VISIBLE_DEVICES:0 GGML_VK_VISIBLE_DEVICES: GPU_DEVICE_ORDINAL: HIP_VISIBLE_DEVICES: HSA_OVERRIDE_GFX_VERSION: HTTPS_PROXY: HTTP_PROXY: NO_PROXY: OLLAMA_CONTEXT_LENGTH:0 OLLAMA_DEBUG:INFO OLLAMA_DEBUG_LOG_REQUESTS:false OLLAMA_EDITOR: OLLAMA_FLASH_ATTENTION:false OLLAMA_GPU_OVERHEAD:0 OLLAMA_HOST:http://127.0.0.1:11434 OLLAMA_KEEP_ALIVE:5m0s OLLAMA_KV_CACHE_TYPE: OLLAMA_LLM_LIBRARY: OLLAMA_LOAD_TIMEOUT:5m0s OLLAMA_MAX_LOADED_MODELS:0 OLLAMA_MAX_QUEUE:512 OLLAMA_MAX_TRANSFER_STREAMS:4 OLLAMA_MODELS:<CX3_HOME>/.ollama/models OLLAMA_MULTIUSER_CACHE:false OLLAMA_NEW_ENGINE:false OLLAMA_NOHISTORY:false OLLAMA_NOPRUNE:false OLLAMA_NO_CLOUD:false OLLAMA_NUM_PARALLEL:1 OLLAMA_ORIGINS:[http://localhost https://localhost http://localhost:* https://localhost:* http://127.0.0.1 https://127.0.0.1 http://127.0.0.1:* https://127.0.0.1:* http://0.0.0.0 https://0.0.0.0 http://0.0.0.0:* https://0.0.0.0:* app://* file://* tauri://* vscode-webview://* vscode-file://*] OLLAMA_REMOTES:[ollama.com] OLLAMA_SCHED_SPREAD:false OLLAMA_VULKAN:false ROCR_VISIBLE_DEVICES: http_proxy: https_proxy: no_proxy:]"
+time=2026-08-10T15:37:55.575+01:00 level=INFO source=routes.go:1804 msg="Ollama cloud disabled: false"
+time=2026-08-10T15:37:55.700+01:00 level=INFO source=images.go:517 msg="total blobs: 5"
+time=2026-08-10T15:37:55.700+01:00 level=INFO source=images.go:524 msg="total unused blobs removed: 0"
+time=2026-08-10T15:37:55.701+01:00 level=INFO source=routes.go:1864 msg="Listening on 127.0.0.1:11434 (version 0.24.0)"
+time=2026-08-10T15:37:55.814+01:00 level=INFO source=runner.go:67 msg="discovering available GPUs..."
+time=2026-08-10T15:37:55.814+01:00 level=WARN source=runner.go:536 msg="user overrode visible devices" CUDA_VISIBLE_DEVICES=0
+time=2026-08-10T15:37:55.814+01:00 level=WARN source=runner.go:540 msg="if GPUs are not correctly discovered, unset and try again"
+time=2026-08-10T15:37:55.814+01:00 level=INFO source=server.go:433 msg="starting runner" cmd="<CX3_HOME>/bin/ollama runner --ollama-engine --port 44331"
+time=2026-08-10T15:37:55.892+01:00 level=INFO source=model_recommendations.go:177 msg="model recommendations cache sleep scheduled" wait=3h43m0.622584649s consecutive_failures=0
+time=2026-08-10T15:37:58.401+01:00 level=INFO source=server.go:433 msg="starting runner" cmd="<CX3_HOME>/bin/ollama runner --ollama-engine --port 46173"
+time=2026-08-10T15:38:00.582+01:00 level=INFO source=runner.go:106 msg="experimental Vulkan support disabled.  To enable, set OLLAMA_VULKAN=1"
+time=2026-08-10T15:38:00.582+01:00 level=INFO source=server.go:433 msg="starting runner" cmd="<CX3_HOME>/bin/ollama runner --ollama-engine --port 45495"
+time=2026-08-10T15:38:00.582+01:00 level=INFO source=server.go:433 msg="starting runner" cmd="<CX3_HOME>/bin/ollama runner --ollama-engine --port 35773"
+time=2026-08-10T15:38:00.965+01:00 level=INFO source=types.go:42 msg="inference compute" id=GPU-8bd320c3-e9d9-ca13-94e5-55e79d01e17e filter_id="" library=CUDA compute=8.9 name=CUDA0 description="NVIDIA L40S" libdirs=ollama,cuda_v13 driver=13.0 pci_id=0000:1a:00.0 type=discrete total="45.0 GiB" available="44.4 GiB"
+time=2026-08-10T15:38:00.965+01:00 level=INFO source=routes.go:1914 msg="vram-based default context" total_vram="45.0 GiB" default_num_ctx=32768
+time=2026-08-10T15:39:18.742+01:00 level=INFO source=server.go:433 msg="starting runner" cmd="<CX3_HOME>/bin/ollama runner --ollama-engine --port 34303"
+time=2026-08-10T15:39:21.721+01:00 level=WARN source=runner.go:355 msg="unable to refresh free memory, using old values"
+time=2026-08-10T15:39:21.865+01:00 level=INFO source=server.go:259 msg="enabling flash attention"
+time=2026-08-10T15:39:21.865+01:00 level=INFO source=server.go:433 msg="starting runner" cmd="<CX3_HOME>/bin/ollama runner --ollama-engine --model <CX3_HOME>/.ollama/models/blobs/sha256-58574f2e94b99fb9e4391408b57e5aeaaaec10f6384e9a699fc2cb43a5c8eabf --port 33005"
+time=2026-08-10T15:39:21.865+01:00 level=INFO source=sched.go:484 msg="system memory" total="1007.0 GiB" free="900.5 GiB" free_swap="0 B"
+time=2026-08-10T15:39:21.865+01:00 level=INFO source=sched.go:491 msg="gpu memory" id=GPU-8bd320c3-e9d9-ca13-94e5-55e79d01e17e library=CUDA available="43.9 GiB" free="44.4 GiB" minimum="457.0 MiB" overhead="0 B"
+time=2026-08-10T15:39:21.865+01:00 level=INFO source=server.go:792 msg="loading model" "model layers"=49 requested=-1
+time=2026-08-10T15:39:21.881+01:00 level=INFO source=runner.go:1450 msg="starting ollama engine"
+time=2026-08-10T15:39:21.881+01:00 level=INFO source=runner.go:1485 msg="Server listening on 127.0.0.1:33005"
+time=2026-08-10T15:39:21.887+01:00 level=INFO source=runner.go:1297 msg=load request="{Operation:fit LoraPath:[] Parallel:1 BatchSize:512 FlashAttention:Enabled KvSize:32768 KvCacheType: NumThreads:64 GPULayers:49[ID:GPU-8bd320c3-e9d9-ca13-94e5-55e79d01e17e Layers:49(0..48)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+time=2026-08-10T15:39:21.912+01:00 level=INFO source=ggml.go:144 msg="" architecture=qwen3moe file_type=Q4_K_M name="Qwen3 30B A3B Thinking 2507" description="" num_tensors=579 num_key_values=33
+load_backend: loaded CPU backend from <CX3_HOME>/lib/ollama/libggml-cpu-icelake.so
+ggml_cuda_init: GGML_CUDA_FORCE_MMQ:    no
+ggml_cuda_init: GGML_CUDA_FORCE_CUBLAS: no
+ggml_cuda_init: found 1 CUDA devices:
+  Device 0: NVIDIA L40S, compute capability 8.9, VMM: yes, ID: GPU-8bd320c3-e9d9-ca13-94e5-55e79d01e17e
+load_backend: loaded CUDA backend from <CX3_HOME>/lib/ollama/cuda_v13/libggml-cuda.so
+time=2026-08-10T15:39:22.076+01:00 level=INFO source=ggml.go:104 msg=system CPU.0.SSE3=1 CPU.0.SSSE3=1 CPU.0.AVX=1 CPU.0.AVX2=1 CPU.0.F16C=1 CPU.0.FMA=1 CPU.0.BMI2=1 CPU.0.AVX512=1 CPU.0.AVX512_VBMI=1 CPU.0.AVX512_VNNI=1 CPU.0.LLAMAFILE=1 CPU.1.LLAMAFILE=1 CUDA.0.ARCHS=750,800,860,870,890,900,1000,1030,1100,1200,1210 CUDA.0.USE_GRAPHS=1 CUDA.0.PEER_MAX_BATCH_SIZE=128 compiler=cgo(gcc)
+time=2026-08-10T15:39:27.095+01:00 level=INFO source=runner.go:1297 msg=load request="{Operation:alloc LoraPath:[] Parallel:1 BatchSize:512 FlashAttention:Enabled KvSize:32768 KvCacheType: NumThreads:64 GPULayers:49[ID:GPU-8bd320c3-e9d9-ca13-94e5-55e79d01e17e Layers:49(0..48)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+time=2026-08-10T15:39:27.212+01:00 level=INFO source=runner.go:1297 msg=load request="{Operation:commit LoraPath:[] Parallel:1 BatchSize:512 FlashAttention:Enabled KvSize:32768 KvCacheType: NumThreads:64 GPULayers:49[ID:GPU-8bd320c3-e9d9-ca13-94e5-55e79d01e17e Layers:49(0..48)] MultiUserCache:false ProjectorPath: MainGPU:0 UseMmap:false}"
+time=2026-08-10T15:39:27.212+01:00 level=INFO source=ggml.go:490 msg="offloading 48 repeating layers to GPU"
+time=2026-08-10T15:39:27.212+01:00 level=INFO source=ggml.go:497 msg="offloading output layer to GPU"
+time=2026-08-10T15:39:27.212+01:00 level=INFO source=ggml.go:502 msg="offloaded 49/49 layers to GPU"
+time=2026-08-10T15:39:27.212+01:00 level=INFO source=device.go:240 msg="model weights" device=CUDA0 size="17.1 GiB"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=device.go:245 msg="model weights" device=CPU size="166.9 MiB"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=device.go:251 msg="kv cache" device=CUDA0 size="3.0 GiB"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=device.go:262 msg="compute graph" device=CUDA0 size="226.0 MiB"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=device.go:267 msg="compute graph" device=CPU size="4.0 MiB"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=device.go:272 msg="total memory" size="20.5 GiB"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=sched.go:561 msg="loaded runners" count=1
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=server.go:1385 msg="waiting for llama runner to start responding"
+time=2026-08-10T15:39:27.213+01:00 level=INFO source=server.go:1428 msg="waiting for server to become available" status="llm server loading model"
+time=2026-08-10T15:40:12.069+01:00 level=INFO source=server.go:1432 msg="llama runner started in 50.20 seconds"
+time=2026-08-10T19:20:56.723+01:00 level=INFO source=model_recommendations.go:177 msg="model recommendations cache sleep scheduled" wait=4h29m6.541016801s consecutive_failures=0

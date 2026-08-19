@@ -1,73 +1,58 @@
-# ChatPSE Thesis Data Archive
+# ChatPSE thesis data
 
-This directory is the curated research data archive for the MSc thesis:
+This deposit contains the selected machine-readable records underlying the
+reported ChatPSE thesis results. It is a curated release, not a dump of the
+mixed development-results directory.
 
-> **[THESIS TITLE]** — Harry Badland, Imperial College London, 2026
+Canonical repository:
+<https://github.com/hbadland/multiAgentFlowsheet/tree/main>
 
-It is structured to satisfy the Imperial College London Research Data Management policy. All data required to reproduce the reported results, or to verify the reported conclusions without re-running inference, is collected here.
+The records are separated into six analytical cohorts across five top-level
+groups:
 
----
+- `capability`: the 20-case capability panel selected on 10 August 2026.
+- `validation/main_panel`: the ten-case validation panel selected on
+  10 August 2026.
+- `validation/repeatability`: five independent single-sample executions for
+  each of `VAL_01`, `VAL_04`, `VAL_06`, and `VAL_09`. These runs used one
+  generated candidate per execution and are not best-of-five samples.
+- `specification_density`: L0, L1, and L2 records for `VAL_01`, `VAL_03`, and
+  `VAL_04`.
+- `model_substitution`: the three L1 cases evaluated with the baseline model
+  and four substitute models.
+- `ablation/component_targeted`: matched `full_ccs`, `no_physics`, and
+  `no_coupling` records for `VAL_01`, `VAL_02`, `VAL_03`, and `VAL_06`.
 
-## Archive contents
+The component ablation produced no improvement under either removal arm.
+`VAL_01`, `VAL_03`, and `VAL_06` were invariant, whereas `VAL_02` changed from
+`MAX_ITER` with 9/13 matched streams under `full_ccs` to `HUMAN` without a
+scored comparison in both removal arms. Because only one stochastic
+best-of-three execution was retained per case-arm, this difference cannot be
+assigned causally to either component. Activation counters show that
+bubble-point call sites did not supply a selected phase-derived repair, while
+the coupling map was never queried. Code inspection confirms that coupling is
+consulted only after a candidate fix creates a beam state and another unfixed
+error remains. The records establish that this gate was not reached; they do
+not establish one common case-level reason for every non-activation.
 
-### `thesis_2026_manifest.json`
+`selection_manifest.tsv` is the authoritative mapping from archived source
+records to analytical groups. Some baseline records legitimately appear in
+more than one group. `SHA256SUMS` will identify the deposited copies after
+staging and validation.
 
-Machine-readable index of every result record included in the reported aggregate. This is the authoritative record for reproducing the published tables; a date-filtered query of `results/per_run/` is approximate and should not be used as a substitute. See the manifest for the exact record list and associated metadata.
+## Exclusions
 
-### `code/`
+Exploratory, interrupted, superseded, and unreported records are excluded.
+In particular, the earlier eight-case `no_physics` batch from 17 August is not
+part of the reported four-case component ablation.
 
-A snapshot of the source code at the reported results commit. The canonical version is the tagged release at `[THESIS RELEASE TAG]` on GitHub (`https://github.com/hbadland/multiAgentFlowsheet`). The snapshot here is provided for archival self-containment.
+`FOS_01` is also excluded. It was adapted from FOSSEE during development but
+was not included in the reported ten-case validation panel or any aggregate
+reported in the thesis.
 
-### `benchmark_definitions/`
+## Licence
 
-All inputs to the benchmark that are independent of the model or pipeline run:
-- `cases/` — JSON case files (natural-language descriptions + tier assignments) for all experimental groups
-- `references/` — Reference flowsheet JSON files (expert-specified DWSIM solutions)
-- `PROVENANCE.md` — Construction methodology, validity criteria, per-case notes, and integrity checks for all reference flowsheets
-
-### `selected_run_records/`
-
-Per-run JSON records selected for inclusion in the reported aggregate, organised by experimental group. Each subdirectory contains only the records used to compute the reported results. Development runs and discarded repeats are excluded.
-
-- `capability/` — Main 20-case capability benchmark (headline results)
-- `validation/` — Ten-case validation panel (VAL_01–VAL_10)
-- `specification_density/` — L0/L1/L2 density study (VAL_01, VAL_03, VAL_04)
-- `model_substitution/` — Substitution study (qwen3:32b, deepseek-r1-distill-qwen-32b, gemma3:27b, mistral-small3.2:24b on three L1 cases)
-- `ablation/` — Component ablation runs (capability set N=1; VAL_01_L1, VAL_03_L1, VAL_04_L1, VAL_05, VAL_06 at N=5)
-
-### `analysis/`
-
-- `scripts/` — Aggregation and figure-generation scripts used to produce the reported tables and figures
-- `outputs/` — Final figure and table input data (CSVs, JSON summaries) as submitted to the manuscript
-
-### `environment/`
-
-Everything needed to reconstruct the execution environment:
-- `requirements.txt` — Python dependencies (direct, without version pins — see `software_versions.txt` for known pinned versions)
-- `Dockerfile` — Container definition (Ubuntu 20.04, Python 3.9, .NET 8, DWSIM 9.0.4)
-- `software_versions.txt` — Recorded and unrecorded software versions with provenance notes
-
----
-
-## How to use this archive
-
-**To verify the reported aggregate without re-running inference:**
-
-```bash
-PYTHONPATH=<code_snapshot_path> python3.9 analysis/scripts/aggregate_from_manifest.py \
-    --manifest thesis_2026_manifest.json \
-    --records selected_run_records/ \
-    --out analysis/outputs/aggregate_verification.json
-```
-
-*(Requires only `networkx`, `scipy`, `numpy` — no container, DWSIM, or model inference needed.)*
-
-**To inspect individual run records:** each JSON file in `selected_run_records/` is self-contained and human-readable. See `PIPELINE.md` in the root repository for field definitions.
-
-**To re-run inference:** follow the instructions in the root `README.md`. The container definition and dependency list here match the environment used for the reported runs.
-
----
-
-## Archival deposit
-
-This directory and its contents are deposited at `[ARCHIVE DOI]`. The deposit was created on `[DEPOSIT DATE]`.
+The generated research data, derived summaries, metadata, manifests, and
+redacted logs in this directory are released under CC BY 4.0. See
+`DATA_LICENSE.md`. ChatPSE source code is separately licensed under the MIT
+licence in the repository root. Third-party material is not included here.

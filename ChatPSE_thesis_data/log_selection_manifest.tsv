@@ -1,0 +1,10 @@
+purpose	file	redaction
+main_panel	fullv3.o3649166	CX3 user paths replaced
+main_panel	fullv3.e3649166	CX3 user paths replaced
+specification_density	l1_l2_only.o3679691	CX3 user paths replaced
+model_substitution	model_ablation.o3702174	CX3 user paths replaced
+model_substitution	qwen32b_only.o3708832	CX3 user paths replaced
+repeatability	variance_study.o3785509	CX3 user paths replaced
+component_ablation	val_bon3.o3785412	CX3 user paths replaced
+component_ablation	val_bon3.e3785412	No sensitive match; retained verbatim
+component_ablation	ablation_tgt.o3812570	CX3 user paths replaced

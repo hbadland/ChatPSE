@@ -1,0 +1,1366 @@
+{
+  "case_id": "VAL_04_L1",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:32b",
+  "timestamp": "20260813_162302",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 745.7779581546783,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 6,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 7,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 8,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 9,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 10,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 11,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 12,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 13,
+      "n_errors_before": 3,
+      "n_errors_after": 3,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 14,
+      "n_errors_before": 3,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-03-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Stream 'RX-04-OUT1': flow_mol_s = -inf. Solver returned non-finite value \u2014 conve",
+        "[CRITICAL/UNPHYSICAL_VALUES] global:global \u2192 CONDITION_FIX: Mass balance error: feed total = 3.0000 mol/s, outlet total = -inf mol/s (relati"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 2,
+    "issue_summaries": [
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou",
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-02 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 18,
+    "unit_types": [
+      "Compressor",
+      "Heater",
+      "Pump",
+      "Heater",
+      "Mixer",
+      "ConversionReactor",
+      "Cooler",
+      "ConversionReactor",
+      "Cooler",
+      "ConversionReactor",
+      "Cooler",
+      "Vessel",
+      "Vessel",
+      "Pump",
+      "Mixer",
+      "Heater",
+      "ConversionReactor",
+      "Cooler"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CP-01",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "HT-01",
+        "type": "Heater",
+        "T_K": 338.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "PM-01",
+        "type": "Pump",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "HT-02",
+        "type": "Heater",
+        "T_K": 338.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 1073.15,
+        "temperature_source": "template",
+        "reaction_type": "steam_methane_reforming",
+        "basis": "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"
+      },
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-02",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift",
+        "basis": "Newsome, Catal. Rev.-Sci. Eng. 21 (1980) 275 (HTS default)"
+      },
+      {
+        "tag": "CL-02",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-03",
+        "type": "ConversionReactor",
+        "T_K": 473.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift_lts",
+        "basis": "Ratnasamy & Wagner, Catal. Rev. 51 (2009) 325"
+      },
+      {
+        "tag": "CL-03",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      },
+      {
+        "tag": "V-02",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      },
+      {
+        "tag": "PM-02",
+        "type": "Pump",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MX-02",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "HT-03",
+        "type": "Heater",
+        "T_K": 338.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-04",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "generic",
+        "basis": "unresolved reaction type - conservative moderate default"
+      },
+      {
+        "tag": "CL-04",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapour",
+    "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-02 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapour",
+    "[consistency] CONSISTENCY[fill_stream_T]: COMP_BI T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT_BI T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: PUMP_W T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT_W T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MIXED T=338.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: REFORM T=1073.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL1 T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SHIFT1 T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL2 T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SHIFT2 T=473.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL3 T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: H2_PROD T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: TAIL T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: REDUCED T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MIX_TG T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: HOT_TG T=338.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED_BI": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.4,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.6
+      },
+      "is_feed": true
+    },
+    "COMP_BI": {
+      "T_K": 458.682,
+      "T_C": 185.532,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.4,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.6
+      },
+      "is_feed": false
+    },
+    "HOT_BI": {
+      "T_K": 338.15,
+      "T_C": 65.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.4,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.6
+      },
+      "is_feed": false
+    },
+    "FEED_W": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 1.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": true
+    },
+    "PUMP_W": {
+      "T_K": 298.185,
+      "T_C": 25.035,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 1.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "HOT_W": {
+      "T_K": 338.15,
+      "T_C": 65.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 1.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "MIXED": {
+      "T_K": 327.545,
+      "T_C": 54.395,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 2.0000000000000004,
+      "vapor_fraction": 0.5140016953370126,
+      "composition": {
+        "Carbon dioxide": 0.19999999999999998,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.5,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.3
+      },
+      "is_feed": false
+    },
+    "REFORM": {
+      "T_K": 1073.15,
+      "T_C": 800.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.02,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.13245033112582782,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.16225165562913912,
+        "Carbon monoxide": 0.16887417218543044,
+        "Hydrogen": 0.5066225165562913,
+        "Methane": 0.02980132450331128
+      },
+      "is_feed": false
+    },
+    "COOL1": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.02,
+      "vapor_fraction": 0.83851287782773,
+      "composition": {
+        "Carbon dioxide": 0.13245033112582782,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.16225165562913912,
+        "Carbon monoxide": 0.16887417218543044,
+        "Hydrogen": 0.5066225165562913,
+        "Methane": 0.02980132450331128
+      },
+      "is_feed": false
+    },
+    "SHIFT1": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.1474260188849223,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.16858043654341426,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.09394741498442831,
+        "Carbon monoxide": 0.14078760058677792,
+        "Hydrogen": 0.5883326468992254,
+        "Methane": 0.008351900986154234
+      },
+      "is_feed": false
+    },
+    "COOL2": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.1474260188849223,
+      "vapor_fraction": 0.9069121004535996,
+      "composition": {
+        "Carbon dioxide": 0.16858043654341426,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.09394741498442831,
+        "Carbon monoxide": 0.14078760058677792,
+        "Hydrogen": 0.5883326468992254,
+        "Methane": 0.008351900986154234
+      },
+      "is_feed": false
+    },
+    "SHIFT2": {
+      "T_K": 473.15,
+      "T_C": 200.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.1949612573092128,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.24147909889341446,
+        "Nitrogen": 0.0,
+        "Oxygen": 1.5013387611669282e-21,
+        "Water": 0.009703718905266544,
+        "Carbon monoxide": 0.07072519666888734,
+        "Hydrogen": 0.6773034403652365,
+        "Methane": 0.0007885451671953286
+      },
+      "is_feed": false
+    },
+    "COOL3": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.1949612573092128,
+      "vapor_fraction": 0.991290168035067,
+      "composition": {
+        "Carbon dioxide": 0.24147909889341446,
+        "Nitrogen": 0.0,
+        "Oxygen": 1.5013387611669282e-21,
+        "Water": 0.009703718905266544,
+        "Carbon monoxide": 0.07072519666888734,
+        "Hydrogen": 0.6773034403652365,
+        "Methane": 0.0007885451671953286
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.1671336816235787,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.24359423245357664,
+        "Nitrogen": 0.0,
+        "Oxygen": 1.5145299610211404e-21,
+        "Water": 0.0010092196082368409,
+        "Carbon monoxide": 0.0713466127858365,
+        "Hydrogen": 0.6832544615524064,
+        "Methane": 0.0007954735999434478
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.027827575685634383,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0007495715338990304,
+        "Nitrogen": 0.0,
+        "Oxygen": 9.783168069220765e-27,
+        "Water": 0.9992500746640224,
+        "Carbon monoxide": 1.3661868559544288e-08,
+        "Hydrogen": 3.401373536978736e-07,
+        "Methane": 2.8563856409840258e-12
+      },
+      "is_feed": false
+    },
+    "H2_PROD": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 3.167133681623579,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.24359423245357664,
+        "Nitrogen": 0.0,
+        "Oxygen": 1.5145299610211404e-21,
+        "Water": 0.0010092196082368409,
+        "Carbon monoxide": 0.0713466127858365,
+        "Hydrogen": 0.6832544615524064,
+        "Methane": 0.0007954735999434478
+      },
+      "is_feed": false
+    },
+    "TAIL": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "REDUCED": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "FEED_AIR": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.79,
+        "Oxygen": 0.21,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": true
+    },
+    "MIX_TG": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0000000000000002,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.7899999999999999,
+        "Oxygen": 0.20999999999999996,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "HOT_TG": {
+      "T_K": 338.15,
+      "T_C": 65.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0000000000000002,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.7899999999999999,
+        "Oxygen": 0.20999999999999996,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "FLUE": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0000000000000002,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.79,
+        "Oxygen": 0.21,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "COOL4": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0000000000000002,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.79,
+        "Oxygen": 0.21,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-01-OUT1": {
+      "T_K": 1073.15,
+      "T_C": 800.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-02-OUT1": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-03-OUT1": {
+      "T_K": 473.15,
+      "T_C": 200.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": -Infinity,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-04-OUT1": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": -Infinity,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED_BI": {
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "FEED_W": {
+      "composition": {
+        "Water": 1.0,
+        "Carbon dioxide": 0.0,
+        "Nitrogen": 0.0,
+        "Oxygen": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "FEED_AIR": {
+      "composition": {
+        "Nitrogen": 0.79,
+        "Oxygen": 0.21,
+        "Carbon dioxide": 0.0,
+        "Water": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Methane": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 21,
+    "n_reference_streams": 27,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": false,
+    "reference_mape_T": 26.04,
+    "reference_mape_P": 45.81,
+    "reference_mape_vf": 0.0962,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "5/21 matched streams within +/-5 K. MAPE=26.04%. Failures: S-020->FLUE: |dT|=100.0K (sys=623.1 ref=523.1); S-015->H2_PROD: |dT|=38.0K (sys=273.1 ref=311.1); S-016->LIQ: |dT|=38.0K (sys=273.1 ref=311.1); S-011->SHIFT2: |dT|=10.0K (sys=473.1 ref=483.1); FLUE GAS->HOT_TG: |dT|=135.0K (sys=338.1 ref=473.1); S-01->COMP_BI: |dT|=131.1K (sys=458.7 ref=589.8); S-06->REFORM: |dT|=108.6K (sys=1073.2 ref=1181.8); S-09->SHIFT1: |dT|=117.8K (sys=623.1 ref=741.0); S-014->COOL2: |dT|=38.0K (sys=273.1 ref=311.1); H2->VAP: |dT|=38.0K (sys=273.1 ref=311.1); S-012->COOL3: |dT|=241.4K (sys=273.1 ref=514.6); S-02->HOT_BI: |dT|=844.0K (sys=338.1 ref=1182.2); S-021->COOL4: |dT|=1276.9K (sys=273.1 ref=1550.0); S-08->COOL1: |dT|=350.0K (sys=273.1 ref=623.1); S-05->MIXED: |dT|=854.2K (sys=327.5 ref=1181.8); S-04->HOT_W: |dT|=844.0K (sys=338.1 ref=1182.2)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "7/21 matched streams within +/-5%. MAPE=45.81%. Failures: S-03->PUMP_W: |dP/P|=68.3%; S-015->H2_PROD: |dP/P|=67.7%; S-016->LIQ: |dP/P|=67.7%; S-011->SHIFT2: |dP/P|=67.8%; S-01->COMP_BI: |dP/P|=68.3%; S-06->REFORM: |dP/P|=68.3%; S-09->SHIFT1: |dP/P|=67.8%; S-014->COOL2: |dP/P|=67.7%; H2->VAP: |dP/P|=67.7%; S-012->COOL3: |dP/P|=67.7%; S-02->HOT_BI: |dP/P|=68.3%; S-08->COOL1: |dP/P|=68.3%; S-05->MIXED: |dP/P|=68.3%; S-04->HOT_W: |dP/P|=68.3%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": false,
+        "detail": "14/18 matched streams within +/-0.05. MAE=0.0962. Failures: S-014->COOL2: |dvf|=0.076; S-08->COOL1: |dvf|=0.161; S-05->MIXED: |dvf|=0.486; S-04->HOT_W: |dvf|=1.000",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "21 matched (confidence >= 0.55); 6 system + 6 reference unmatched",
+        "n_matched": 21,
+        "n_system_unmatched": 6,
+        "n_reference_unmatched": 6,
+        "matches": [
+          {
+            "ref_tag": "AIR",
+            "sys_tag": "FEED_AIR",
+            "confidence": 0.998,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "BIOGAS",
+            "sys_tag": "FEED_BI",
+            "confidence": 0.9979,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "WATER",
+            "sys_tag": "FEED_W",
+            "confidence": 0.9978,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 1325.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-019",
+            "sys_tag": "MIX_TG",
+            "confidence": 0.9201,
+            "comp_cosine": 0.8694,
+            "dT": 0.89,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-020",
+            "sys_tag": "FLUE",
+            "confidence": 0.8898,
+            "comp_cosine": 0.8694,
+            "dT": 100.0,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-03",
+            "sys_tag": "PUMP_W",
+            "confidence": 0.8794,
+            "comp_cosine": 1.0,
+            "dT": -0.09,
+            "dP": -1093375.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-015",
+            "sys_tag": "H2_PROD",
+            "confidence": 0.8682,
+            "comp_cosine": 0.9952,
+            "dT": -38.0,
+            "dP": -1063375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-016",
+            "sys_tag": "LIQ",
+            "confidence": 0.8589,
+            "comp_cosine": 1.0,
+            "dT": -38.0,
+            "dP": -1063375.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-011",
+            "sys_tag": "SHIFT2",
+            "confidence": 0.8578,
+            "comp_cosine": 0.9502,
+            "dT": -10.0,
+            "dP": -1068375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "FLUE GAS",
+            "sys_tag": "HOT_TG",
+            "confidence": 0.8545,
+            "comp_cosine": 0.8355,
+            "dT": -135.0,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-01",
+            "sys_tag": "COMP_BI",
+            "confidence": 0.8539,
+            "comp_cosine": 1.0,
+            "dT": -131.14,
+            "dP": -1093375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-06",
+            "sys_tag": "REFORM",
+            "confidence": 0.8492,
+            "comp_cosine": 0.9565,
+            "dT": -108.63,
+            "dP": -1093375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-09",
+            "sys_tag": "SHIFT1",
+            "confidence": 0.8459,
+            "comp_cosine": 0.9679,
+            "dT": -117.83,
+            "dP": -1068375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-014",
+            "sys_tag": "COOL2",
+            "confidence": 0.844,
+            "comp_cosine": 0.9653,
+            "dT": -38.0,
+            "dP": -1063375.0,
+            "dvf": 0.0758
+          },
+          {
+            "ref_tag": "H2",
+            "sys_tag": "VAP",
+            "confidence": 0.834,
+            "comp_cosine": 0.9374,
+            "dT": -38.0,
+            "dP": -1063375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-012",
+            "sys_tag": "COOL3",
+            "confidence": 0.7923,
+            "comp_cosine": 0.9627,
+            "dT": -241.43,
+            "dP": -1063375.0,
+            "dvf": -0.0087
+          },
+          {
+            "ref_tag": "S-02",
+            "sys_tag": "HOT_BI",
+            "confidence": 0.7746,
+            "comp_cosine": 1.0,
+            "dT": -844.0,
+            "dP": -1093375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-021",
+            "sys_tag": "COOL4",
+            "confidence": 0.7677,
+            "comp_cosine": 0.8355,
+            "dT": -1276.88,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-08",
+            "sys_tag": "COOL1",
+            "confidence": 0.7596,
+            "comp_cosine": 0.9565,
+            "dT": -350.0,
+            "dP": -1093375.0,
+            "dvf": -0.1615
+          },
+          {
+            "ref_tag": "S-05",
+            "sys_tag": "MIXED",
+            "confidence": 0.714,
+            "comp_cosine": 0.9706,
+            "dT": -854.24,
+            "dP": -1093375.0,
+            "dvf": -0.486
+          },
+          {
+            "ref_tag": "S-04",
+            "sys_tag": "HOT_W",
+            "confidence": 0.6886,
+            "comp_cosine": 1.0,
+            "dT": -844.0,
+            "dP": -1093375.0,
+            "dvf": -1.0
+          }
+        ],
+        "system_unmatched": [
+          "TAIL",
+          "REDUCED",
+          "RX-01-OUT1",
+          "RX-02-OUT1",
+          "RX-03-OUT1",
+          "RX-04-OUT1"
+        ],
+        "reference_unmatched": [
+          "S-07",
+          "S-010",
+          "S-013",
+          "S-017",
+          "S-018",
+          "S-022"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 18,
+  "n_units_total": 18,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 2,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 2 with solve_tier=fully_solved, passed=False, critical_ir_errors=0, iterations=15",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "failed",
+        "outcome": "PLAN_FAILED",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "PLAN_FAILED",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 15,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "PLAN_FAILED",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "failed",
+        "outcome": "INVALID_IR",
+        "passed": false,
+        "n_critical_ir_errors": 1,
+        "n_iterations": 0,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3,
+    3
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

@@ -1,0 +1,369 @@
+{
+  "case_id": "VAL_01_L0",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260811_173537",
+  "outcome": "PASS",
+  "total_elapsed_s": 123.20934343338013,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [
+        "PASS"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 1,
+    "issue_summaries": [
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 4,
+    "unit_types": [
+      "Compressor",
+      "Cooler",
+      "Expander",
+      "Vessel"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CP-01",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "CL-01",
+        "type": "Cooler",
+        "T_K": 273.15,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "EX-01",
+        "type": "Expander",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      }
+    ]
+  },
+  "warnings": [
+    "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapour",
+    "[consistency] CONSISTENCY[fill_stream_T]: COMP T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: COOL T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: EXPND T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=273.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=273.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": true
+    },
+    "COMP": {
+      "T_K": 460.036,
+      "T_C": 186.886,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "COOL": {
+      "T_K": 273.15,
+      "T_C": 0.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "EXPND": {
+      "T_K": 205.577,
+      "T_C": -67.573,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 205.577,
+      "T_C": -67.573,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 205.577,
+      "T_C": -67.573,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0,
+        "Methane": 1.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Methane": 1.0,
+        "N-butane": 0.0,
+        "IsoButane": 0.0,
+        "1-Butene": 0.0,
+        "Isobutene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 6,
+    "n_reference_streams": 10,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": false,
+    "reference_mape_T": 46.19,
+    "reference_mape_P": 1.32,
+    "reference_mape_vf": 0.0787,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "0/6 matched streams within +/-5 K. MAPE=46.19%. Failures: S-03->COOL: |dT|=6.8K (sys=273.2 ref=280.0); S-01->FEED: |dT|=18.1K (sys=298.1 ref=280.0); S-02->COMP: |dT|=59.5K (sys=460.0 ref=400.6); S-09->EXPND: |dT|=94.1K (sys=205.6 ref=111.5); S-10->LIQ: |dT|=94.1K (sys=205.6 ref=111.5); S-08->VAP: |dT|=94.1K (sys=205.6 ref=111.5)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "6/6 matched streams within +/-5%. MAPE=1.32%.",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": false,
+        "detail": "4/5 matched streams within +/-0.05. MAE=0.0787. Failures: S-08->VAP: |dvf|=0.394",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "6 matched (confidence >= 0.55); 0 system + 4 reference unmatched",
+        "n_matched": 6,
+        "n_system_unmatched": 0,
+        "n_reference_unmatched": 4,
+        "matches": [
+          {
+            "ref_tag": "S-03",
+            "sys_tag": "COOL",
+            "confidence": 0.9939,
+            "comp_cosine": 1.0,
+            "dT": -6.85,
+            "dP": 6625.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-01",
+            "sys_tag": "FEED",
+            "confidence": 0.9879,
+            "comp_cosine": 1.0,
+            "dT": 18.15,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-02",
+            "sys_tag": "COMP",
+            "confidence": 0.9739,
+            "comp_cosine": 1.0,
+            "dT": 59.46,
+            "dP": 6625.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-09",
+            "sys_tag": "EXPND",
+            "confidence": 0.8616,
+            "comp_cosine": 1.0,
+            "dT": 94.13,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-10",
+            "sys_tag": "LIQ",
+            "confidence": 0.8486,
+            "comp_cosine": 1.0,
+            "dT": 94.13,
+            "dP": 1325.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "S-08",
+            "sys_tag": "VAP",
+            "confidence": 0.8278,
+            "comp_cosine": 1.0,
+            "dT": 94.13,
+            "dP": 1325.0,
+            "dvf": 0.3937
+          }
+        ],
+        "system_unmatched": [],
+        "reference_unmatched": [
+          "S-07",
+          "S-06",
+          "S-05",
+          "S-04"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 4,
+  "n_units_total": 4,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=fully_solved, passed=True, critical_ir_errors=0, iterations=1",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    0
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

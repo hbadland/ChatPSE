@@ -1,0 +1,429 @@
+{
+  "case_id": "VAL_04",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260810_183915",
+  "outcome": "PASS",
+  "total_elapsed_s": 213.88178944587708,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 0,
+      "n_errors_after": 0,
+      "changes": [
+        "PASS"
+      ],
+      "candidates_tried": [],
+      "constraint_violations": [],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 1,
+    "issue_summaries": [
+      "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapou"
+    ]
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 5,
+    "unit_types": [
+      "Compressor",
+      "Mixer",
+      "ConversionReactor",
+      "ConversionReactor",
+      "Vessel"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "CP-01",
+        "type": "Compressor",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 1073.15,
+        "temperature_source": "template",
+        "reaction_type": "steam_methane_reforming",
+        "basis": "Rostrup-Nielsen, Catal. Sci. Technol. 5 (1984); reformer outlet 800-900 C"
+      },
+      {
+        "tag": "RX-02",
+        "type": "ConversionReactor",
+        "T_K": 623.15,
+        "temperature_source": "template",
+        "reaction_type": "water_gas_shift",
+        "basis": "Newsome, Catal. Rev.-Sci. Eng. 21 (1980) 275 (HTS default)"
+      },
+      {
+        "tag": "V-01",
+        "type": "Vessel",
+        "T_K": null,
+        "temperature_source": "inherited"
+      }
+    ]
+  },
+  "warnings": [
+    "[PHYSICS/WARNING] [WARNING/INVALID_UNIT_CONFIG] unit:V-01 \u2192 CONDITION_FIX: Vessel has no feed T \u2014 may produce zero vapour",
+    "[consistency] CONSISTENCY[fill_stream_T]: COMP T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: MIX T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: REFORM T=1073.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: SHIFT T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=623.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=623.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": true
+    },
+    "COMP": {
+      "T_K": 458.682,
+      "T_C": 185.532,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "MIX": {
+      "T_K": 458.682,
+      "T_C": 185.532,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "REFORM": {
+      "T_K": 1073.15,
+      "T_C": 800.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.000000000029187,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.599999999904,
+        "Carbon dioxide": 0.399999999976,
+        "Carbon monoxide": 5.999999999639999e-11,
+        "Hydrogen": 5.999999999639999e-11,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "SHIFT": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0000000000765574,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.5999999997757594,
+        "Carbon dioxide": 0.3999999999842406,
+        "Carbon monoxide": 6.626563388600157e-11,
+        "Hydrogen": 1.7373436606030217e-10,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 1.0000000000765574,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Methane": 0.5999999997757594,
+        "Carbon dioxide": 0.3999999999842406,
+        "Carbon monoxide": 6.626563388600157e-11,
+        "Hydrogen": 1.7373436606030217e-10,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 0.01602826009516234,
+        "Carbon dioxide": 0.9839717399048377,
+        "Carbon monoxide": 4.3365242732509414e-17,
+        "Hydrogen": 2.2697340800055606e-62,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-01-OUT1": {
+      "T_K": 1073.15,
+      "T_C": 800.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    },
+    "RX-02-OUT1": {
+      "T_K": 623.15,
+      "T_C": 350.0,
+      "P_Pa": 506625.0,
+      "P_bar": 5.06625,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Methane": 0.0,
+        "Carbon dioxide": 0.0,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Methane": 0.6,
+        "Carbon dioxide": 0.4,
+        "Carbon monoxide": 0.0,
+        "Hydrogen": 0.0,
+        "Water": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 3,
+    "n_reference_streams": 27,
+    "min_match_threshold": 3,
+    "fully_solved": true,
+    "n_streams_at_default": 0,
+    "mape_status": "computed",
+    "reference_match_pass": false,
+    "reference_mape_T": 17.65,
+    "reference_mape_P": 46.0,
+    "reference_mape_vf": 0.0,
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "1/3 matched streams within +/-5 K. MAPE=17.65%. Failures: S-01->SHIFT: |dT|=33.3K (sys=623.1 ref=589.8); S-02->VAP: |dT|=559.0K (sys=623.1 ref=1182.2)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "1/3 matched streams within +/-5%. MAPE=46.00%. Failures: S-01->SHIFT: |dP/P|=68.3%; S-02->VAP: |dP/P|=68.3%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "3/3 matched streams within +/-0.05. MAE=0.0000.",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "3 matched (confidence >= 0.55); 6 system + 24 reference unmatched",
+        "n_matched": 3,
+        "n_system_unmatched": 6,
+        "n_reference_unmatched": 24,
+        "matches": [
+          {
+            "ref_tag": "BIOGAS",
+            "sys_tag": "FEED",
+            "confidence": 0.9979,
+            "comp_cosine": 1.0,
+            "dT": 0.0,
+            "dP": 1325.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-01",
+            "sys_tag": "SHIFT",
+            "confidence": 0.8807,
+            "comp_cosine": 1.0,
+            "dT": 33.33,
+            "dP": -1093375.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "S-02",
+            "sys_tag": "VAP",
+            "confidence": 0.8135,
+            "comp_cosine": 1.0,
+            "dT": -559.0,
+            "dP": -1093375.0,
+            "dvf": 0.0
+          }
+        ],
+        "system_unmatched": [
+          "COMP",
+          "MIX",
+          "REFORM",
+          "LIQ",
+          "RX-01-OUT1",
+          "RX-02-OUT1"
+        ],
+        "reference_unmatched": [
+          "S-07",
+          "S-06",
+          "S-05",
+          "FLUE GAS",
+          "S-04",
+          "S-03",
+          "WATER",
+          "S-08",
+          "S-010",
+          "S-09",
+          "S-011",
+          "S-012",
+          "S-013",
+          "S-014",
+          "H2",
+          "S-015",
+          "S-016",
+          "S-017",
+          "S-018",
+          "AIR",
+          "S-019",
+          "S-020",
+          "S-021",
+          "S-022"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": true,
+  "n_units_solved": 5,
+  "n_units_total": 5,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=fully_solved, passed=True, critical_ir_errors=0, iterations=1",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      },
+      {
+        "solve_tier": "fully_solved",
+        "outcome": "PASS",
+        "passed": true,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 1,
+        "n_streams_at_default": 0
+      }
+    ]
+  },
+  "score_curve": [
+    0
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

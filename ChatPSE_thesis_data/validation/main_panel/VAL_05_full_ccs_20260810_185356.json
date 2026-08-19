@@ -1,0 +1,545 @@
+{
+  "case_id": "VAL_05",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260810_185356",
+  "outcome": "MAX_ITER",
+  "total_elapsed_s": 176.39576077461243,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/MISSING_PARAM] unit:RX-01 \u2192 PARAM_INJECT: The given key '1,2-dichloroethane' was not present in the dictionary"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 1,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/MISSING_PARAM] unit:RX-01 \u2192 PARAM_INJECT: The given key '1,2-dichloroethane' was not present in the dictionary"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 2,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/MISSING_PARAM] unit:RX-01 \u2192 PARAM_INJECT: The given key '1,2-dichloroethane' was not present in the dictionary"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 3,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/MISSING_PARAM] unit:RX-01 \u2192 PARAM_INJECT: The given key '1,2-dichloroethane' was not present in the dictionary"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 4,
+      "n_errors_before": 1,
+      "n_errors_after": 1,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/MISSING_PARAM] unit:RX-01 \u2192 PARAM_INJECT: The given key '1,2-dichloroethane' was not present in the dictionary"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    },
+    {
+      "iteration": 5,
+      "n_errors_before": 1,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/MISSING_PARAM] unit:RX-01 \u2192 PARAM_INJECT: The given key '1,2-dichloroethane' was not present in the dictionary"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 0,
+    "issue_summaries": []
+  },
+  "final_graph_summary": {
+    "property_package": "Peng-Robinson",
+    "n_units": 5,
+    "unit_types": [
+      "Mixer",
+      "ConversionReactor",
+      "ConversionReactor",
+      "Column",
+      "Mixer"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "MX-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "RX-01",
+        "type": "ConversionReactor",
+        "T_K": 363.15,
+        "temperature_source": "template",
+        "reaction_type": "chlorination",
+        "basis": "direct chlorination of ethylene to EDC (Ullmann's, Chlorinated Hydrocarbons)"
+      },
+      {
+        "tag": "RX-02",
+        "type": "ConversionReactor",
+        "T_K": 773.15,
+        "temperature_source": "template",
+        "reaction_type": "edc_pyrolysis",
+        "basis": "EDC (1,2-dichloroethane) pyrolysis to vinyl chloride ~500 C (Ullmann's, Vinyl Chloride)"
+      },
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MIX-RX-02",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[consistency] CONSISTENCY[fill_stream_T]: MIXED T=298.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: REACT T=363.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: CRACK T=773.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: VAP T=773.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: LIQ T=773.15 K (propagated from upstream unit outlet)",
+    "[consistency] CONSISTENCY[fill_stream_T]: S-MIX-RX-02-OUT T=363.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": {
+    "FEED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen chloride": 0.0,
+        "Vinyl chloride": 0.0,
+        "Ethylene": 0.5,
+        "Chlorine": 0.5
+      },
+      "is_feed": true
+    },
+    "MIXED": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.9999999999999998,
+      "vapor_fraction": 1.0,
+      "composition": {
+        "Hydrogen chloride": 0.0,
+        "Vinyl chloride": 0.0,
+        "Ethylene": 0.4999999999999999,
+        "Chlorine": 0.5000000000000001
+      },
+      "is_feed": false
+    },
+    "REACT": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    },
+    "CRACK": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    },
+    "VAP": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    },
+    "LIQ": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    },
+    "LIQ-INIT": {
+      "T_K": 773.15,
+      "T_C": 500.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 1.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.0,
+        "Vinyl chloride": 0.0,
+        "Ethylene": 0.5,
+        "Chlorine": 0.5
+      },
+      "is_feed": true
+    },
+    "S-MIX-RX-02-OUT": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    },
+    "RX-01-OUT1": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    },
+    "RX-02-OUT1": {
+      "T_K": 298.15,
+      "T_C": 25.0,
+      "P_Pa": 101325.0,
+      "P_bar": 1.01325,
+      "flow_mol_s": 0.0,
+      "vapor_fraction": 0.0,
+      "composition": {
+        "Hydrogen chloride": 0.25,
+        "Vinyl chloride": 0.25,
+        "Ethylene": 0.25,
+        "Chlorine": 0.25
+      },
+      "is_feed": false
+    }
+  },
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Ethylene": 0.5,
+        "Chlorine": 0.5,
+        "Hydrogen chloride": 0.0,
+        "Vinyl chloride": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "LIQ-INIT": {
+      "composition": {
+        "Ethylene": 0.5,
+        "Chlorine": 0.5,
+        "Hydrogen chloride": 0.0,
+        "Vinyl chloride": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 773.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 4,
+    "n_reference_streams": 21,
+    "min_match_threshold": 3,
+    "fully_solved": false,
+    "n_streams_at_default": 7,
+    "mape_status": "partial_solve",
+    "reference_match_pass": false,
+    "reference_mape_T": "partial_solve",
+    "reference_mape_P": "partial_solve",
+    "reference_mape_vf": "partial_solve",
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": false,
+        "detail": "1/4 matched streams within +/-5 K. MAPE=5.37%. Failures: Rin->MIXED: |dT|=21.7K (sys=298.1 ref=276.4); 10->VAP: |dT|=19.0K (sys=298.1 ref=279.1); 9->CRACK: |dT|=19.0K (sys=298.1 ref=279.1)",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": false,
+        "detail": "0/4 matched streams within +/-5%. MAPE=79.93%. Failures: Rin->MIXED: |dP/P|=33.3%; Ethylene 1->FEED: |dP/P|=98.6%; 10->VAP: |dP/P|=91.7%; 9->CRACK: |dP/P|=96.2%",
+        "source": "execution",
+        "severity": "CRITICAL"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "2/2 matched streams within +/-0.05. MAE=0.0000.",
+        "source": "execution",
+        "severity": "WARNING"
+      },
+      {
+        "check": "reference_stream_matching",
+        "passed": true,
+        "source": "execution",
+        "detail": "4 matched (confidence >= 0.55); 6 system + 17 reference unmatched",
+        "n_matched": 4,
+        "n_system_unmatched": 6,
+        "n_reference_unmatched": 17,
+        "matches": [
+          {
+            "ref_tag": "Rin",
+            "sys_tag": "MIXED",
+            "confidence": 0.9336,
+            "comp_cosine": 1.0,
+            "dT": 21.74,
+            "dP": -50662.5,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "Ethylene 1",
+            "sys_tag": "FEED",
+            "confidence": 0.6815,
+            "comp_cosine": 0.7071,
+            "dT": 0.0,
+            "dP": -6918702.0,
+            "dvf": 0.0
+          },
+          {
+            "ref_tag": "10",
+            "sys_tag": "VAP",
+            "confidence": 0.593,
+            "comp_cosine": 0.6396,
+            "dT": 19.0,
+            "dP": -1114575.0,
+            "dvf": null
+          },
+          {
+            "ref_tag": "9",
+            "sys_tag": "CRACK",
+            "confidence": 0.5851,
+            "comp_cosine": 0.6396,
+            "dT": 19.0,
+            "dP": -2533125.0,
+            "dvf": null
+          }
+        ],
+        "system_unmatched": [
+          "REACT",
+          "LIQ",
+          "LIQ-INIT",
+          "S-MIX-RX-02-OUT",
+          "RX-01-OUT1",
+          "RX-02-OUT1"
+        ],
+        "reference_unmatched": [
+          "MSTR-044",
+          "Recycle",
+          "15",
+          "14- VC",
+          "13",
+          "7",
+          "No Outlet",
+          "6",
+          "5",
+          "4",
+          "16",
+          "3",
+          "Zero Outlet",
+          "Chlorine 2",
+          "8",
+          "12",
+          "11-HCL"
+        ],
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Peng-Robinson",
+    "selected_family": "eos",
+    "expected_label": "eos",
+    "expected_family": "eos",
+    "correct": true,
+    "n_binary_params": 0
+  },
+  "fully_solved": false,
+  "n_units_solved": 1,
+  "n_units_total": 5,
+  "best_of_n": {
+    "N": 5,
+    "selected_index": 0,
+    "selection_reason": "reference-blind argmax over 5 samples on (solve_tier > passed > -critical_ir_errors > -iterations): selected sample 0 with solve_tier=partial_solve, passed=False, critical_ir_errors=0, iterations=6",
+    "reference_blind": true,
+    "samples": [
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 6,
+        "n_streams_at_default": 7
+      },
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 6,
+        "n_streams_at_default": 7
+      },
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 6,
+        "n_streams_at_default": 7
+      },
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 6,
+        "n_streams_at_default": 7
+      },
+      {
+        "solve_tier": "partial_solve",
+        "outcome": "MAX_ITER",
+        "passed": false,
+        "n_critical_ir_errors": 0,
+        "n_iterations": 6,
+        "n_streams_at_default": 7
+      }
+    ]
+  },
+  "score_curve": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

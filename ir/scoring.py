@@ -2,8 +2,8 @@
 Multi-factor candidate scoring for flowsheet ranking (Item 1).
 
 CandidateScore encodes 8 interpretable components combined into a scalar
-via a fixed weighted sum.  Weights are justified by ablation analysis
-(see ARCHITECTURE.md §Ablation Study Design).
+via a fixed weighted sum. The weights are heuristic development settings;
+they are not learned parameters or causal estimates from the final ablation.
 
 Component weights (sum = 1.00):
   valid_ir               0.35  — no schema/graph critical errors

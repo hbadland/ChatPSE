@@ -1,0 +1,170 @@
+{
+  "case_id": "VAL_09",
+  "ablation_mode": "full_ccs",
+  "model": "qwen3:30b-a3b",
+  "timestamp": "20260817_224008",
+  "outcome": "HUMAN",
+  "total_elapsed_s": 54.08021855354309,
+  "iterations": [
+    {
+      "iteration": 0,
+      "n_errors_before": 1,
+      "n_errors_after": 0,
+      "changes": [],
+      "candidates_tried": [],
+      "constraint_violations": [
+        "[CRITICAL/INFEASIBLE] unit:COL-01 \u2192 HUMAN: COL-01: near-degenerate split (relative volatility \u2248 1): components not separabl"
+      ],
+      "explore_exploit": "unknown",
+      "coupling_boosts": [],
+      "cache_hits": 0,
+      "elapsed_s": 0.0,
+      "coord_descent_triggered": false,
+      "coord_descent_level": -1,
+      "coord_descent_improvement": 0.0,
+      "stage_after_beam_errors": null,
+      "stage_after_local_opt_errors": null,
+      "n_bp_calls": 0,
+      "n_phase_candidates": 0,
+      "phase_candidate_selected": false,
+      "n_coupling_queries": 0,
+      "nonempty_coupling_boosts": []
+    }
+  ],
+  "ir_report_json": {
+    "valid": true,
+    "n_issues": 0,
+    "issue_summaries": []
+  },
+  "final_graph_summary": {
+    "property_package": "Raoult's Law",
+    "n_units": 3,
+    "unit_types": [
+      "Column",
+      "Column",
+      "Mixer"
+    ],
+    "n_binary_params": 0,
+    "unit_conditions": [
+      {
+        "tag": "COL-01",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "COL-02",
+        "type": "Column",
+        "T_K": null,
+        "temperature_source": "computed"
+      },
+      {
+        "tag": "MIX-COL-01",
+        "type": "Mixer",
+        "T_K": null,
+        "temperature_source": "computed"
+      }
+    ]
+  },
+  "warnings": [
+    "[recycle] 'REC' is_recycle=True but no trigger phrase in description \u2014 cleared to avoid false positive",
+    "[GRAPH/CRITICAL] [CRITICAL/INVALID_TOPOLOGY] global:global \u2192 HUMAN: Cycle detected in non-recycle streams \u2014 possible missing is_recycle tag",
+    "[TOPO_REPAIR] repropagated is_recycle on REC (lost at guard3-phrase)",
+    "[consistency] CONSISTENCY[fill_stream_T]: S-MIX-COL-01-OUT T=298.15 K (propagated from upstream unit outlet)"
+  ],
+  "completeness_critic": null,
+  "system_streams": null,
+  "ir_feed_streams": {
+    "FEED": {
+      "composition": {
+        "Benzene": 0.5,
+        "Ethanol": 0.5,
+        "p-Xylene": 0.0,
+        "m-Xylene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "MAKEUP": {
+      "composition": {
+        "p-Xylene": 1.0,
+        "Ethanol": 0.0,
+        "Benzene": 0.0,
+        "m-Xylene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    },
+    "REC-INIT": {
+      "composition": {
+        "p-Xylene": 1.0,
+        "Ethanol": 0.0,
+        "Benzene": 0.0,
+        "m-Xylene": 0.0
+      },
+      "composition_sum": 1.0,
+      "T": 298.15,
+      "P": 101325.0,
+      "flow": 1.0
+    }
+  },
+  "reference_comparison": {
+    "n_matched": 0,
+    "n_reference_streams": 0,
+    "min_match_threshold": 3,
+    "fully_solved": false,
+    "n_streams_at_default": 0,
+    "mape_status": "partial_solve",
+    "reference_match_pass": false,
+    "reference_mape_T": "partial_solve",
+    "reference_mape_P": "partial_solve",
+    "reference_mape_vf": "partial_solve",
+    "reference_excluded": false,
+    "reference_excluded_reason": "",
+    "checks": [
+      {
+        "check": "reference_match_T",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_P",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      },
+      {
+        "check": "reference_match_vf",
+        "passed": true,
+        "detail": "reference comparison skipped: no stream results from DWSIM",
+        "source": "none",
+        "severity": "INFO"
+      }
+    ]
+  },
+  "package_family": {
+    "selected_package": "Raoult's Law",
+    "selected_family": "ideal",
+    "expected_label": "activity_coefficient",
+    "expected_family": "activity",
+    "correct": false,
+    "n_binary_params": 0
+  },
+  "fully_solved": false,
+  "n_units_solved": 0,
+  "n_units_total": 3,
+  "best_of_n": null,
+  "ablation_stats": null,
+  "score_curve": [
+    1
+  ],
+  "n_explore": 0,
+  "n_exploit": 0
+}

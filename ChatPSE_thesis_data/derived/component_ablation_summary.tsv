@@ -1,0 +1,13 @@
+case	arm	outcome	fully_solved	matched_streams	T_MAPE_pct	P_MAPE_pct	bp_call_sites	phase_candidates	coupling_queries
+VAL_01	full_ccs	MAX_ITER	True	9/10	21.40	74.75	30	0	0
+VAL_01	no_physics	MAX_ITER	True	9/10	21.40	74.75	30	0	0
+VAL_01	no_coupling	MAX_ITER	True	9/10	21.40	74.75	30	0	0
+VAL_02	full_ccs	MAX_ITER	False	9/13	partial_solve	partial_solve	NA	NA	NA
+VAL_02	no_physics	HUMAN	False	No scored comparison	partial_solve	partial_solve	NA	NA	NA
+VAL_02	no_coupling	HUMAN	False	No scored comparison	partial_solve	partial_solve	NA	NA	NA
+VAL_03	full_ccs	MAX_ITER	True	4/8	44.08	95.69	15	0	0
+VAL_03	no_physics	MAX_ITER	True	4/8	44.08	95.69	15	0	0
+VAL_03	no_coupling	MAX_ITER	True	4/8	44.08	95.69	15	0	0
+VAL_06	full_ccs	MAX_ITER	False	No scored comparison	partial_solve	partial_solve	30	0	0
+VAL_06	no_physics	MAX_ITER	False	No scored comparison	partial_solve	partial_solve	30	0	0
+VAL_06	no_coupling	MAX_ITER	False	No scored comparison	partial_solve	partial_solve	30	0	0
