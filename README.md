@@ -1,6 +1,6 @@
 # ChatPSE
 
-**Natural-language process descriptions in. Executable DWSIM flowsheets out.**
+**Natural-language description to flowsheet.**
 
 [![Python 3.9](https://img.shields.io/badge/Python-3.9-3776AB?logo=python&logoColor=white)](#requirements)
 [![DWSIM 9.0.4](https://img.shields.io/badge/DWSIM-9.0.4-0B7285)](https://dwsim.org/)
