@@ -35,6 +35,9 @@ htmlcov/
 # Logs & temp
 *.log
 *.tmp
+
+# RDM staging directory — raw unredacted HPC pulls, never commit
+ChatPSE_thesis_data/_staging/
 CLAUDE.md
 
 # HPC scripts (contain hardcoded server paths/usernames — keep local only)
