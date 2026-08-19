@@ -1,8 +1,14 @@
 # ChatPSE
 
-ChatPSE translates natural-language descriptions of steady-state chemical processes into executable DWSIM flowsheets. Given a plain-English process description, the pipeline extracts compound identities and unit operations, assembles a typed intermediate representation (IR), configures thermodynamic packages and operating conditions, constructs and solves the flowsheet inside DWSIM via a .NET automation interface, and applies classified repair where the solver fails or returns physically inconsistent results.
+![Python 3.9](https://img.shields.io/badge/Python-3.9-3776AB?logo=python&logoColor=white)](#requirements)
+[![DWSIM 9.0.4](https://img.shields.io/badge/DWSIM-9.0.4-0B7285)](https://dwsim.org/)
+[![Software: MIT](https://img.shields.io/badge/software-MIT-green.svg)](LICENSE)
+[![Data: CC BY 4.0](https://img.shields.io/badge/data-CC_BY_4.0-lightgrey.svg)](ChatPSE_thesis_data/DATA_LICENSE.md)
+[![Status: research prototype](https://img.shields.io/badge/status-research_prototype-orange.svg)](#limitations)
 
-This repository accompanies an MSc thesis and associated manuscript. It contains research software and should be treated as such.
+[Quick start](#quick-start) · [Results](#results) · [Research data](ChatPSE_thesis_data) · [How it works](
+
+ChatPSE translates natural-language descriptions of steady-state chemical processes into executable DWSIM flowsheets. Given a plain-English process description, the pipeline extracts compound identities and unit operations, assembles a typed intermediate representation (IR), configures thermodynamic packages and operating conditions, constructs and solves the flowsheet inside DWSIM via a .NET automation interface, and applies classified repair where the solver fails or returns physically inconsistent results.
 
 ---
 
