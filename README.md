@@ -6,17 +6,6 @@ This repository accompanies an MSc thesis and associated manuscript. It contains
 
 ---
 
-## Project status
-
-- **Reported results branch:** `v4` (also merged to `main`)
-- **Reported results commit:** `[FULL COMMIT HASH]` — see release checklist
-- **Release tag:** `[THESIS RELEASE TAG]` — to be created on final submission
-- **Archive DOI:** `[ARCHIVE DOI]` — to be added after Zenodo/institutional deposit
-- The `main` branch may receive further development changes after the thesis release tag is created.
-- No software licence has yet been assigned. The repository may be viewed, but public availability should not be interpreted as permission to reuse, modify, or redistribute the code.
-
----
-
 ## What the pipeline does
 
 ```
