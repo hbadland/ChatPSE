@@ -1,0 +1,10 @@
+openai
+anthropic
+google-genai
+pythonnet>=3.0.1
+networkx
+scipy
+numpy
+langchain
+langchain-community
+langgraph

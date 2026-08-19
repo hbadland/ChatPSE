@@ -1,0 +1,58 @@
+# ChatPSE Execution Environment — Software Versions
+# Recorded from the Imperial College CX3 HPC environment used for the reported experiments.
+# Items marked UNRECORDED were not logged at run time and cannot be recovered post-hoc.
+# Do not substitute currently-installed versions for these entries.
+
+# ── Container ──────────────────────────────────────────────────────────────────
+Base OS:            Ubuntu 20.04 LTS (Focal Fossa)
+Python:             3.9 (system python3.9 from ubuntu:20.04 base image)
+.NET runtime:       8.0 (dotnet-runtime-8.0 from packages.microsoft.com)
+DWSIM:              9.0.4 (amd64 .deb)
+pythonnet:          >= 3.0.1 (exact version: UNRECORDED)
+
+# ── Model serving ──────────────────────────────────────────────────────────────
+Ollama:             UNRECORDED
+  Note: The exact Ollama binary version used on CX3 for the August 2026 runs was
+  not captured in scheduler logs or run records. Recording the currently installed
+  version does not prove it was used historically. This field is permanently
+  unrecorded unless recovered from the CX3 module environment or job logs.
+
+Model:              qwen3:30b-a3b
+Model digest:       UNRECORDED
+  Note: The SHA256 of the GGUF artefact was not recorded at pull time. Future pulls
+  of the same tag are not guaranteed to retrieve the same weights. This field is
+  permanently unrecorded unless recovered from Ollama's model manifest on CX3.
+
+OLLAMA_NUM_CTX:     16384   (set in run_component_ablation_val_hpc.sh)
+OLLAMA_TIMEOUT:     300     (set in run_component_ablation_val_hpc.sh)
+
+# ── GPU (component ablation and model substitution jobs) ───────────────────────
+GPU type:           NVIDIA L40S (48 GB VRAM)
+CUDA:               UNRECORDED
+CUDA driver:        UNRECORDED
+
+# ── Python packages (direct dependencies) ─────────────────────────────────────
+# Exact versions not pinned in requirements.txt and not recorded from pip freeze.
+# The list below reflects requirements.txt direct dependencies only.
+openai:             UNRECORDED
+anthropic:          UNRECORDED
+google-genai:       UNRECORDED
+pythonnet:          >= 3.0.1 (exact: UNRECORDED)
+networkx:           UNRECORDED
+scipy:              UNRECORDED
+numpy:              UNRECORDED
+langchain:          UNRECORDED
+langchain-community: UNRECORDED
+langgraph:          UNRECORDED
+
+# ── HPC scheduler ─────────────────────────────────────────────────────────────
+Cluster:            Imperial College London CX3
+Scheduler:          PBS (Portable Batch System)
+Container runtime:  Singularity/Apptainer (version: UNRECORDED)
+
+# ── To record currently installed versions (for new runs only) ────────────────
+# Inside the container:
+#   python3.9 -m pip freeze > environment/pip_freeze_<date>.txt
+# For Ollama:
+#   ollama --version
+#   ollama show qwen3:30b-a3b --modelinfo | grep digest

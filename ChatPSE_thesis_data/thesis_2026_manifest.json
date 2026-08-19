@@ -1,0 +1,96 @@
+{
+  "_comment": "Authoritative record of all result files included in the reported thesis aggregate. Populate each entry with the exact filename from selected_run_records/ when HPC data is transferred. Do not substitute date-filtered aggregate_per_run.py output for this manifest.",
+  "thesis_title": "[THESIS TITLE]",
+  "author": "Harry Badland",
+  "institution": "Imperial College London",
+  "year": 2026,
+  "commit": "[FULL COMMIT HASH]",
+  "release_tag": "[THESIS RELEASE TAG]",
+  "archive_doi": "[ARCHIVE DOI]",
+  "model": "qwen3:30b-a3b",
+  "model_digest": "[DIGEST — unrecorded if not in scheduler logs]",
+  "ollama_version": "[VERSION — unrecorded if not in scheduler logs]",
+  "container": "docker/Dockerfile (Ubuntu 20.04, Python 3.9, .NET 8, DWSIM 9.0.4)",
+  "pipeline_config": {
+    "main_panel": {
+      "USE_LANGGRAPH": "1",
+      "BEST_OF_N": "5",
+      "max_iter_default": 6,
+      "max_iter_beam_extension": 15,
+      "note": "Beam extension activates when n_cond_errors > 1"
+    },
+    "density_study": {
+      "USE_LANGGRAPH": "1",
+      "BEST_OF_N": "5",
+      "max_iter": 15
+    },
+    "targeted_ablation": {
+      "USE_LANGGRAPH": "1",
+      "BEST_OF_N": "5",
+      "max_iter": 15,
+      "OLLAMA_NUM_CTX": "16384"
+    },
+    "capability_ablation": {
+      "USE_LANGGRAPH": "unset",
+      "BEST_OF_N": "1",
+      "max_iter": 6
+    }
+  },
+  "experimental_groups": {
+    "capability": {
+      "description": "20-case capability benchmark — headline results",
+      "cases": ["P1","P2","P3","F1","F2","F3","F4","S1","S2","C1","C2","C3","M1","EASY_01","EASY_02","EASY_04","SAN_03","SAN_04","GEN_01","GEN_03"],
+      "mode": "full_ccs",
+      "records_dir": "selected_run_records/capability/",
+      "records": []
+    },
+    "validation": {
+      "description": "Ten-case validation panel",
+      "cases": ["VAL_01","VAL_02","VAL_03","VAL_04","VAL_05","VAL_06","VAL_07","VAL_08","VAL_09","VAL_10"],
+      "mode": "full_ccs",
+      "records_dir": "selected_run_records/validation/",
+      "records": []
+    },
+    "specification_density": {
+      "description": "L0/L1/L2 specification-density study",
+      "cases": ["VAL_01_L0","VAL_01_L1","VAL_03_L0","VAL_03_L1","VAL_04_L0","VAL_04_L1","VALS_01","VALS_03","VALS_04"],
+      "mode": "full_ccs",
+      "records_dir": "selected_run_records/specification_density/",
+      "records": []
+    },
+    "model_substitution": {
+      "description": "Sensitivity study — model substitution on three L1 cases",
+      "cases": ["VAL_01_L1","VAL_03_L1","VAL_04_L1"],
+      "models": ["qwen3:30b-a3b","qwen3:32b","deepseek-r1-distill-qwen-32b","gemma3:27b","mistral-small3.2:24b"],
+      "records_dir": "selected_run_records/model_substitution/",
+      "records": []
+    },
+    "ablation": {
+      "description": "Component ablation — capability set (N=1) and targeted validation (N=5)",
+      "sub_groups": {
+        "capability_ablation": {
+          "cases": ["P1","P2","P3","F1","F2","F3","F4","S1","S2","C1","C2","C3","M1","EASY_01","EASY_02","EASY_04","SAN_03","SAN_04","GEN_01","GEN_03"],
+          "modes": ["full_ccs","no_rule_store","no_physics","no_coupling"],
+          "N": 1,
+          "max_iter": 6
+        },
+        "targeted_ablation": {
+          "cases": ["VAL_01_L1","VAL_03_L1","VAL_04_L1","VAL_05","VAL_06"],
+          "modes": ["full_ccs","no_physics","no_coupling"],
+          "N": 5,
+          "max_iter": 15
+        }
+      },
+      "records_dir": "selected_run_records/ablation/",
+      "records": []
+    }
+  },
+  "aggregate_metrics": {
+    "_comment": "Populate from analysis/outputs/ after verification run",
+    "capability_pass_rate": null,
+    "validation_pass_rate": null,
+    "mean_iterations_to_pass": null,
+    "reference_mape_T_pct": null,
+    "reference_mape_P_pct": null
+  }
+}
